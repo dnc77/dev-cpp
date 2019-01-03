@@ -1,8 +1,6 @@
 #ifndef __OCTREE_H__
 #define __OCTREE_H__
 
-// Author: Copyright (C) 2014 Duncan Camilleri (dnc77@hotmail.com) 
-
 //
 // Some terminology:
 //
@@ -32,18 +30,9 @@ struct Item
    aabb mBounds;
 };
 
-// A flag to determine in which nodes an object falls under.
-typedef enum _presence {
-   nodeNone = 0x0000,
-   nodeTopLeftNear = 0x0001,
-   nodeTopRightNear = 0x0002,
-   nodeBtmLeftNear = 0x0004,
-   nodeBtmRightNear = 0x0008,
-   nodeTopLeftFar = 0x0010,
-   nodeTopRightFar = 0x0020,
-   nodeBtmLeftFar = 0x0040,
-   nodeBtmRightFar = 0x0080
-} WhichNodes;
+// Const pointers to const structs.
+typedef const Point* const CPointPtr;
+typedef const aabb* const CAabbPtr;
 
 // A sequence identifying the index of each node in a vector.
 typedef enum _pointIdx {
@@ -60,8 +49,11 @@ typedef enum _pointIdx {
 
 class Octree
 {
-public:
+private:
    Octree();
+
+public:
+   Octree(aabb& bounds);
    virtual ~Octree();
 
    // Add an item to the octree.
@@ -70,6 +62,13 @@ public:
    // Clear the octree.
    void Reset();
 
+   //
+   // OCTREE FUNCTIONALITY
+   //
+
+   // Console me!
+   void printf();
+
    // Find up to 'maxResults' intersecting items and write them into
    // 'outResults' array. Returns the actual number of results stored.
    int Query(Point const& point, int* outResults, int maxResults) const;
@@ -77,13 +76,33 @@ public:
 private:
    aabb mBounds;                    // as a leaf node this is the bounding rect
    std::vector<Octree> mLeaves;     // as an intermediate node this is filled
-   std::vector<Item> mItems;        // as an intermediate node this is filled
+   std::vector<Item> mItems;        // as a leaf node this may be filled
 
+   bool isLeaf() const;             // am I a leaf?
+   void promote();                  // promotes a leaf node to intermediate
+
+   //
+   // STATIC HELPERS.
+   //
+
+   // Determines an index which identifies the child node of an intermediate
+   // based on the position of the point within bounds.
    static PointIdx findPos(aabb const& bounds, Point const& point);
+
+   // Assumes an array of 8 bounds which will be filled with the bounds of the
+   // child cubes of bounds.
    static void getChildBounds(aabb const& bounds, aabb* childbounds);  
-   static bool isPointInBounds(Point* ppt, aabb* pAb);
+
+   // Returns true of pt lies within ab.
+   static bool isPointInBounds(Point const& pt, aabb const& ab);
+
+   // Returns true if item exists partially within the search area.
    static bool isItemInBoundsPartial(aabb const& searchArea, Item const& item);
+
+   // Returns true if the big bounds wholly enclose the small bounds.
+   static bool isCubeEnclosed(aabb const& big, aabb const& small);
 };
 
 #endif   // __OCTREE_H__
+
 

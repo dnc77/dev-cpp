@@ -1,5 +1,3 @@
-// Author: Copyright (C) 2014 Duncan Camilleri (dnc77@hotmail.com) 
-
 #include <assert.h>
 #include <stdio.h>
 #include <memory.h>
@@ -9,19 +7,21 @@
 
 #include "octree.h"
 
+using namespace std;
+
 Octree::Octree()
-   : mId(0)
 {
-   // Initialise.
-   memset(&mPoint, 0, sizeof(mPoint));
-   mSet = false;                              
-   mChildren = 0;
+   memset(&mBounds, 0, sizeof(aabb));
+}
+
+Octree::Octree(aabb& bounds)
+{
+   memcpy(&mBounds, &bounds, sizeof(aabb));
 }
 
 Octree::~Octree()
 {
-   if (mChildren)
-      delete[] mChildren;
+   // Nothing to free.
 }
 
 // Add an item to the octree.
@@ -49,11 +49,11 @@ void Octree::Add(aabb const& bounds, int id)
    }
 
    // Am I a leaf node?
-   if (mLeaves.size() == 0) {
+   if (isLeaf()) {
       // Yes this is a leaf - Add item to this node first.
       mItems.push_back(item);
 
-      // If this leaf node is promoted to an intermediate node, will this
+      // Should this leaf node be promoted to an intermediate node, will this
       // item be contained in more than one child leaf node? If yes, then just
       // promote this node.
       int count = 0;
@@ -66,13 +66,19 @@ void Octree::Add(aabb const& bounds, int id)
       }
 
       // Promote node to an intermediate one?
-      if (count > 2) {
-         promote();
+      if (count >= 2) {
+         // Only promote the node of this item does not cover the entire area
+         // of this leaf's space.
+         if (!isCubeEnclosed(item.mBounds, mBounds)) {
+            promote();
+         }
       }
    } else if (mLeaves.size() == 8) {         // must always be 8.
       // No - this is intermediate.
-      for (int n = 0; n < 8; ++n) {
-         mLeaves[n].Add(bounds, id);
+      for (vector<Octree>::iterator it = mLeaves.begin(); 
+         it != mLeaves.end(); ++it)
+      {
+         it->Add(bounds, id);
       }
    }
 }
@@ -80,14 +86,121 @@ void Octree::Add(aabb const& bounds, int id)
 // Clear the octree.
 void Octree::Reset()
 {
+   memset(&mBounds, 0, sizeof(aabb));
+   mItems.clear();
+   mLeaves.clear();
+}
 
+void Octree::printf()
+{
+   // Intermediates do not have items.
+   if (mItems.size() == 0) {
+      ::printf("(Inode - x: %f - %f, y: %f - %f, z: %f - %f)\n", 
+         mBounds.min.x, mBounds.max.x,
+         mBounds.min.y, mBounds.max.y,
+         mBounds.min.z, mBounds.max.z);
+      
+      // Print leaves!
+      for (vector<Octree>::iterator it = mLeaves.begin(); 
+         it != mLeaves.end(); ++it)
+      {
+         it->printf();
+      }
+   } else {
+      ::printf("(Lnode - x: %f - %f, y: %f - %f, z: %f - %f)\n", 
+         mBounds.min.x, mBounds.max.x,
+         mBounds.min.y, mBounds.max.y,
+         mBounds.min.z, mBounds.max.z);
+
+      // Print items!
+      for (vector<Item>::iterator it = mItems.begin(); 
+         it != mItems.end(); ++it)
+      {
+         ::printf("   (item %d - x: %f - %f, y: %f - %f, z: %f - %f)\n",
+            it->mId, 
+            it->mBounds.min.x, it->mBounds.max.x,
+            it->mBounds.min.y, it->mBounds.max.y,
+            it->mBounds.min.z, it->mBounds.max.z);
+      }
+   }
 }
 
 // Find up to 'maxResults' intersecting items and write them into
 // 'outResults' array. Returns the actual number of results stored.
 int Octree::Query(Point const& point, int* outResults, int maxResults) const
 {
+   // If the leaf node containing this point is identified, then the items
+   // within that node are searched such that any ones which enclose or touch
+   // the input point will be returned.
+   if (!isLeaf()) {
+      // Go through leaves and query...
+      for (vector<Octree>::const_iterator it = mLeaves.begin(); 
+         it != mLeaves.end(); ++it)
+      {
+         int found = it->Query(point, outResults, maxResults);
 
+         // A point is a point - it can be found only in one spot. Once found,
+         // the process can stop.
+         if (found > 0) return found;
+      }
+
+      // Not found in the leaf nodes of this intermediate.
+      return 0;
+   }
+
+   // This is a leaf node. This node may enclose this point.
+   if (!isPointInBounds(point, mBounds)) return 0;
+
+   // Point is within this leaf node. Validate parameters.
+   if (!outResults || maxResults <= 0) return 0;
+
+   // Go through all the items within this node and up until maxResults report
+   // each only if it touches or encloses this point.
+   int results = 0;
+   for (vector<Item>::const_iterator it = mItems.begin(); 
+      it != mItems.end() && results < maxResults; ++it)
+   {
+      if (isPointInBounds(point, it->mBounds)) {
+         outResults[results] = it->mId;
+         results++;
+      }
+   }
+
+   // Done.
+   return results;
+}
+
+// am I a leaf?
+bool Octree::isLeaf() const
+{
+   return mLeaves.size() == 0;
+}
+
+// If this node is a leaf node, then it will be promoted to an intermediate node
+// otherwise nothing happens.
+void Octree::promote()
+{
+   if (mLeaves.size() > 0) return;           // not a leaf
+
+   // To promote, 8 child nodes need to be created to represent 8 equal cubes
+   // within the bounding cube of this tree.
+   aabb pChildBounds[8];
+   getChildBounds(mBounds, pChildBounds);
+   for (int n = 0; n < 8; ++n) {
+      mLeaves.push_back(Octree(pChildBounds[n]));
+   }
+
+   // Add each item in this node to the child nodes.
+   for (vector<Item>::iterator it = mItems.begin(); it != mItems.end(); ++it) {
+      for (vector<Octree>::iterator leaf = mLeaves.begin();
+         leaf != mLeaves.end(); ++leaf)
+      {
+         leaf->Add(it->mBounds, it->mId);
+      }
+   }
+
+   // Once done, delete all items.
+   mItems.clear();
 }
 
 // Splits bounds into 8 halves (a cube split across 3 axis from the centre point
@@ -100,9 +213,9 @@ int Octree::Query(Point const& point, int* outResults, int maxResults) const
 PointIdx Octree::findPos(aabb const& bounds, Point const& point)
 {
    float halves[3];
-   halves[0] = bounds.min.x + ((bounds.max.x - bounds.min.x) / 2)
-   halves[1] = bounds.min.y + ((bounds.max.y - bounds.min.y) / 2)
-   halves[2] = bounds.min.z + ((bounds.max.z - bounds.min.z) / 2)
+   halves[0] = bounds.min.x + ((bounds.max.x - bounds.min.x) / 2);
+   halves[1] = bounds.min.y + ((bounds.max.y - bounds.min.y) / 2);
+   halves[2] = bounds.min.z + ((bounds.max.z - bounds.min.z) / 2);
 
    // Validate the point to be within bounds.
    if (point.x < bounds.min.x)   return nodeIdxOutOfBounds;
@@ -171,9 +284,9 @@ PointIdx Octree::findPos(aabb const& bounds, Point const& point)
 void Octree::getChildBounds(aabb const& bounds, aabb* childbounds)
 {
    float halves[3];
-   halves[0] = bounds.min.x + ((bounds.max.x - bounds.min.x) / 2)
-   halves[1] = bounds.min.y + ((bounds.max.y - bounds.min.y) / 2)
-   halves[2] = bounds.min.z + ((bounds.max.z - bounds.min.z) / 2)
+   halves[0] = bounds.min.x + ((bounds.max.x - bounds.min.x) / 2.0);
+   halves[1] = bounds.min.y + ((bounds.max.y - bounds.min.y) / 2.0);
+   halves[2] = bounds.min.z + ((bounds.max.z - bounds.min.z) / 2.0);
 
    // Top left near.
    // smaller x plane (left)
@@ -265,14 +378,14 @@ void Octree::getChildBounds(aabb const& bounds, aabb* childbounds)
 }
 
 // Returns true if the point 'ppt' falls within the bounds 'pAb'.
-bool Octree::isPointInBounds(Point* ppt, aabb* pAb)
+bool Octree::isPointInBounds(Point const& pt, aabb const& ab)
 {
-   if (ppt->x < pAb->min.x)   return false;
-   if (ppt->y < pAb->min.y)   return false;
-   if (ppt->z < pAb->min.z)   return false;
-   if (ppt->x >= pAb->max.x)  return false;
-   if (ppt->y >= pAb->max.y)  return false;
-   if (ppt->z >= pAb->max.z)  return false;
+   if (pt.x < ab.min.x)    return false;
+   if (pt.y < ab.min.y)    return false;
+   if (pt.z < ab.min.z)    return false;
+   if (pt.x > ab.max.x)    return false;
+   if (pt.y > ab.max.y)    return false;
+   if (pt.z > ab.max.z)    return false;
 
    // In very simple terms the point is within bounds.
    return true;
@@ -281,5 +394,66 @@ bool Octree::isPointInBounds(Point* ppt, aabb* pAb)
 // Determines if the searchItem exists within searchArea in full or in part.
 bool Octree::isItemInBoundsPartial(aabb const& searchArea, Item const& item)
 {
+   // Since this is a partial binding check, the item does not need to be wholly
+   // within the search area. If any point of the cube can be found within the
+   // search area, we got a hit!
+
+   // Check to see if any of the corners of the item's cube is within the search
+   // area. If at least one corner of the item's cube is within the search area,
+   // then we can say that the search area, to a certain extent owns this object
+   // id.
+   const Point* const pMin = &item.mBounds.min;
+   const Point* const pMax = &item.mBounds.max;
+
+   // There may yet be a better way to do this...
+   // Avoid loop?
+   Point pt;
+   for (int x = pMin->x;  x <= pMax->x; x += pMax->x - pMin->x) {
+      pt.x = x;
+      for (int y = pMin->y;  y <= pMax->y; y += pMax->y - pMin->y) {
+         pt.y = y;
+         for (int z = pMin->z;  z <= pMax->z; z += pMax->z - pMin->z) {
+            pt.z = z;
+            if (isPointInBounds(pt, searchArea)) {
+               return true;
+            }  
+         }
+      }
+   }
+
+   // Ok so none of the corners of the item's cube are within the search area.
+   // This means that this item is:
+   // a) either completely out of the search area.
+   // b) or enclosing totally the search area
+   //       (but obviously can't be fully enclosed within the search area).
+   if (isCubeEnclosed(item.mBounds, searchArea))
+      return true;
+
+   // Nowhere to be seen!
+   return false;
+}
+
+// Returns true if ptBig wholly encloses ptSmall.
+bool Octree::isCubeEnclosed(aabb const& big, aabb const& small)
+{
+   // small located before big.
+   if (small.min.x < big.min.x) return false;
+   if (small.min.y < big.min.y) return false;
+   if (small.min.z < big.min.z) return false;
+
+   // small located after end of big.
+   if (small.min.x > big.max.x) return false;
+   if (small.min.y > big.max.y) return false;
+   if (small.min.z > big.max.z) return false;
+
+   // small cube starts inside big cube but overlaps edges :(.
+   // Small cube goes home...
+   if (small.max.x > big.max.x) return false;
+   if (small.max.y > big.max.y) return false;
+   if (small.max.z > big.max.z) return false;
+
+   // Otherwise, small cube stays here - small cube is in big cube.
    return true;
 }
+
+
