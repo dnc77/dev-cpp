@@ -29,10 +29,10 @@ AR                         := ar
 GCC                        := gcc
 TOUCH                      := touch
 ECHO                       := echo
-VALGRIND							:= valgrind
-VALGRINDOPTFULL				:= --leak-check=full --track-origins=yes \
+VALGRIND                   := valgrind
+VALGRINDOPTFULL            := --leak-check=full --track-origins=yes \
                               --track-fds=yes
-VALGRINDOUTPUT					:=
+VALGRINDOUTPUT             :=
 
 # Compiler flags
 GCCSTD98                   := -std=c++98
