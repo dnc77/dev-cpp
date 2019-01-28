@@ -1,4 +1,4 @@
-netlib
+tcplib
 
 Summary:
 This is a simple tcp based network library.
