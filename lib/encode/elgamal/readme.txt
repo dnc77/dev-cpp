@@ -34,7 +34,7 @@ How to use:
 2. Construct the class passing these as parameters.
 3. Choose a message to encode.
 4. For each character to encode in a message, an elchar struct is returned
-   by the encode function. Consider using the elbug structure.
+   by the encode function. Consider using the elbuf structure.
 5. For further details refer to main.cpp.
 
 
