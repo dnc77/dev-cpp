@@ -3,7 +3,9 @@
 //
 // Version control
 // 19 Jan 2019 Duncan Camilleri           Initial development
-//
+// 31 Jan 2019 Duncan Camilleri           Replaced addrinfo with new netaddress
+// 02 Feb 2019 Duncan Camilleri           Added sockoptAddrReuse
+// 
 
 #ifndef __NETNODE_H__
 #define __NETNODE_H__
@@ -15,6 +17,8 @@
 #error "netnode.h: missing include - sys/socket.h"
 #elif not defined _NETDB_H
 #error "netnode.h: missing include - netdb.h"
+#elif not defined __NETADDRESS_H__
+#error "netnode.h: missing include - netaddress.h"
 #endif
 
 class netnode
@@ -42,7 +46,11 @@ protected:
 
    // system connectivity info
    int mSocket = 0;                    // file descriptor
-   addrinfo* mpInterface = nullptr;    // comms interface
+   netaddress mNetAddr;                // address information
+
+protected:
+   // Socket options
+   bool optAddrReuse(bool enable);
 };
 
 

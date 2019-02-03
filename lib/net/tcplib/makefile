@@ -1,5 +1,7 @@
 # History of changes:
 #
+# 28 Jan 2019					added client
+#
 
 # Root path
 ROOTDIR                    := /home/duncan/cpp/tcplib/
@@ -54,15 +56,18 @@ GCCLIBDIR                  := -L
 # Project names
 NETCOMMON                  := netcommon
 SERVER                     := server
+CLIENT                     := client
 TEST                       := test
 
 # Individual project include locations
 NETCOMMONINCDIR            := $(INCDIR)
 SERVERINCDIR               := $(INCDIR)
+CLIENTINCDIR               := $(INCDIR)
 
 # Individual project source locations
 NETCOMMONSRCDIR            := $(SRCDIR)$(NETCOMMON)/
 SERVERSRCDIR               := $(SRCDIR)$(SERVER)/
+CLIENTSRCDIR               := $(SRCDIR)$(CLIENT)/
 TESTSRCDIR                 := $(SRCDIR)$(TEST)/
 
 # Individual project include files
@@ -72,6 +77,7 @@ NETCOMMONINC               := $(NETCOMMONINCDIR)helpers.h \
 SERVERINC                  := $(SERVERINCDIR)server.h \
                               $(SERVERINCDIR)serversync.h \
                               $(SERVERINCDIR)serverasync.h
+CLIENTINC                  := $(CLIENTINCDIR)client.h
 
 # Individual project source files
 NETCOMMONSRC               := $(NETCOMMONSRCDIR)netnode.cpp \
@@ -79,6 +85,7 @@ NETCOMMONSRC               := $(NETCOMMONSRCDIR)netnode.cpp \
 SERVERSRC                  := $(SERVERSRCDIR)server.cpp \
                               $(SERVERSRCDIR)serversync.cpp \
                               $(SERVERSRCDIR)serverasync.cpp
+CLIENTSRC                  := $(CLIENTSRCDIR)client.cpp
 TESTSRC                    := $(TESTSRCDIR)main.cpp
 
 # Project object files
@@ -86,6 +93,8 @@ NETCOMMONOBJ_RDBG          := $(OBJDIR_RDBG)$(NETCOMMON).o
 NETCOMMONOBJ_RREL          := $(OBJDIR_RDBG)$(NETCOMMON).o
 SERVEROBJ_RDBG             := $(OBGDIR_RDBG)$(SERVER).o
 SERVEROBJ_RREL             := $(OBGDIR_RREL)$(SERVER).o
+CLIENTOBJ_RDBG             := $(OBGDIR_RDBG)$(CLIENT).o
+CLIENTOBJ_RREL             := $(OBGDIR_RREL)$(CLIENT).o
 
 # Project library link options
 # Libraries:
@@ -100,12 +109,16 @@ NETCOMMONBIN_RDBG          := $(BINDIR_RDBG)$(NETCOMMON).a
 NETCOMMONBIN_RREL          := $(BINDIR_RREL)$(NETCOMMON).a
 SERVERBIN_RDBG             := $(BINDIR_RDBG)$(SERVER).a
 SERVERBIN_RREL             := $(BINDIR_RREL)$(SERVER).a
+CLIENTBIN_RDBG             := $(BINDIR_RDBG)$(CLIENT).a
+CLIENTBIN_RREL             := $(BINDIR_RREL)$(CLIENT).a
 TESTBIN_RDBG               := $(BINDIR_RDBG)$(TEST)
 TESTBIN_RREL               := $(BINDIR_RREL)$(TEST)
 
 # Project dependencies
-TESTDEP_RDBG               := $(SERVERBIN_RDBG) $(NETCOMMONBIN_RDBG)
-TESTDEP_RREL               := $(SERVERBIN_RREL) $(NETCOMMONBIN_RREL)
+TESTDEP_RDBG               := $(SERVERBIN_RDBG) $(CLIENTBIN_RDBG) \
+                              $(NETCOMMONBIN_RDBG)
+TESTDEP_RREL               := $(SERVERBIN_RREL) $(CLIENTBIN_RREL) \
+                              $(NETCOMMONBIN_RREL)
 
 # Individual project type compiler options
 OBJGCCOPT_RDBG             := $(GCCDEBUG) $(GCCCOMPILEONLY) $(GCCSTD17) \
@@ -127,11 +140,13 @@ all : dbg rel
 dbg : mkdbgdirs \
       $(NETCOMMONBIN_RDBG) \
       $(SERVERBIN_RDBG) \
+      $(CLIENTBIN_RDBG) \
       $(TESTBIN_RDBG)
 
 rel : mkreldirs \
       $(NETCOMMONBIN_RREL) \
       $(SERVERBIN_RREL) \
+      $(CLIENTBIN_RREL) \
       $(TESTBIN_RREL)
 
 # Create required directories
@@ -172,6 +187,18 @@ $(SERVERBIN_RDBG) : $(SERVERSRC)
 $(SERVERBIN_RREL) : $(SERVERSRC)
 	$(GCC) $(OBJGCCOPT_RREL) $(SERVERSRC)
 	$(AR) rc $(SERVERBIN_RREL) *.o
+	$(MV) *.o $(OBJDIR_RDBG)
+
+# client debug build
+$(CLIENTBIN_RDBG) : $(CLIENTSRC)
+	$(GCC) $(OBJGCCOPT_RDBG) $(CLIENTSRC)
+	$(AR) rc $(CLIENTBIN_RDBG) *.o
+	$(MV) *.o $(OBJDIR_RDBG)
+
+# client release build
+$(CLIENTBIN_RREL) : $(CLIENTSRC)
+	$(GCC) $(OBJGCCOPT_RREL) $(CLIENTSRC)
+	$(AR) rc $(CLIENTBIN_RREL) *.o
 	$(MV) *.o $(OBJDIR_RDBG)
 
 # test debug build

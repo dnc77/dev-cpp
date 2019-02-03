@@ -35,7 +35,7 @@ public:
    virtual bool init();
    virtual bool term();
 
-   // Accept connections (blocking call).
+   // Accept connections (threaded non blocking call).
    virtual bool waitForClients();
 
 protected:

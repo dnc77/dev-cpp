@@ -26,39 +26,6 @@
 using namespace std;
 
 //
-// Network interface selector
-// A class which detects a list of possible servers that can listen locally on
-// a port. Since a port may be open at any one time, there might be no
-// interface to listen for connection requests on that port. Alternatively,
-// there also might be multiple interfaces to choose from. In that case,
-// this is where selection takes place.
-//
-class selectserver
-{
-public:
-   // Initialize
-   selectserver() = delete;
-   selectserver(unsigned short port);
-   virtual ~selectserver();
-
-   bool init();
-   void term();
-
-private:
-   unsigned short mPort = 0;
-
-   // Interfacing
-   // List of interfaces that can listen for connections.
-   addresslist mInterfaces;
-   addressptr mActive = nullptr;
-   bool findInterfaces();
-
-public:
-   addresslistcref getInterfaces() const;
-   addresscptr select(string& address);
-};
-
-//
 // Client record
 // A client record represents one client which has connected successfully to
 // this server. This is stored as a list in the server.

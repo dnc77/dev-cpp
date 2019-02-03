@@ -17,7 +17,6 @@
 #define max(x, y)                         (x >= y ? x : y)
 #define min(x, y)                         (x <= y ? x : y)
 
-
 // Doubles the time in pt up until it reaches maxsec and maxusec.
 // Subsequent calls on a timeval that is equal or greater to
 // maxsec and maxusec will do nothing. When both maxsec and maxusec are 0,

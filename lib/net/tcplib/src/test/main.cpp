@@ -3,6 +3,8 @@
 //
 // Version control
 // 20 Jan 2019 Duncan Camilleri           Initial development
+// 28 Jan 2019 Duncan Camilleri           Added basic client test
+// 29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
 //
 
 #include <stdio.h>
@@ -18,6 +20,7 @@
 #include <helpers.h>
 #include <netaddress.h>
 #include <netnode.h>
+#include <client.h>
 #include <server.h>
 #include <serversync.h>
 #include <serverasync.h>
@@ -37,20 +40,6 @@ void dbltimertest(const int maxsec, const int maxusec)
       printf("maxsec: %d maxusec: %d sec: %d usec: %d\n",
          maxsec, maxusec, v.tv_sec, v.tv_usec);
    }   
-}
-
-// Shows all local interfaces using selectserver.
-void showlocalinterfaces()
-{
-   selectserver s(1024);
-   s.init();
-
-   // Get all the interfaces available in an address list.
-   addresslist list = s.getInterfaces();
-   for (int n = 0; n < 2; ++n) {
-      netaddress a(&list[n], sizeof(sockaddr_storage));
-      printf("%s (%s)\n", a.address().c_str(), a.family().c_str());
-   }
 }
 
 // Just initializes a server. Synchronous: will block.
@@ -73,9 +62,87 @@ void serverinit()
    delete s;
 }
 
+#include <memory.h>
+void clientissues()
+{
+   // Set up hints and get info.
+   addrinfo* pInfo = nullptr;
+   addrinfo hints;
+   hints.ai_flags = 0;
+   hints.ai_family = AF_UNSPEC;
+   hints.ai_socktype = SOCK_STREAM;
+   hints.ai_protocol = 0;
+   hints.ai_addrlen = 0;
+   hints.ai_addr = nullptr;
+   hints.ai_canonname = nullptr;
+   hints.ai_next = nullptr;
+   if (0 != getaddrinfo("192.168.170.14", "1888", &hints, &pInfo)) {
+      printf("getaddrinfo() fail\n");
+      return;
+   }
+
+   int socksrv = 0;
+   addrinfo* pCur = pInfo;
+   while (pCur) {
+      socksrv =
+         socket(AF_INET, SOCK_STREAM, 0
+      );
+
+      if (-1 == socksrv) {
+         socksrv = 0;
+         pCur = pCur->ai_next;
+      } else {
+         break;
+      }
+   }
+
+   if (!pCur) {
+      printf("socket() fail (socksrv)\n");
+      return;
+   }
+
+   // Server socket exists. Create compatible client socket now.
+   int sockcli = socket(pCur->ai_family, pCur->ai_socktype, 0);
+   if (-1 == sockcli) {
+      printf("socket() fail (sockcli)\n");
+      return;
+   }
+
+   if (-1 == ::connect(sockcli, pCur->ai_addr, pCur->ai_addrlen))
+      printf("connect() fail\n");
+   
+   send(socksrv, "Hello server!\n", 14, 0);
+
+   char r[1024];
+   memset(r, 0, 1024);
+   int n = recv(socksrv, r, 1023, 0);
+   if (n == -1) printf("recv() fail\n");
+   
+   printf("recvd %d bytes\n", n);   
+   while (true);
+}
+
+// Just initiates a connection with a listening server.
+void clientconnect(const char* const server, const unsigned short port)
+{
+   client c(server, port);
+   c.setLocal("0.0.0.0", 1084);
+   c.init();
+   if (c.connect()) { printf("success\n"); }
+   else { printf("fail\n"); }
+
+   client c2(server, port);
+   c2.setLocal("0.0.0.0", 1084);
+   c2.init();
+   if (c2.connect()) { printf("success(2)\n"); }
+   else { printf("fail(2)\n"); }
+
+   while (true);
+}
+
 int main(int argc, char** argv)
 {
-   serverinit();
+   clientconnect("192.168.170.11", 4444);
    return 0;
 }
 

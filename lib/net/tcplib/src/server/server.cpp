@@ -3,6 +3,9 @@
 //
 // Version control
 // 19 Jan 2019 Duncan Camilleri           Initial development
+// 29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
+// 31 Jan 2019 Duncan Camilleri           new netaddress changes
+// 03 Feb 2019 Duncan Camilleri           address reuse socket option
 //
 
 // Includes
@@ -23,122 +26,6 @@
 
 #include <sys/stat.h>                     // open
 #include <fcntl.h>
-
-
-// 
-//           |              |
-// ,---.,---.|    ,---.,---.|---     ,---.,---.,---..    ,,---.,---.
-// `---.|---'|    |---'|    |        `---.|---'|     \  / |---'|
-// `---'`---'`---'`---'`---'`---'    `---'`---'`      `'  `---'`
-// Select server is used to determine what addresses are available on
-// the local machine for listening. The sole purpose of this class is
-// just that.
-// NOTE: This class needs to be re-visited as it does not seem to work
-// the way it was intended to.
-
-//
-// Initialize
-// Initialization functions for the server selector.
-//
-
-selectserver::selectserver(unsigned short port)
-{
-   mPort = port;
-}
-
-selectserver::~selectserver()
-{
-   term();
-}
-
-// Will try to obtain all available interface in the vector of
-// interfaces in this class. If there are already items in this
-// vector, for this function to succeed, it has to be emptied.
-// This may be done by re-initializing this class (calling term()
-// before init()).
-bool selectserver::init()
-{
-   if (!findInterfaces()) return false;
-
-   return true;
-}
-
-void selectserver::term()
-{
-   mActive = nullptr;
-   mInterfaces.clear();
-}
-
-//
-// Interfacing
-// All functionality related to the interface selection.
-//
-
-// Get all available interfaces that can act as a server.
-bool selectserver::findInterfaces()
-{
-   // Interfaces have already been fetched?
-   if (mInterfaces.size() > 0) return false;
-
-   // Get port number.
-   if (mPort == 0) return false;
-   char port[8];
-   sprintf(port, "%d\0", mPort);
-
-   // Locate all interfaces.
-   addrinfo hints;
-   addrinfo* servers;                           // list of servers available
-   memset(&hints, 0, sizeof(addrinfo));
-   hints.ai_family = AF_UNSPEC;
-   hints.ai_socktype = SOCK_STREAM;
-   hints.ai_flags = AI_PASSIVE;
-   if (0 != getaddrinfo(0, port, &hints, &servers)) {
-      return false;
-   }
-
-   // Record all interfaces.
-   addrinfo* p = servers;
-   while (0 != p) {
-      // Create a sockaddr storage and move it to the interfaces structure.
-      sockaddr_storage address;
-      memset(&address, 0, sizeof(sockaddr_storage));
-      memcpy(&address, p->ai_addr, p->ai_addrlen);
-      mInterfaces.push_back(address);
-
-      // Next interface.
-      p = p->ai_next;
-   }
-
-   // All interfaces recorded.
-   freeaddrinfo(servers);
-   return true;
-}
-
-// Gets all interfaces in the vector as constants.
-addresslistcref selectserver::getInterfaces() const
-{
-   // vector<const sockaddr_storage>& 
-   return mInterfaces;
-}
-
-// Locates the specified user address from the currently loaded address list.
-// If found, then the address is selected and returned.
-// nullptr returned when no address has been found.
-addresscptr selectserver::select(string& address)
-{
-   // Reset active address.
-   mActive = nullptr;
-
-   // Try to find the address in the list of interfaces.
-   addresslist::iterator i = mInterfaces.begin();
-   for (; i != mInterfaces.end(); ++i) {
-      netaddress na(&(*(i)), sizeof(sockaddr_storage));
-      if (na.address() == address)
-         mActive = &(*i);
-   }
-
-   return mActive;
-}
 
 
 // 
@@ -190,73 +77,62 @@ bool server::init()
 
    // If an address is already registered, clear it.
    // Since socket is free, address should also be free at this point.
-   if (nullptr != mpInterface) {
-      freeaddrinfo(mpInterface);
-      mpInterface = nullptr;
-   }
+   if (nullptr != *mNetAddr) mNetAddr.delinfo();
 
    // Initialize address retrieval hints and get local address.
+   // Either use the one provided or find one by not providing an address.
    if (0 == mAddress[0]) {
-      // Should I Look for an address myself?
-      addrinfo hints;
-      memset(&hints, 0, sizeof(addrinfo));
-      hints.ai_family = AF_UNSPEC;
-      hints.ai_socktype = SOCK_STREAM;
-      hints.ai_flags = AI_PASSIVE;
-      if (0 != getaddrinfo(0, port, &hints, &mpInterface)) {
+      if (!mNetAddr.newinfo(nullptr, port,
+         AI_PASSIVE, AF_UNSPEC, SOCK_STREAM, 0)) {
          return false;
       }
    } else {
-      // Or will I use the one you've given me?
-      addrinfo hints;
-      memset(&hints, 0, sizeof(addrinfo));
-      hints.ai_family = AF_UNSPEC;
-      hints.ai_socktype = SOCK_STREAM;
-      if (0 != getaddrinfo(mAddress, port, &hints, &mpInterface)) {
+      if (!mNetAddr.newinfo(mAddress, port,
+         0, AF_UNSPEC, SOCK_STREAM)) {
          return false;
       }
    }
 
    // A valid address is obtained. Open a socket for binding.
-   mSocket = socket(mpInterface->ai_family, SOCK_STREAM, 0);
+   addrinfo* paddr = *mNetAddr;
+   mSocket = socket(paddr->ai_family, paddr->ai_socktype, paddr->ai_protocol);
    if (-1 == mSocket) {
       mSocket = 0;
-      freeaddrinfo(mpInterface);
-      mpInterface = nullptr;
+      mNetAddr.delinfo();
 
       return false;
    }
+
+   // Enable socket address re-use for sockets that have not yet closed.
+   optAddrReuse(true);
 
    // Update address text.
-   sockaddr_storage* psa =
-      reinterpret_cast<sockaddr_storage*>(mpInterface->ai_addr);
-   netaddress na(psa, mpInterface->ai_addrlen);
-   na.address(mAddress, mkAddrLen);
+   mNetAddr.address(mAddress, mkAddrLen);
    if (strlen(mAddress) == 0) {
+      mNetAddr.delinfo();
       close(mSocket);
       mSocket = 0;
-      freeaddrinfo(mpInterface);
-      mpInterface = nullptr;
 
       return false;
    }
 
+   // ...and port
+   mPort = mNetAddr.port();
+
    // Server address info struct is available. Binding time.
-   if (0 != bind(mSocket, mpInterface->ai_addr, mpInterface->ai_addrlen)) {
+   if (0 != bind(mSocket, paddr->ai_addr, paddr->ai_addrlen)) {
+      mNetAddr.delinfo();
       close(mSocket);
       mSocket = 0;
-      freeaddrinfo(mpInterface);
-      mpInterface = nullptr;
 
       return false;
    }
 
    // Set the socket as listening.
    if (0 != listen(mSocket, mkBacklog)) {
+      mNetAddr.delinfo();
       close(mSocket);
       mSocket = 0;
-      freeaddrinfo(mpInterface);
-      mpInterface = nullptr;
 
       return false;
    }
@@ -268,8 +144,7 @@ bool server::init()
 // Releases the socket.
 bool server::term()
 {
-   if (nullptr != mpInterface) freeaddrinfo(mpInterface);
-   mpInterface = nullptr;
+   mNetAddr.delinfo();
 
    // Close listening socket.
    if (mSocket > 0) {

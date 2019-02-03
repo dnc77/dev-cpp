@@ -3,7 +3,10 @@
 //
 // Version control
 // 27 Jan 2019 Duncan Camilleri           Initial development
-//
+// 29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
+// 03 Feb 2019 Duncan Camilleri           Removed stdout logging (will revise)
+// 03 Feb 2019 Duncan Camilleri           Terminate loop when mSocket <= 0
+// 
 
 #include <string>
 #include <vector>
@@ -122,7 +125,6 @@ void serversync::acceptLoop()
          break;
       } else if (0 == selected) {
          // No communication received. Double time to wait and wait again.
-         printf("timeout @ %ld %ld\n", (long)tv.tv_sec, (long)tv.tv_usec);
          doubletime(tv, maxsec);
          continue;
       }
@@ -130,7 +132,6 @@ void serversync::acceptLoop()
       // Otherwise something just arrived...
       // If mSocket has been closed, break out.
       if (0 == mSocket) {
-         printf("term\n");
          break;
       }
 
@@ -149,16 +150,13 @@ void serversync::acceptLoop()
             clientrec rc;
             rc.mSocket = sock;
             rc.mSockAddr = ss;
-
-            printf("client connected\n");
             mClients.push_back(std::move(rc));
             
             // Reset timeout.
             tv.tv_sec = tv.tv_usec = 0;
          }
       }
-   // Do not check for mSocket == 0 here as 0 is stdin.
-   } while (true);
+   } while (mSocket > 0);
 
    // Update session status.
    sessionStop = true;
