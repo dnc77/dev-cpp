@@ -6,7 +6,8 @@
 // 29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
 // 03 Feb 2019 Duncan Camilleri           Removed stdout logging (will revise)
 // 03 Feb 2019 Duncan Camilleri           Terminate loop when mSocket <= 0
-// 
+// 03 Feb 2019 Duncan Camilleri           added logging support
+//
 
 #include <string>
 #include <vector>
@@ -23,6 +24,10 @@
 #include <netnode.h>
 #include <server.h>
 #include <serverasync.h>
+
+extern "C" {
+   #include <logger.h>                    // C does not name mangle
+}
 
 //
 // CONSTRUCTOR/DESCTRUCTOR
@@ -52,16 +57,21 @@ bool serverasync::init()
    int f = fcntl(mSocket, F_GETFL, 0);
    if (-1 == f) {
       server::term();
+
+      logErr(mLog, lognormal, "serverasync init - cannot unblock socket");
       return false;
    }
 
    // Set the non blocking option.
    if (-1 == fcntl(mSocket, F_SETFL, f | O_NONBLOCK)) {
       server::term();
+      
+      logErr(mLog, lognormal, "serverasync init - cannot unblock socket");
       return false;
    }
 
    // Listening socket is non blocking and can proceed.
+   logInfo(mLog, logmore, "serverasync init - complete");
    return true;
 }
 
@@ -70,19 +80,20 @@ bool serverasync::term()
    bool success = true;
 
    // Close listening socket first. Take note on failure.
-   if (!server::term()) {
+   if (!server::term())
       success = false;
-   }
 
    // Wait for the accepting thread to finish. It should finish
    // because the socket was closed. It's highly unlikely that
    // server::term fails and if it does, socket is still reset
    // so accept loop will break out anyway. 
+   logInfo(mLog, logmore, "serverasync term - waiting for accept thread");
    mAcceptThread.join();
 
    // Termination done.
    // In the unlikely event that the socket failed to close,
    // mSocket is still set to 0 anyway.
+   logInfo(mLog, logmore, "serverasync term - complete");
    return success;
 }
 
@@ -95,6 +106,8 @@ bool serverasync::term()
 bool serverasync::waitForClients()
 {
    try {
+      logInfo(mLog, logfull, "serverasync accept - running accept loop once");
+
       std::call_once(mAcceptOnce, [&]() {
          thread t(&serverasync::acceptLoop, this);
          mAcceptThread = move(t);
@@ -133,9 +146,15 @@ void serverasync::acceptLoop()
       int selected = select(mSocket + 1, &fdrd, nullptr, nullptr, &activetime);
       if (-1 == selected) {
          // Fail tasks because select failed for some reason.
+         logErr(mLog, lognormal, "serverasync accept - select fail");
          break;
       } else if (0 == selected) {
          // No communication received. Double time to wait and wait again.
+         logInfo(mLog, logfull,
+            "serverasync accept - timeout after %ds %dusec",
+            tv.tv_sec, tv.tv_usec
+         );
+
          doubletime(tv, maxsec);
          continue;
       }
@@ -148,6 +167,8 @@ void serverasync::acceptLoop()
 
       // Has a connection request been made?
       if (FD_ISSET(mSocket, &fdrd)) {
+         logInfo(mLog, logmore, "serverasync accept - connection request");
+
          // A connection request has been made.
          // Prepare a client address information.
          sockaddr_storage ss;
@@ -165,9 +186,18 @@ void serverasync::acceptLoop()
             
             // Reset timeout.
             tv.tv_sec = tv.tv_usec = 0;
+            
+            logInfo(mLog, lognormal, "serverasync accept - accepted %s:%d",
+               netaddress::address(&ss).c_str(), netaddress::port(&ss)
+            );
+         } else {
+            logWarn(mLog, lognormal, "serverasync accept - accept failed");
          }
       }
    } while (mSocket > 0);
+
+   // term() signal
+   logInfo(mLog, logmore, "serverasync accept - term() signal");
 }
 
 

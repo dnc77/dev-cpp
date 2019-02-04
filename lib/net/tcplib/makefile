@@ -1,6 +1,7 @@
 # History of changes:
 #
-# 28 Jan 2019					added client
+# 28 Jan 2019              added client
+# 03 Feb 2019              added logger
 #
 
 # Root path
@@ -54,23 +55,27 @@ GCCLIBDIR                  := -L
 # External libraries library dirs
 
 # Project names
+LOGGER                     := logger
 NETCOMMON                  := netcommon
 SERVER                     := server
 CLIENT                     := client
 TEST                       := test
 
 # Individual project include locations
+LOGGERINCDIR               := $(INCDIR)
 NETCOMMONINCDIR            := $(INCDIR)
 SERVERINCDIR               := $(INCDIR)
 CLIENTINCDIR               := $(INCDIR)
 
 # Individual project source locations
+LOGGERSRCDIR               := $(SRCDIR)$(LOGGER)/
 NETCOMMONSRCDIR            := $(SRCDIR)$(NETCOMMON)/
 SERVERSRCDIR               := $(SRCDIR)$(SERVER)/
 CLIENTSRCDIR               := $(SRCDIR)$(CLIENT)/
 TESTSRCDIR                 := $(SRCDIR)$(TEST)/
 
 # Individual project include files
+LOGGERINC                  := $(LOGGERINCDIR)logger.h
 NETCOMMONINC               := $(NETCOMMONINCDIR)helpers.h \
                               $(NETCOMMONINCDIR)netnode.h \
                               $(NETCOMMONINCDIR)netaddress.h
@@ -80,6 +85,7 @@ SERVERINC                  := $(SERVERINCDIR)server.h \
 CLIENTINC                  := $(CLIENTINCDIR)client.h
 
 # Individual project source files
+LOGGERSRC                  := $(LOGGERSRCDIR)logger.c
 NETCOMMONSRC               := $(NETCOMMONSRCDIR)netnode.cpp \
                               $(NETCOMMONSRCDIR)netaddress.cpp
 SERVERSRC                  := $(SERVERSRCDIR)server.cpp \
@@ -89,6 +95,8 @@ CLIENTSRC                  := $(CLIENTSRCDIR)client.cpp
 TESTSRC                    := $(TESTSRCDIR)main.cpp
 
 # Project object files
+LOGGER_RDBG                := $(OBJDIR_RDBG)$(LOGGER).o
+LOGGER_RREL                := $(OBJDIR_RREL)$(LOGGER).o
 NETCOMMONOBJ_RDBG          := $(OBJDIR_RDBG)$(NETCOMMON).o
 NETCOMMONOBJ_RREL          := $(OBJDIR_RDBG)$(NETCOMMON).o
 SERVEROBJ_RDBG             := $(OBGDIR_RDBG)$(SERVER).o
@@ -105,6 +113,8 @@ TESTLIB_RDBG               := -pthread $(GCCLIB)stdc++
 TESTLIB_RREL               := -pthread $(GCCLIB)stdc++
 
 # Project output files
+LOGGERBIN_RDBG             := $(BINDIR_RDBG)$(LOGGER).a
+LOGGERREL_RREL             := $(BINDIR_RREL)$(LOGGER).a
 NETCOMMONBIN_RDBG          := $(BINDIR_RDBG)$(NETCOMMON).a
 NETCOMMONBIN_RREL          := $(BINDIR_RREL)$(NETCOMMON).a
 SERVERBIN_RDBG             := $(BINDIR_RDBG)$(SERVER).a
@@ -116,11 +126,15 @@ TESTBIN_RREL               := $(BINDIR_RREL)$(TEST)
 
 # Project dependencies
 TESTDEP_RDBG               := $(SERVERBIN_RDBG) $(CLIENTBIN_RDBG) \
-                              $(NETCOMMONBIN_RDBG)
+                              $(NETCOMMONBIN_RDBG) $(LOGGERBIN_RDBG)
 TESTDEP_RREL               := $(SERVERBIN_RREL) $(CLIENTBIN_RREL) \
-                              $(NETCOMMONBIN_RREL)
+                              $(NETCOMMONBIN_RREL) $(LOGGERBIN_RDBG)
 
 # Individual project type compiler options
+OBJCOPT_RDBG               := $(GCCDEBUG) $(GCCCOMPILEONLY) \
+                              $(GCCINCDIR)$(INCDIR)
+OBJCOPT_RREL               := $(GCCCOMPILEONLY) \
+                              $(GCCINCDIR)$(INCDIR)
 OBJGCCOPT_RDBG             := $(GCCDEBUG) $(GCCCOMPILEONLY) $(GCCSTD17) \
                               $(GCCINCDIR)$(INCDIR)
 OBJGCCOPT_RREL             := $(GCCCOMPILEONLY) $(GCCSTD17) \
@@ -138,12 +152,14 @@ rules :
 all : dbg rel
 
 dbg : mkdbgdirs \
+      $(LOGGERBIN_RDBG) \
       $(NETCOMMONBIN_RDBG) \
       $(SERVERBIN_RDBG) \
       $(CLIENTBIN_RDBG) \
       $(TESTBIN_RDBG)
 
 rel : mkreldirs \
+      $(LOGGERBIN_RREL) \
       $(NETCOMMONBIN_RREL) \
       $(SERVERBIN_RREL) \
       $(CLIENTBIN_RREL) \
@@ -164,6 +180,18 @@ clean :
 
 memchk :
 	$(VALGRIND) $(VALGRINDOPTFULL) $(TESTBIN_RDBG)
+
+# logger debug build
+$(LOGGERBIN_RDBG) : $(LOGGERSRC) $(LOGGERINC)
+	$(GCC) $(OBJCOPT_RDBG) $(LOGGERSRC)
+	$(AR) rc $(LOGGERBIN_RDBG) *.o
+	$(MV) *.o $(OBJDIR_RDBG)
+
+# logger release build
+$(LOGGERBIN_RREL) : $(LOGGERSRC) $(LOGGERINC)
+	$(GCC) $(OBJCOPT_RREL) $(LOGGERSRC)
+	$(AR) rc $(LOGGERBIN_RREL) *.o
+	$(MV) *.o $(OBJDIR_RREL)
 
 # netnode debug build
 $(NETCOMMONBIN_RDBG) : $(NETCOMMONSRC) $(NETCOMMONINC)

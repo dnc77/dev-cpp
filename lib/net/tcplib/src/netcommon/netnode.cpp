@@ -4,6 +4,7 @@
 // Version control
 // 19 Jan 2019 Duncan Camilleri           Initial development
 // 02 Feb 2019 Duncan Camilleri           Added sockoptAddrReuse
+// 03 Feb 2019 Duncan Camilleri           added logging support
 // 
 
 // Includes
@@ -15,6 +16,10 @@
 #include <string>
 #include <netaddress.h>
 #include <netnode.h>
+
+extern "C" {
+   #include <logger.h>     // C does not name mangle
+}
 
 //
 // CONSTRUCTOR/DESCTRUCTOR

@@ -6,6 +6,7 @@
 // 29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
 // 31 Jan 2019 Duncan Camilleri           new netaddress changes
 // 03 Feb 2019 Duncan Camilleri           address reuse socket option
+// 03 Feb 2019 Duncan Camilleri           added logging support
 //
 
 // Includes
@@ -27,6 +28,9 @@
 #include <sys/stat.h>                     // open
 #include <fcntl.h>
 
+extern "C" {
+   #include <logger.h>                    // C does not name mangle
+}
 
 // 
 //      |    o          |                                     |
@@ -69,7 +73,10 @@ bool server::init()
    // First validate all data.
    // One can't have a server when they don't know on which port to listen to.
    char port[8];
-   if (0 == mPort) return false;
+   if (0 == mPort) {
+      logErr(mLog, lognormal, "server init - invalid port (%d)", mPort);
+      return false;
+   }
    sprintf(port, "%d", mPort);
 
    // If socket has been previously initialized, do not re-initialize.
@@ -84,11 +91,17 @@ bool server::init()
    if (0 == mAddress[0]) {
       if (!mNetAddr.newinfo(nullptr, port,
          AI_PASSIVE, AF_UNSPEC, SOCK_STREAM, 0)) {
+         logErr(mLog, lognormal, "server init - could not find any interfaces");
          return false;
       }
    } else {
       if (!mNetAddr.newinfo(mAddress, port,
          0, AF_UNSPEC, SOCK_STREAM)) {
+         logErr(mLog, lognormal,
+            "server init - failed locating interfaces for %s(%d)",
+            mAddress, mPort
+         );
+         
          return false;
       }
    }
@@ -99,6 +112,7 @@ bool server::init()
    if (-1 == mSocket) {
       mSocket = 0;
       mNetAddr.delinfo();
+      logCri(mLog, lognormal, "server init - failed creating server socket!");
 
       return false;
    }
@@ -113,6 +127,7 @@ bool server::init()
       close(mSocket);
       mSocket = 0;
 
+      logErr(mLog, lognormal, "server init - no server address detected");
       return false;
    }
 
@@ -125,6 +140,7 @@ bool server::init()
       close(mSocket);
       mSocket = 0;
 
+      logErr(mLog, lognormal, "server init - could not bind server socket");
       return false;
    }
 
@@ -134,10 +150,12 @@ bool server::init()
       close(mSocket);
       mSocket = 0;
 
+      logErr(mLog, lognormal, "server init - could not listen");
       return false;
    }
 
    // Socket is bound to a valid name structure.
+   logInfo(mLog, logmore, "server init - complete");
    return true;
 }
 
@@ -150,6 +168,10 @@ bool server::term()
    if (mSocket > 0) {
       if (-1 == close(mSocket)) {
          mSocket = 0;
+         logWarn(mLog, logmore,
+            "server term - failed closing socket gracefully"
+         );
+
          return false;
       }
 
@@ -157,5 +179,6 @@ bool server::term()
    }
 
    // Done.
+   logInfo(mLog, logmore, "server term - complete");
    return true;
 }

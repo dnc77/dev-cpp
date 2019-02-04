@@ -6,6 +6,7 @@
 // 29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
 // 03 Feb 2019 Duncan Camilleri           Removed stdout logging (will revise)
 // 03 Feb 2019 Duncan Camilleri           address reuse socket option
+// 04 Feb 2019 Duncan Camilleri           added logging support
 //
 
 // Includes
@@ -20,6 +21,10 @@
 #include <netaddress.h>
 #include <netnode.h>
 #include <client.h>
+
+extern "C" {
+   #include <logger.h>                    // C does not name mangle
+}
 
 //
 // CONSTRUCTOR/DESTRUCTOR
@@ -46,6 +51,9 @@ client::~client()
 // function will attempt to pre-define that.
 bool client::setLocal(const char* const address, unsigned short port)
 {
+   logInfo(mLog, logmore, "client local port - trying with local address %s:%d",
+      address, port);
+
    // Get port string.
    char cport[8];
    memset(cport, 0, 8);
@@ -54,6 +62,8 @@ bool client::setLocal(const char* const address, unsigned short port)
    // Get address info.
    if (!mLocal.newinfo(address, port == 0 ? nullptr : cport,
       AI_NUMERICHOST, AF_UNSPEC, SOCK_STREAM, 0)) {
+      logErr(mLog, lognormal, "server init - could not find any interfaces");
+
       return false;
    }
 
@@ -67,7 +77,10 @@ bool client::init()
 {
    // First validate all data.
    // One can't connect to a server if it's not defined.
-   if (strlen(mAddress) == 0 || 0 == mPort) return false;
+   if (strlen(mAddress) == 0 || 0 == mPort) {
+      logErr(mLog, logmore, "client init - nothing to connect to");
+      return false;
+   }
 
    // If socket has been previously initialized, do not re-initialize.
    if (0 != mSocket) return false;
@@ -79,8 +92,10 @@ bool client::init()
    sprintf(port, "%d", mPort);
 
    // Get address info.
-   if (!mNetAddr.newinfo(mAddress, port))
+   if (!mNetAddr.newinfo(mAddress, port)) {
+      logErr(mLog, lognormal, "client init - cannot validate server address");
       return false;
+   }
 
    // Find a valid server socket and address first.
    addrinfo* pCur = mNetAddr;
@@ -104,6 +119,8 @@ bool client::init()
    // Failed?
    if (!pCur) {
       mNetAddr.delinfo();
+      logCri(mLog, lognormal, "client init - failed creating server socket!");
+
       return false;
    }
 
@@ -114,6 +131,7 @@ bool client::init()
       mLocalSock = mSocket = 0;
       mNetAddr.delinfo();
 
+      logCri(mLog, lognormal, "client init - failed creating client socket!");
       return false;
    }
 
@@ -143,7 +161,7 @@ bool client::term()
             sock = 0;
             return false;
          }
-         
+
          sock = 0;
          return true;
       }
@@ -152,7 +170,21 @@ bool client::term()
    };
 
    // Close both sockets.
-   return closesock(mSocket) && closesock(mLocalSock);
+   bool success = true;
+   if (!closesock(mSocket)) {
+      success = false;
+      logWarn(mLog, logmore,
+         "client term - failed closing server socket gracefully");
+   }
+
+   if (!closesock(mLocalSock)) {
+      success = false;
+      logWarn(mLog, logmore,
+         "client term - failed closing client socket gracefully");
+   }
+
+   logInfo(mLog, logmore, "client term - complete");
+   return success;
 }
 
 //
@@ -164,11 +196,23 @@ bool client::connect()
 {
    if (!mLocalSock || !mSocket) return false;
 
+   logInfo(mLog, logmore, "client connect: connecting to %s:%d",
+      mAddress, mPort);
+
    // Connect local to server.
    addrinfo* pAddr = mNetAddr;
-   if (-1 == ::connect(mLocalSock, pAddr->ai_addr, pAddr->ai_addrlen))
+   if (-1 == ::connect(mLocalSock, pAddr->ai_addr, pAddr->ai_addrlen)) {
+      logErr(mLog, logmore, "client connect: connection to %s:%d failed",
+         mAddress, mPort
+      );
+      
       return false;
+   }
 
+   // Connected.
+   logInfo(mLog, lognormal, "client connect: connected to %s:%d",
+      mAddress, mPort
+   );
    return true;
 }
 
@@ -199,6 +243,9 @@ bool client::bindToLocal()
    }
 
    // Bind failed.
+   logWarn(mLog, lognormal,
+      "client local port - %d already in use", mLocal.port()
+   );
    return false;
 }
 

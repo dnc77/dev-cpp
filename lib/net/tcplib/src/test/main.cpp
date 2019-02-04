@@ -25,6 +25,12 @@
 #include <serversync.h>
 #include <serverasync.h>
 
+extern "C" {
+   #include <logger.h>
+}
+
+loghdl gLog = 0;
+
 void dbltimertest(const int maxsec, const int maxusec)
 {
    timeval v;
@@ -47,6 +53,8 @@ void dbltimertest(const int maxsec, const int maxusec)
 void serverinit()
 {
    server *s = new serversync(nullptr, 1158);
+   s->log(reinterpret_cast<void*>(gLog));
+
    if (s->init()) {
       printf("server listening %s:%d\n", s->getAddress(), s->getPort());
    } else {
@@ -126,23 +134,36 @@ void clientissues()
 void clientconnect(const char* const server, const unsigned short port)
 {
    client c(server, port);
+   c.log(reinterpret_cast<void*>(gLog));
    c.setLocal("0.0.0.0", 1084);
    c.init();
    if (c.connect()) { printf("success\n"); }
    else { printf("fail\n"); }
-
-   client c2(server, port);
-   c2.setLocal("0.0.0.0", 1084);
-   c2.init();
-   if (c2.connect()) { printf("success(2)\n"); }
-   else { printf("fail(2)\n"); }
 
    while (true);
 }
 
 int main(int argc, char** argv)
 {
-   clientconnect("192.168.170.11", 4444);
+   gLog = createLoggerHandle(nullptr, logfull, 1);
+
+   if (!argv[1][0]) {
+      destroyLoggerHandle(&gLog);
+      printf("args: c/s\n");
+      return 1;
+   }
+
+   if (argv[1][0] == 'c') {
+      clientconnect("192.168.170.11", 1158);
+   } else if (argv[1][0] == 's') {
+      serverinit();
+   } else {
+      destroyLoggerHandle(&gLog);
+      printf("args: c/s\n");
+      return 1;
+   }
+
+   destroyLoggerHandle(&gLog);
    return 0;
 }
 

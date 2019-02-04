@@ -34,12 +34,16 @@ public:
    // Initializations.
    virtual bool init() = 0;
    virtual bool term() = 0;
+   void log(void* log)                 { mLog = log; }
 
    // Accessors.
    const char* const getAddress()      { return mAddress; }
    unsigned short getPort()            { return mPort; }
 
 protected:
+   // logging
+   void* mLog = nullptr;
+
    // user connectivity input
    char mAddress[mkAddrLen];
    unsigned short mPort;

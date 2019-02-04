@@ -6,7 +6,8 @@
 // 29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
 // 03 Feb 2019 Duncan Camilleri           Removed stdout logging (will revise)
 // 03 Feb 2019 Duncan Camilleri           Terminate loop when mSocket <= 0
-// 
+// 04 Feb 2019 Duncan Camilleri           added logging support
+//
 
 #include <string>
 #include <vector>
@@ -22,6 +23,10 @@
 #include <netnode.h>
 #include <server.h>
 #include <serversync.h>
+
+extern "C" {
+   #include <logger.h>                    // C does not name mangle
+}
 
 //
 // CONSTRUCTOR/DESCTRUCTOR
@@ -51,16 +56,21 @@ bool serversync::init()
    int f = fcntl(mSocket, F_GETFL, 0);
    if (-1 == f) {
       server::term();
+
+      logErr(mLog, lognormal, "serversync init - cannot unblock socket");
       return false;
    }
 
    // Set the non blocking option.
    if (-1 == fcntl(mSocket, F_SETFL, f | O_NONBLOCK)) {
       server::term();
+
+      logErr(mLog, lognormal, "serversync init - cannot unblock socket");
       return false;
    }
 
    // Listening socket is non blocking and can proceed.
+   logInfo(mLog, logmore, "serversync init - complete");
    return true;
 }
 
@@ -77,11 +87,13 @@ bool serversync::term()
    // running. It's ideal to wait for the loop to exit. To do that,
    // sessionStop has been introduced. When set to true, then the accepting
    // loop has completed.
+   logInfo(mLog, logmore, "serversync term - waiting for accept loop");
    while (!sessionStop);
 
    // Termination done.
    // In the unlikely event that the socket failed to close,
    // mSocket is still set to 0 anyway.
+   logInfo(mLog, logmore, "serversync term - complete");
    return success;
 }
 
@@ -93,6 +105,8 @@ bool serversync::term()
 // server. This is a blocking call.
 bool serversync::waitForClients()
 {
+   logInfo(mLog, logfull, "serversync accept - running accept loop once");
+
    std::call_once(mAcceptOnce, &serversync::acceptLoop, this);
    return true;
 }
@@ -122,9 +136,15 @@ void serversync::acceptLoop()
       int selected = select(mSocket + 1, &fdrd, nullptr, nullptr, &activetime);
       if (-1 == selected) {
          // Fail tasks because select failed for some reason.
+         logErr(mLog, lognormal, "serversync accept - select fail");
          break;
       } else if (0 == selected) {
          // No communication received. Double time to wait and wait again.
+         logInfo(mLog, logfull,
+            "serversync accept - timeout after %ds %dusec",
+            tv.tv_sec, tv.tv_usec
+         );
+
          doubletime(tv, maxsec);
          continue;
       }
@@ -137,6 +157,8 @@ void serversync::acceptLoop()
 
       // Has a connection request been made?
       if (FD_ISSET(mSocket, &fdrd)) {
+         logInfo(mLog, logmore, "serversync accept - connection request");
+
          // A connection request has been made.
          // Prepare a client address information.
          sockaddr_storage ss;
@@ -154,10 +176,18 @@ void serversync::acceptLoop()
             
             // Reset timeout.
             tv.tv_sec = tv.tv_usec = 0;
+            
+            logInfo(mLog, lognormal, "serversync accept - accepted %s:%d",
+               netaddress::address(&ss).c_str(), netaddress::port(&ss)
+            );
+         } else {
+            logWarn(mLog, lognormal, "serversync accept - accept failed");
          }
       }
    } while (mSocket > 0);
 
-   // Update session status.
+   // Update session status - term() signal.
+   logInfo(mLog, logmore, "serversync accept - term() signal");
    sessionStop = true;
 }
+
