@@ -3,6 +3,7 @@
 //
 // Version control
 // 13 Feb 2019 Duncan Camilleri           Initial development
+// 19 Feb 2019 Duncan Camilleri           Removed byte* swap() function
 // 
 
 // Includes
@@ -56,30 +57,6 @@ void becode::swap(int32_t& n)
 void becode::swap(int16_t& n)
 {
    if (!mIsBigEndian) swap16(n);
-}
-
-bool becode::swap(byte* pbyte, size_t s)
-{
-   if (mIsBigEndian) return true;
-   int64_t* pn = reinterpret_cast<int64_t*>(pbyte);
-
-   switch (s) {
-      case 64:
-         swap64(*pn);
-         // swap64(&((int64_t*)*pbyte));
-         break;
-      case 32:
-         // swap32(&((int32_t*)*pbyte));
-         break;
-      case 16:
-         // swap16(&((int16_t*)*pbyte));
-         break;
-      default:
-         return false;           // invalid size
-   }
-
-   // Done.
-   return true;
 }
 
 inline void becode::swap64(int64_t& bytes)

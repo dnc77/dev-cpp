@@ -3,7 +3,8 @@
 //
 // Version control
 // 13 Feb 2019 Duncan Camilleri           Initial development
-// 
+// 19 Feb 2019 Duncan Camilleri           Removed byte* swap() function
+//
 
 #ifndef __BECODE_H__
 #define __BECODE_H__
@@ -30,7 +31,6 @@ public:
    void swap(int64_t& n);
    void swap(int32_t& n);
    void swap(int16_t& n);
-   bool swap(byte* pbyte, size_t s);
 
 private:
    void swap64(int64_t& bytes);
