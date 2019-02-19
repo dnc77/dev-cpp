@@ -9,7 +9,6 @@
 #include <sys/time.h>
 #include <memory.h>
 #include <string>
-#include <helpers.h>
 #include <cycbuf.h>
 
 using namespace std;

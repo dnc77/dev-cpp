@@ -3,6 +3,7 @@
 //
 // Version control
 // 05 Feb 2019 Duncan Camilleri           Initial development
+// 10 Feb 2019 Duncan Camilleri           isEmpty() and isFull() are now public
 // 
 
 #ifndef __CYCBUF_H__
@@ -18,7 +19,7 @@ enum class byte : unsigned char {};
 
 // Different cyclic buffer sizes.
 enum cycsiz : unsigned int {
-   tiny = 16,                 // TO DO: CHANGE TO 16
+   tiny = 16,
    small = 128,
    medium = 1024,
    large = 4096,
@@ -80,9 +81,12 @@ private:
    byte* mpEnd = &mBuf[size - 1];         // end of buffer
    byte mBuf[(int)size];                  // whole buffer
 
+public:
    // Buffer status checks
    bool isEmpty();
    bool isFull();
+
+private:
    bool isReadReady();
    bool isWriteReady();
 };
