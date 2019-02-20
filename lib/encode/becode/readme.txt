@@ -14,8 +14,10 @@ first constructor and this is used to determine whether the local system is big
 or little endian.
 
 Public swap methods exist to swap different data types to big endian provided
-that the local system is not big endian already. These guarded swap functions
-will not swap back to little endian and they only work in little endian systems.
+that the local system is not big endian. These swap functions can also swap back
+to little endian. Since the purpose of this is to convert to big endian,
+the swap methods only work in little endian systems where data is not already
+ordered such.
 
 Public methods exist also to encode floats and doubles to a byte buffer and vice
 versa (always in big endian form).
