@@ -3,6 +3,7 @@
 //
 // Version control
 // 19 Jan 2019 Duncan Camilleri           Initial development
+// 24 Feb 2019 Duncan Camilleri           Added callback support
 //
 
 #ifndef __SERVER_H__
@@ -30,6 +31,9 @@ using namespace std;
 // A client record represents one client which has connected successfully to
 // this server. This is stored as a list in the server.
 //
+
+class clientrec;
+typedef void (*servercallback)(clientrec* pClient, void* pUserData);
 
 class clientrec
 {
@@ -62,11 +66,25 @@ public:
    virtual bool init();
    virtual bool term();
 
+   // Callbacks.
+   // Callbacks allow the server end to perform various application level
+   // functionality whenever client events occur. Callbacks are of type
+   // servercallback. When a callback is called, the server will provide
+   // two parameters, the pointer to the client record requesting that event
+   // as well as some user data (if any) which pertains to the application
+   // level and is defined by the user with callbackUserData.
+   void callbackUserData(void* pUserData);
+   void callbackOnConnect(servercallback callback);
+
    // Accept connections.
    virtual bool waitForClients() = 0;
 
 protected:
    vector<clientrec> mClients;
+
+   // Callbacks.
+   void* mpUserData = nullptr;
+   servercallback mOnClientConnect = nullptr;
 };
 
 

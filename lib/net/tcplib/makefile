@@ -56,6 +56,8 @@ GCCLIBDIR                  := -L
 
 # Project names
 LOGGER                     := logger
+CYCBUF                     := cycbuf
+BECODE                     := becode
 NETCOMMON                  := netcommon
 SERVER                     := server
 CLIENT                     := client
@@ -63,12 +65,16 @@ TEST                       := test
 
 # Individual project include locations
 LOGGERINCDIR               := $(INCDIR)
+CYCBUFINCDIR               := $(INCDIR)
+BECODEINCDIR               := $(INCDIR)
 NETCOMMONINCDIR            := $(INCDIR)
 SERVERINCDIR               := $(INCDIR)
 CLIENTINCDIR               := $(INCDIR)
 
 # Individual project source locations
 LOGGERSRCDIR               := $(SRCDIR)$(LOGGER)/
+CYCBUFSRCDIR               := $(SRCDIR)$(CYCBUF)/
+BECODESRCDIR               := $(SRCDIR)coding/
 NETCOMMONSRCDIR            := $(SRCDIR)$(NETCOMMON)/
 SERVERSRCDIR               := $(SRCDIR)$(SERVER)/
 CLIENTSRCDIR               := $(SRCDIR)$(CLIENT)/
@@ -76,9 +82,12 @@ TESTSRCDIR                 := $(SRCDIR)$(TEST)/
 
 # Individual project include files
 LOGGERINC                  := $(LOGGERINCDIR)logger.h
+CYCBUFINC                  := $(CYCBUFINCDIR)cycbuf.h
+BECODEINC                  := $(BECODEINCDIR)becode.h
 NETCOMMONINC               := $(NETCOMMONINCDIR)helpers.h \
                               $(NETCOMMONINCDIR)netnode.h \
-                              $(NETCOMMONINCDIR)netaddress.h
+                              $(NETCOMMONINCDIR)netaddress.h \
+                              $(NETCOMMONINCDIR)netdataraw.h
 SERVERINC                  := $(SERVERINCDIR)server.h \
                               $(SERVERINCDIR)serversync.h \
                               $(SERVERINCDIR)serverasync.h
@@ -86,8 +95,11 @@ CLIENTINC                  := $(CLIENTINCDIR)client.h
 
 # Individual project source files
 LOGGERSRC                  := $(LOGGERSRCDIR)logger.c
+CYCBUFSRC                  := $(CYCBUFSRCDIR)cycbuf.cpp
+BECODESRC                  := $(BECODESRCDIR)becode.cpp
 NETCOMMONSRC               := $(NETCOMMONSRCDIR)netnode.cpp \
-                              $(NETCOMMONSRCDIR)netaddress.cpp
+                              $(NETCOMMONSRCDIR)netaddress.cpp \
+                              $(NETCOMMONSRCDIR)netdataraw.cpp
 SERVERSRC                  := $(SERVERSRCDIR)server.cpp \
                               $(SERVERSRCDIR)serversync.cpp \
                               $(SERVERSRCDIR)serverasync.cpp
@@ -97,6 +109,10 @@ TESTSRC                    := $(TESTSRCDIR)main.cpp
 # Project object files
 LOGGER_RDBG                := $(OBJDIR_RDBG)$(LOGGER).o
 LOGGER_RREL                := $(OBJDIR_RREL)$(LOGGER).o
+CYCBUF_RDBG                := $(OBJDIR_RDBG)$(CYCBUF).o
+CYCBUF_RREL                := $(OBJDIR_RREL)$(CYCBUF).o
+BECODE_RDBG                := $(OBJDIR_RDBG)$(BECODE).o
+BECODE_RREL                := $(OBJDIR_RREL)$(BECODE).o
 NETCOMMONOBJ_RDBG          := $(OBJDIR_RDBG)$(NETCOMMON).o
 NETCOMMONOBJ_RREL          := $(OBJDIR_RDBG)$(NETCOMMON).o
 SERVEROBJ_RDBG             := $(OBGDIR_RDBG)$(SERVER).o
@@ -109,12 +125,16 @@ CLIENTOBJ_RREL             := $(OBGDIR_RREL)$(CLIENT).o
 # stdc++ - c++ library
 # m - math library
 # dl - dynamic loading library
-TESTLIB_RDBG               := -pthread $(GCCLIB)stdc++
-TESTLIB_RREL               := -pthread $(GCCLIB)stdc++
+TESTLIB_RDBG               := -lm -pthread $(GCCLIB)stdc++
+TESTLIB_RREL               := -lm -pthread $(GCCLIB)stdc++
 
 # Project output files
 LOGGERBIN_RDBG             := $(BINDIR_RDBG)$(LOGGER).a
-LOGGERREL_RREL             := $(BINDIR_RREL)$(LOGGER).a
+LOGGERBIN_RREL             := $(BINDIR_RREL)$(LOGGER).a
+CYCBUFBIN_RDBG             := $(BINDIR_RDBG)$(CYCBUF).a
+CYCBUFBIN_RREL             := $(BINDIR_RREL)$(CYCBUF).a
+BECODEBIN_RDBG             := $(BINDIR_RDBG)$(BECODE).a
+BECODEBIN_RREL             := $(BINDIR_RREL)$(BECODE).a
 NETCOMMONBIN_RDBG          := $(BINDIR_RDBG)$(NETCOMMON).a
 NETCOMMONBIN_RREL          := $(BINDIR_RREL)$(NETCOMMON).a
 SERVERBIN_RDBG             := $(BINDIR_RDBG)$(SERVER).a
@@ -126,21 +146,23 @@ TESTBIN_RREL               := $(BINDIR_RREL)$(TEST)
 
 # Project dependencies
 TESTDEP_RDBG               := $(SERVERBIN_RDBG) $(CLIENTBIN_RDBG) \
-                              $(NETCOMMONBIN_RDBG) $(LOGGERBIN_RDBG)
+                              $(NETCOMMONBIN_RDBG) $(LOGGERBIN_RDBG) \
+                              $(CYCBUF_RDBG) $(BECODE_RDBG)
 TESTDEP_RREL               := $(SERVERBIN_RREL) $(CLIENTBIN_RREL) \
-                              $(NETCOMMONBIN_RREL) $(LOGGERBIN_RDBG)
+                              $(NETCOMMONBIN_RREL) $(LOGGERBIN_RREL) \
+                              $(CYCBUF_RREL) $(BECODE_RREL)
 
 # Individual project type compiler options
 OBJCOPT_RDBG               := $(GCCDEBUG) $(GCCCOMPILEONLY) \
                               $(GCCINCDIR)$(INCDIR)
 OBJCOPT_RREL               := $(GCCCOMPILEONLY) \
                               $(GCCINCDIR)$(INCDIR)
-OBJGCCOPT_RDBG             := $(GCCDEBUG) $(GCCCOMPILEONLY) $(GCCSTD17) \
+OBJGCCOPT_RDBG             := $(GCCDEBUG) $(GCCCOMPILEONLY) $(GCCSTD14) \
                               $(GCCINCDIR)$(INCDIR)
-OBJGCCOPT_RREL             := $(GCCCOMPILEONLY) $(GCCSTD17) \
+OBJGCCOPT_RREL             := $(GCCCOMPILEONLY) $(GCCSTD14) \
                               $(GCCINCDIR)$(INCDIR)
-BINGCCOPT_RDBG             := $(GCCDEBUG) $(GCCSTD17) $(GCCINCDIR)$(INCDIR)
-BINGCCOPT_RREL             := $(GCCSTD17) $(GCCINCDIR)$(INCDIR)
+BINGCCOPT_RDBG             := $(GCCDEBUG) $(GCCSTD14) $(GCCINCDIR)$(INCDIR)
+BINGCCOPT_RREL             := $(GCCSTD14) $(GCCINCDIR)$(INCDIR)
 
 rules :
 	@echo '   all:    all projects (debug and release)'
@@ -153,6 +175,8 @@ all : dbg rel
 
 dbg : mkdbgdirs \
       $(LOGGERBIN_RDBG) \
+      $(CYCBUFBIN_RDBG) \
+      $(BECODEBIN_RDBG) \
       $(NETCOMMONBIN_RDBG) \
       $(SERVERBIN_RDBG) \
       $(CLIENTBIN_RDBG) \
@@ -160,6 +184,8 @@ dbg : mkdbgdirs \
 
 rel : mkreldirs \
       $(LOGGERBIN_RREL) \
+      $(CYCBUFBIN_RREL) \
+      $(BECODEBIN_RREL) \
       $(NETCOMMONBIN_RREL) \
       $(SERVERBIN_RREL) \
       $(CLIENTBIN_RREL) \
@@ -193,6 +219,30 @@ $(LOGGERBIN_RREL) : $(LOGGERSRC) $(LOGGERINC)
 	$(AR) rc $(LOGGERBIN_RREL) *.o
 	$(MV) *.o $(OBJDIR_RREL)
 
+# cycbuf debug build
+$(CYCBUFBIN_RDBG) : $(CYCBUFSRC) $(CYCBUFINC)
+	$(GCC) $(OBJGCCOPT_RDBG) $(CYCBUFSRC)
+	$(AR) rc $(CYCBUFBIN_RDBG) *.o
+	$(MV) *.o $(OBJDIR_RDBG)
+
+# cycbuf release build
+$(CYCBUFBIN_RREL) : $(CYCBUFSRC) $(CYCBUFINC)
+	$(GCC) $(OBJGCCOPT_RREL) $(CYCBUFSRC)
+	$(AR) rc $(CYCBUFBIN_RREL) *.o
+	$(MV) *.o $(OBJDIR_RREL)
+
+# becode debug build
+$(BECODEBIN_RDBG) : $(BECODESRC) $(BECODEINC)
+	$(GCC) $(OBJGCCOPT_RDBG) $(BECODESRC)
+	$(AR) rc $(BECODEBIN_RDBG) *.o
+	$(MV) *.o $(OBJDIR_RDBG)
+
+# becode release build
+$(BECODEBIN_RREL) : $(BECODESRC) $(BECODEINC)
+	$(GCC) $(OBJGCCOPT_RREL) $(BECODESRC)
+	$(AR) rc $(BECODEBIN_RREL) *.o
+	$(MV) *.o $(OBJDIR_RREL)
+
 # netnode debug build
 $(NETCOMMONBIN_RDBG) : $(NETCOMMONSRC) $(NETCOMMONINC)
 	$(GCC) $(OBJGCCOPT_RDBG) $(NETCOMMONSRC)
@@ -203,7 +253,7 @@ $(NETCOMMONBIN_RDBG) : $(NETCOMMONSRC) $(NETCOMMONINC)
 $(NETCOMMONBIN_RREL) : $(NETCOMMONSRC) $(NETCOMMONINC)
 	$(GCC) $(OBJGCCOPT_RREL) $(NETCOMMONSRC)
 	$(AR) rc $(NETCOMMONBIN_RREL) *.o
-	$(MV) *.o $(OBJDIR_RDBG)
+	$(MV) *.o $(OBJDIR_RREL)
 
 # server debug build
 $(SERVERBIN_RDBG) : $(SERVERSRC)
@@ -215,7 +265,7 @@ $(SERVERBIN_RDBG) : $(SERVERSRC)
 $(SERVERBIN_RREL) : $(SERVERSRC)
 	$(GCC) $(OBJGCCOPT_RREL) $(SERVERSRC)
 	$(AR) rc $(SERVERBIN_RREL) *.o
-	$(MV) *.o $(OBJDIR_RDBG)
+	$(MV) *.o $(OBJDIR_RREL)
 
 # client debug build
 $(CLIENTBIN_RDBG) : $(CLIENTSRC)
@@ -227,7 +277,7 @@ $(CLIENTBIN_RDBG) : $(CLIENTSRC)
 $(CLIENTBIN_RREL) : $(CLIENTSRC)
 	$(GCC) $(OBJGCCOPT_RREL) $(CLIENTSRC)
 	$(AR) rc $(CLIENTBIN_RREL) *.o
-	$(MV) *.o $(OBJDIR_RDBG)
+	$(MV) *.o $(OBJDIR_RREL)
 
 # test debug build
 $(TESTBIN_RDBG) : $(TESTSRC) $(TESTDEP_RDBG)

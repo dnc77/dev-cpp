@@ -3,6 +3,7 @@
 //
 // Version control
 // 28 Jan 2019 Duncan Camilleri           Initial development
+// 23 Feb 2019 Duncan Camilleri           using mSocket correctly no mLocalSock
 //
 
 #ifndef __CLIENT_H__
@@ -40,7 +41,6 @@ public:
 
 private:
    // Local address
-   int mLocalSock = 0;
    netaddress mLocal;
 
    bool bindToLocal();

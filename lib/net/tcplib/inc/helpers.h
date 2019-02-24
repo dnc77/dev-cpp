@@ -3,7 +3,7 @@
 //
 // Version control
 // 28 Jan 2019 Duncan Camilleri           Initial development
-//
+// 
 
 #ifndef __HELPERS_H__
 #define __HELPERS_H__
@@ -13,9 +13,20 @@
 #error "helpers.h: missing include - sys/time.h"
 #endif
 
+//
+// QUICKIES
+//
+
+// c++17 not installed. remove if compiling with a full c++17 support.
+enum class byte : unsigned char {};
+
 // One liners
 #define max(x, y)                         (x >= y ? x : y)
 #define min(x, y)                         (x <= y ? x : y)
+
+//
+// TIME
+//
 
 // Doubles the time in pt up until it reaches maxsec and maxusec.
 // Subsequent calls on a timeval that is equal or greater to

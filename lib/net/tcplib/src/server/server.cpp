@@ -4,9 +4,10 @@
 // Version control
 // 19 Jan 2019 Duncan Camilleri           Initial development
 // 29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
-// 31 Jan 2019 Duncan Camilleri           new netaddress changes
-// 03 Feb 2019 Duncan Camilleri           address reuse socket option
-// 03 Feb 2019 Duncan Camilleri           added logging support
+// 31 Jan 2019 Duncan Camilleri           New netaddress changes
+// 03 Feb 2019 Duncan Camilleri           Address reuse socket option
+// 03 Feb 2019 Duncan Camilleri           Added logging support
+// 24 Feb 2019 Duncan Camilleri           Added callback support
 //
 
 // Includes
@@ -181,4 +182,18 @@ bool server::term()
    // Done.
    logInfo(mLog, logmore, "server term - complete");
    return true;
+}
+
+//
+// CALLBACKS
+//
+
+void server::callbackUserData(void* pUserData)
+{
+   mpUserData = pUserData;
+}
+
+void server::callbackOnConnect(servercallback callback)
+{
+   mOnClientConnect = callback;
 }

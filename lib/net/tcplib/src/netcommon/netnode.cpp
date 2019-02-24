@@ -4,7 +4,7 @@
 // Version control
 // 19 Jan 2019 Duncan Camilleri           Initial development
 // 02 Feb 2019 Duncan Camilleri           Added sockoptAddrReuse
-// 03 Feb 2019 Duncan Camilleri           added logging support
+// 03 Feb 2019 Duncan Camilleri           Added logging support
 // 
 
 // Includes
@@ -53,3 +53,4 @@ bool netnode::optAddrReuse(bool enable)
    return 0 == 
       setsockopt(mSocket, SOL_SOCKET, SO_REUSEADDR, &nEnable, sizeof(int));
 }
+

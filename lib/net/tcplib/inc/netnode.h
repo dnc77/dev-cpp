@@ -5,6 +5,7 @@
 // 19 Jan 2019 Duncan Camilleri           Initial development
 // 31 Jan 2019 Duncan Camilleri           Replaced addrinfo with new netaddress
 // 02 Feb 2019 Duncan Camilleri           Added sockoptAddrReuse
+// 24 Feb 2019 Duncan Camilleri           Added netdataraw support
 // 
 
 #ifndef __NETNODE_H__
@@ -23,6 +24,8 @@
 
 class netnode
 {
+friend class netdataraw;
+
 protected:
    static const short mkAddrLen = 512; // user address length
 
@@ -37,8 +40,8 @@ public:
    void log(void* log)                 { mLog = log; }
 
    // Accessors.
-   const char* const getAddress()      { return mAddress; }
-   unsigned short getPort()            { return mPort; }
+   const char* const getAddress()      { return mAddress;   }
+   unsigned short getPort()            { return mPort;      }
 
 protected:
    // logging
@@ -59,4 +62,3 @@ protected:
 
 
 #endif      // __NETNODE_H__
-

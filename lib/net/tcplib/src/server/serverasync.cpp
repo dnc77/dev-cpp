@@ -6,7 +6,8 @@
 // 29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
 // 03 Feb 2019 Duncan Camilleri           Removed stdout logging (will revise)
 // 03 Feb 2019 Duncan Camilleri           Terminate loop when mSocket <= 0
-// 03 Feb 2019 Duncan Camilleri           added logging support
+// 03 Feb 2019 Duncan Camilleri           Added logging support
+// 24 Feb 2019 Duncan Camilleri           Added OnClientConnect callback support
 //
 
 #include <string>
@@ -187,6 +188,10 @@ void serverasync::acceptLoop()
             // Reset timeout.
             tv.tv_sec = tv.tv_usec = 0;
             
+            // If a client has connected, call the OnClientConnect callback.
+            if (nullptr != mOnClientConnect)
+               mOnClientConnect(&rc, mpUserData);
+
             logInfo(mLog, lognormal, "serverasync accept - accepted %s:%d",
                netaddress::address(&ss).c_str(), netaddress::port(&ss)
             );

@@ -7,6 +7,7 @@
 // 03 Feb 2019 Duncan Camilleri           Removed stdout logging (will revise)
 // 03 Feb 2019 Duncan Camilleri           address reuse socket option
 // 04 Feb 2019 Duncan Camilleri           added logging support
+// 23 Feb 2019 Duncan Camilleri           using mSocket correctly no mLocalSock
 //
 
 // Includes
@@ -84,7 +85,6 @@ bool client::init()
 
    // If socket has been previously initialized, do not re-initialize.
    if (0 != mSocket) return false;
-   assert(0 == mLocalSock);
 
    // Get port string.
    char port[8];
@@ -97,13 +97,11 @@ bool client::init()
       return false;
    }
 
-   // Find a valid server socket and address first.
+   // Find a valid server address first.
    addrinfo* pCur = mNetAddr;
    while (pCur) {
       // Server socket (netnode::mSocket).
-      mSocket =
-         socket(pCur->ai_family, pCur->ai_socktype, 0
-      );
+      int svrSocket = socket(pCur->ai_family, pCur->ai_socktype, 0);
 
       // If socket has been created successfully, update server netaddress
       // with active addrinfo.
@@ -111,6 +109,7 @@ bool client::init()
          mSocket = 0;
          pCur = pCur->ai_next;
       } else {
+         close(svrSocket);
          mNetAddr.selectInfo(&pCur);
          break;
       }
@@ -119,16 +118,15 @@ bool client::init()
    // Failed?
    if (!pCur) {
       mNetAddr.delinfo();
-      logCri(mLog, lognormal, "client init - failed creating server socket!");
+      logCri(mLog, lognormal, "client init - no valid server address!");
 
       return false;
    }
 
-   // Server socket exists. Create compatible client socket now.
-   mLocalSock = socket(pCur->ai_family, pCur->ai_socktype, 0);
-   if (-1 == mLocalSock) {
-      close(mSocket);
-      mLocalSock = mSocket = 0;
+   // Create compatible client socket now.
+   mSocket = socket(pCur->ai_family, pCur->ai_socktype, 0);
+   if (-1 == mSocket) {
+      mSocket = 0;
       mNetAddr.delinfo();
 
       logCri(mLog, lognormal, "client init - failed creating client socket!");
@@ -169,18 +167,12 @@ bool client::term()
       return true;
    };
 
-   // Close both sockets.
+   // Close socket.
    bool success = true;
    if (!closesock(mSocket)) {
       success = false;
       logWarn(mLog, logmore,
          "client term - failed closing server socket gracefully");
-   }
-
-   if (!closesock(mLocalSock)) {
-      success = false;
-      logWarn(mLog, logmore,
-         "client term - failed closing client socket gracefully");
    }
 
    logInfo(mLog, logmore, "client term - complete");
@@ -194,14 +186,14 @@ bool client::term()
 // Establish connection with server.
 bool client::connect()
 {
-   if (!mLocalSock || !mSocket) return false;
+   if (!mSocket) return false;
 
    logInfo(mLog, logmore, "client connect: connecting to %s:%d",
       mAddress, mPort);
 
    // Connect local to server.
    addrinfo* pAddr = mNetAddr;
-   if (-1 == ::connect(mLocalSock, pAddr->ai_addr, pAddr->ai_addrlen)) {
+   if (-1 == ::connect(mSocket, pAddr->ai_addr, pAddr->ai_addrlen)) {
       logErr(mLog, logmore, "client connect: connection to %s:%d failed",
          mAddress, mPort
       );
@@ -228,14 +220,14 @@ bool client::connect()
 // been done during init().
 bool client::bindToLocal()
 {
-   assert(mSocket > 0 && mLocalSock >= 0);
+   assert(mSocket > 0);
 
    // Check if a local address has been assigned through setLocal first.
    addrinfo* paddr = mLocal;
 
    while (paddr) {
       // Bind local socket.
-      if (0 != bind(mLocalSock, paddr->ai_addr, paddr->ai_addrlen)) {
+      if (0 != bind(mSocket, paddr->ai_addr, paddr->ai_addrlen)) {
          paddr = paddr->ai_next;
       } else {
          return true;
@@ -270,7 +262,6 @@ bool client::optAddrReuse(bool enable)
    // Go through all sockets and if at least one fails, consider failure.
    bool success = true;
    success = success && setopt(mSocket);
-   success = success && setopt(mLocalSock);
 
    // Done!
    return success;
