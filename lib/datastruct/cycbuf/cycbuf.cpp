@@ -3,7 +3,9 @@
 //
 // Version control
 // 05 Feb 2019 Duncan Camilleri           Initial development
-// 
+// 20 Feb 2019 Duncan Camilleri           Renamed pushHead() to pushReadHead()
+// 21 Feb 2019 Duncan Camilleri           Added copy constructor
+//
 
 // Includes
 #include <sys/time.h>
@@ -27,6 +29,12 @@ template <unsigned int size>
 cycbuf<size>::cycbuf()
 {
    memset(mBuf, 0, size);
+}
+
+template <unsigned int size>
+cycbuf<size>::cycbuf(const cycbuf& c)
+: cycbuf()
+{
 }
 
 template <unsigned int size>
@@ -121,7 +129,7 @@ size_t cycbuf<size>::writecopy(byte* pBuf, size_t s)
 // a cost in that they require more caution.
 // Call getReadHead to get a function pointer to the data in the
 // cyclic buffer and also a size to specify how much data is available.
-// Call pushHead and the size of bytes that is no longer necessary. Be
+// Call pushReadHead and the size of bytes that is no longer necessary. Be
 // wary that the size of bytes to push is within the constraints of the
 // state of the buffer. getReadHead provides the maximum at the time of
 // it's call.
@@ -151,7 +159,7 @@ byte const* cycbuf<size>::getReadHead(size_t& s)
 // Moves the head to the right, implying that data can be disposed
 // from the old position of the head onwards.
 template <unsigned int size>
-void cycbuf<size>::pushHead(size_t s)
+void cycbuf<size>::pushReadHead(size_t s)
 {
    // Check for data availability and head at end of buffer.
    if (!isReadReady()) return;

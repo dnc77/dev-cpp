@@ -4,7 +4,10 @@
 // Version control
 // 05 Feb 2019 Duncan Camilleri           Initial development
 // 10 Feb 2019 Duncan Camilleri           isEmpty() and isFull() are now public
-// 
+// 20 Feb 2019 Duncan Camilleri           Renamed pushHead() to pushReadHead()
+// 21 Feb 2019 Duncan Camilleri           Readjusted buffer sizes
+// 21 Feb 2019 Duncan Camilleri           Added copy constructor
+//
 
 #ifndef __CYCBUF_H__
 #define __CYCBUF_H__
@@ -21,9 +24,10 @@ enum class byte : unsigned char {};
 enum cycsiz : unsigned int {
    tiny = 16,
    small = 128,
-   medium = 1024,
-   large = 4096,
-   huge = 165536   
+   medium = 512,
+   large = 2048,
+   huge = 131072,
+   massive = 16777216                              // undefined for now
 };
 
 // Cyclic buffer
@@ -43,6 +47,7 @@ class cycbuf
 public:
    // Construction/Destruction
    cycbuf();
+   cycbuf(const cycbuf& c);
    virtual ~cycbuf();
 
    // Conversion.
@@ -59,7 +64,7 @@ public:
    // a cost in that they require more caution.
    // Call getReadHead to get a function pointer to the data in the
    // cyclic buffer and also a size to specify how much data is available.
-   // Call pushHead and the size of bytes that is no longer necessary. Be
+   // Call pushReadHead and the size of bytes that is no longer necessary. Be
    // wary that the size of bytes to push is within the constraints of the
    // state of the buffer. getReadHead provides the maximum at the time of
    // it's call.
@@ -68,7 +73,7 @@ public:
    // After writing, a call to pushTail with the number of bytes written should
    // be made. Same conditions as the read functions apply in terms of the size.
    byte const* getReadHead(size_t& s);
-   void pushHead(size_t s);
+   void pushReadHead(size_t s);
    byte* getWriteTail(size_t& s);
    void pushWriteTail(size_t s);
 
