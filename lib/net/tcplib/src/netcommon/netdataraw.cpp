@@ -4,6 +4,9 @@
 // Version control
 // 10 Feb 2019 Duncan Camilleri           Initial development
 // 24 Feb 2019 Duncan Camilleri           operators << and >> to int and netnode
+// 26 Feb 2019 Duncan Camilleri           clearSendBuf to commitSendBuf
+// 26 Feb 2019 Duncan Camilleri           recv() changed to return immediately
+// 27 Feb 2019 Duncan Camilleri           Introduced send and receive buffers
 //
 
 // Includes
@@ -14,9 +17,11 @@
 #include <string>
 #include <helpers.h>
 #include <netaddress.h>                   // netnode
+#include <cycbuf.h>                       // netnode
 #include <netnode.h>                      // netnode
-#include <cycbuf.h>
 #include <netdataraw.h>
+
+
 
 //
 // CONSTRUCTOR/DESCTRUCTOR
@@ -46,22 +51,22 @@ netdataraw::~netdataraw()
 
 byte const* netdataraw::getRecvBuf(size_t& size)
 {
-   return mBuf.getReadHead(size);
+   return mRecvBuf.getReadHead(size);
 }
 
 void netdataraw::clearRecvBuf(size_t size)
 {
-   mBuf.pushReadHead(size);
+   mRecvBuf.pushReadHead(size);
 }
 
 byte* netdataraw::getSendBuf(size_t& size)
 {
-   return mBuf.getWriteTail(size);
+   return mSendBuf.getWriteTail(size);
 }
 
-void netdataraw::clearSendBuf(size_t size)
+void netdataraw::commitSendBuf(size_t size)
 {
-   mBuf.pushWriteTail(size);
+   mSendBuf.pushWriteTail(size);
 }
 
 //
@@ -105,7 +110,7 @@ bool netdataraw::send()
    // First get a buffer to send.
    size_t remaining = 0;
    size_t size = 0;
-   char* pBuf = (char*)mBuf.getReadHead(size);
+   char* pBuf = (char*)mSendBuf.getReadHead(size);
    if (!pBuf || size == 0) return true;
 
    // A buffer exists for sending.
@@ -123,32 +128,30 @@ bool netdataraw::send()
    // Buffer sent - update cyclic buffer with status about read data.
    // Also; recurse to ensure any buffer at the beginning of the cycle
    // is also processed.
-   mBuf.pushReadHead(size);
+   mSendBuf.pushReadHead(size);
    return send();
 }
 
+// When receiving data, just return as soon as some data is received.
+// This could then be processed instantly and freed from the buffer.
+// Function returns false when
+// - the buffer is full and there is no space to receive more data.
+// - when the receive on the socket fails.
 bool netdataraw::recv()
 {
    // First get output buffer.
-   size_t remaining = 0;
    size_t size = 0;
-   char* pBuf = (char*)mBuf.getWriteTail(size);
-   if (!pBuf || size == 0) return true;
+   char* pBuf = (char*)mRecvBuf.getWriteTail(size);
+   if (!pBuf || size == 0) return false;
 
-   // A buffer exists for receiving.
-   remaining = size;
-   ssize_t ret = 0;
-   while (remaining > 0) {
-      // Receive buffer of data.
-      ret = ::recv(mSocket, pBuf, remaining, 0);
-      if (-1 == ret) return false;
+   // A buffer exists for receiving - just receive the next packet.
+   size_t ret = ::recv(mSocket, pBuf, size, 0);
+   if (-1 == ret)
+      return false;
 
-      remaining -= ret;
-      pBuf += ret;
-   }
+   // If data has been received, then push the write tail so that
+   // received data is retained.
+   mRecvBuf.pushWriteTail(ret);
 
-   // Buffer received - update cyclic buffer with status about written data.
-   // Also; recurse to ensure any more space available in the buffer is used.
-   mBuf.pushWriteTail(size);
-   return recv();
+   return true;
 }

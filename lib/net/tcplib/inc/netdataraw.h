@@ -3,15 +3,18 @@
 //
 // Version control
 // 10 Feb 2019 Duncan Camilleri           Initial development
-// 24 Feb 2019 Duncan Camilleri           operators << and >> to int and netnode
+// 24 Feb 2019 Duncan Camilleri           Operators << and >> to int and netnode
+// 25 Feb 2019 Duncan Camilleri           Minor cosmetic change
+// 26 Feb 2019 Duncan Camilleri           clearSendBuf to commitSendBuf
+// 26 Feb 2019 Duncan Camilleri           recv() changed to return immediately
+// 27 Feb 2019 Duncan Camilleri           Introduced send and receive buffers
 //
-
 #ifndef __NETDATARAW_H__
 #define __NETDATARAW_H__
 
 // Check for missing includes.
 #if not defined __CYCBUF_H__
-#error "netxfer.h: missing include - cycbuf.h"
+#error "netdataraw.h: missing include - cycbuf.h"
 #endif
 
 // netdataraw transmits data over the network without any
@@ -32,7 +35,7 @@ public:
    byte const* getRecvBuf(size_t& size);
    void clearRecvBuf(size_t size);
    byte* getSendBuf(size_t& size);
-   void clearSendBuf(size_t size);
+   void commitSendBuf(size_t size);
 
    // Socket assignment.
    netdataraw& operator<<(netnode& net);
@@ -46,7 +49,8 @@ public:
 
 protected:
    int mSocket = 0;
-   cycbuf<medium> mBuf;
+   cycbuf<medium> mSendBuf;
+   cycbuf<medium> mRecvBuf;
 
 private:
 };

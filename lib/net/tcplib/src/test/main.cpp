@@ -106,7 +106,7 @@ void clientconnect(const char* const server, const unsigned short port)
    size_t bufsize = 0;
    byte* pbuf = ndr.getSendBuf(bufsize);
    memset((void*)pbuf, (int)'A', bufsize);
-   ndr.clearSendBuf(bufsize);
+   ndr.commitSendBuf(bufsize);
 
    ndr.send();
 
@@ -131,6 +131,6 @@ void clientserver(char what)
 
 int main(int argc, char** argv)
 {
-   clientserver(argv[1][0]);
+   if (argc > 1) clientserver(argv[1][0]);
    return 0;
 }

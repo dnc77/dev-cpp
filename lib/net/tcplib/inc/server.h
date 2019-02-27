@@ -4,7 +4,9 @@
 // Version control
 // 19 Jan 2019 Duncan Camilleri           Initial development
 // 24 Feb 2019 Duncan Camilleri           Added callback support
-//
+// 25 Feb 2019 Duncan Camilleri           Added data transfer class to clientrec
+// 26 Feb 2019 Duncan Camilleri           Added note about blocking callbacks
+// 
 
 #ifndef __SERVER_H__
 #define __SERVER_H__
@@ -26,14 +28,19 @@
 
 using namespace std;
 
+// Forward declarations and typedefs.
+class clientrec;
+class netdataraw;
+
+typedef void (*servercallback)(clientrec* pClient, void* pUserData);
+
+
+
 //
 // Client record
 // A client record represents one client which has connected successfully to
 // this server. This is stored as a list in the server.
 //
-
-class clientrec;
-typedef void (*servercallback)(clientrec* pClient, void* pUserData);
 
 class clientrec
 {
@@ -43,6 +50,7 @@ public:
 public:
    int mSocket;                        // communicating socket
    sockaddr_storage mSockAddr;         // client address
+   netdataraw* mpXfer = 0;             // data transfer class
 };
 
 //
@@ -83,9 +91,10 @@ protected:
    vector<clientrec> mClients;
 
    // Callbacks.
+   // Note: Callbacks should not entertain blocking operations as they
+   //       will jeopardize the behaviour of the server.
    void* mpUserData = nullptr;
    servercallback mOnClientConnect = nullptr;
 };
-
 
 #endif      // __SERVER_H__

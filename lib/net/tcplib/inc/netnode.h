@@ -6,7 +6,7 @@
 // 31 Jan 2019 Duncan Camilleri           Replaced addrinfo with new netaddress
 // 02 Feb 2019 Duncan Camilleri           Added sockoptAddrReuse
 // 24 Feb 2019 Duncan Camilleri           Added netdataraw support
-// 
+//
 
 #ifndef __NETNODE_H__
 #define __NETNODE_H__
