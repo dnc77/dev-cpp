@@ -8,7 +8,9 @@
 // 26 Feb 2019 Duncan Camilleri           clearSendBuf to commitSendBuf
 // 26 Feb 2019 Duncan Camilleri           recv() changed to return immediately
 // 27 Feb 2019 Duncan Camilleri           Introduced send and receive buffers
+// 28 Feb 2019 Duncan Camilleri           Added netdata state ndstate support
 //
+
 #ifndef __NETDATARAW_H__
 #define __NETDATARAW_H__
 
@@ -16,6 +18,15 @@
 #if not defined __CYCBUF_H__
 #error "netdataraw.h: missing include - cycbuf.h"
 #endif
+
+// Net data state identifies the state of a socket within a netdata
+// structure (given that netdataraw is the main parent of any other
+// netdata child).
+enum class ndstate {
+   ok = 0x00,
+   fail = 0x01,
+   disconnected = 0x02
+};
 
 // netdataraw transmits data over the network without any
 // formatting. This is to be used as a base class for any
@@ -44,8 +55,8 @@ public:
    netdataraw& operator>>(int socket);
 
    // Transmission.
-   bool send();
-   bool recv();
+   bool send(ndstate& nds);
+   bool recv(ndstate& nds);
 
 protected:
    int mSocket = 0;

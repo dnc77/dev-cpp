@@ -17,10 +17,9 @@ A server class inherits from netnode and is used to open the socket for
 listening.
 
 A serverasync class inherits yet again from server and implements an
-asynchronous client accepting loop (running on a separate thread). Since no
-modification to the data within the server is allowed publicly, no mutexes were
-required. A socket can be closed during the middle of an accept call without any
-repercussions.
+asynchronous client accepting loop (running on a separate thread). The client
+list on the server is protected by a mutex because external access happens
+when a client needs to be disconnected with disconnectClient().
 
 A serversync class does the same as serverasync only synchronously. This means
 that it will not launch a separate thread to accept a client; hence it blocks.

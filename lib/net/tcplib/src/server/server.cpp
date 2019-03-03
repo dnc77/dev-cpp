@@ -8,6 +8,8 @@
 // 03 Feb 2019 Duncan Camilleri           Address reuse socket option
 // 03 Feb 2019 Duncan Camilleri           Added logging support
 // 24 Feb 2019 Duncan Camilleri           Added callback support
+// 03 Mar 2019 Duncan Camilleri           Added disconnectClient
+// 03 Mar 2019 Duncan Camilleri           Added locking for clients list
 //
 
 // Includes
@@ -22,6 +24,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <algorithm>                      // std::find
 #include <netaddress.h>
 #include <netnode.h>
 #include <server.h>
@@ -196,4 +199,33 @@ void server::callbackUserData(void* pUserData)
 void server::callbackOnConnect(servercallback callback)
 {
    mOnClientConnect = callback;
+}
+
+//
+// CONNECTIONS
+//
+
+// Disconnects and removes a client from the list.
+void server::disconnectClient(clientrec* pClient)
+{
+   // Comparison function.
+   auto compare =
+      [&](const clientrec& c) -> bool {
+         return c.mSocket == pClient->mSocket;
+      };
+
+   // Find disconnected client first.
+   mCliLock.lock();
+   vector<clientrec>::iterator i = 
+      std::find_if(mClients.begin(), mClients.end(), compare);
+
+   // Ensure socket is closed.
+   if (pClient->mSocket > 0) {
+      close(pClient->mSocket);
+      pClient->mSocket = 0;
+   }
+   
+   // Remove from vector.
+   mClients.erase(i);
+   mCliLock.unlock();
 }

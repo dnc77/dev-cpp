@@ -6,7 +6,9 @@
 // 24 Feb 2019 Duncan Camilleri           Added callback support
 // 25 Feb 2019 Duncan Camilleri           Added data transfer class to clientrec
 // 26 Feb 2019 Duncan Camilleri           Added note about blocking callbacks
-// 
+// 03 Mar 2019 Duncan Camilleri           Added disconnectClient
+// 03 Mar 2019 Duncan Camilleri           Added locking for clients list
+//
 
 #ifndef __SERVER_H__
 #define __SERVER_H__
@@ -84,10 +86,12 @@ public:
    void callbackUserData(void* pUserData);
    void callbackOnConnect(servercallback callback);
 
-   // Accept connections.
+   // Connections.
    virtual bool waitForClients() = 0;
+   void disconnectClient(clientrec* pClient);
 
 protected:
+   mutex mCliLock;
    vector<clientrec> mClients;
 
    // Callbacks.

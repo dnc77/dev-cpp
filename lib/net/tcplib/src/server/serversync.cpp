@@ -8,6 +8,7 @@
 // 03 Feb 2019 Duncan Camilleri           Terminate loop when mSocket <= 0
 // 04 Feb 2019 Duncan Camilleri           Added logging support
 // 24 Feb 2019 Duncan Camilleri           Added OnClientConnect callback support
+// 03 Mar 2019 Duncan Camilleri           Added locking for clients list
 //
 
 #include <string>
@@ -173,6 +174,7 @@ void serversync::acceptLoop()
             clientrec rc;
             rc.mSocket = sock;
             rc.mSockAddr = ss;
+            mCliLock.lock();
             mClients.push_back(std::move(rc));
             
             // Reset timeout.
@@ -182,6 +184,7 @@ void serversync::acceptLoop()
             if (nullptr != mOnClientConnect)
                mOnClientConnect(&rc, mpUserData);
 
+            mCliLock.unlock();
             logInfo(mLog, lognormal, "serversync accept - accepted %s:%d",
                netaddress::address(&ss).c_str(), netaddress::port(&ss)
             );

@@ -7,6 +7,7 @@
 // 26 Feb 2019 Duncan Camilleri           clearSendBuf to commitSendBuf
 // 26 Feb 2019 Duncan Camilleri           recv() changed to return immediately
 // 27 Feb 2019 Duncan Camilleri           Introduced send and receive buffers
+// 28 Feb 2019 Duncan Camilleri           Added netdata state ndstate support
 //
 
 // Includes
@@ -105,9 +106,10 @@ netdataraw& netdataraw::operator>>(int socket)
 // successfully sent. In the case of an error, the buffer may have been
 // partially sent. The buffer will not be altered however in any situation where
 // an error has occurred.
-bool netdataraw::send()
+bool netdataraw::send(ndstate& nds)
 {
    // First get a buffer to send.
+   nds = ndstate::ok;
    size_t remaining = 0;
    size_t size = 0;
    char* pBuf = (char*)mSendBuf.getReadHead(size);
@@ -119,7 +121,10 @@ bool netdataraw::send()
    while (remaining > 0) {
       // Send buffer of data over the wire.
       ret = ::send(mSocket, pBuf, remaining, 0);
-      if (-1 == ret) return false;
+      if (-1 == ret) {
+         nds = (errno == ECONNRESET) ? ndstate::disconnected : ndstate::fail;
+         return false;
+      }
 
       remaining -= ret;
       pBuf += ret;
@@ -129,7 +134,7 @@ bool netdataraw::send()
    // Also; recurse to ensure any buffer at the beginning of the cycle
    // is also processed.
    mSendBuf.pushReadHead(size);
-   return send();
+   return send(nds);
 }
 
 // When receiving data, just return as soon as some data is received.
@@ -137,21 +142,30 @@ bool netdataraw::send()
 // Function returns false when
 // - the buffer is full and there is no space to receive more data.
 // - when the receive on the socket fails.
-bool netdataraw::recv()
+// - the socket has disconnected.
+bool netdataraw::recv(ndstate& nds)
 {
    // First get output buffer.
+   nds = ndstate::ok;
    size_t size = 0;
    char* pBuf = (char*)mRecvBuf.getWriteTail(size);
    if (!pBuf || size == 0) return false;
 
    // A buffer exists for receiving - just receive the next packet.
    size_t ret = ::recv(mSocket, pBuf, size, 0);
-   if (-1 == ret)
+   if (-1 == ret) {
+      nds = ndstate::fail;
       return false;
+   }
+
+   // Disconnected?
+   if (0 == ret) {
+      nds = ndstate::disconnected;
+      return false;
+   }
 
    // If data has been received, then push the write tail so that
    // received data is retained.
    mRecvBuf.pushWriteTail(ret);
-
    return true;
 }
