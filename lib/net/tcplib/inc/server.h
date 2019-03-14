@@ -8,6 +8,12 @@
 // 26 Feb 2019 Duncan Camilleri           Added note about blocking callbacks
 // 03 Mar 2019 Duncan Camilleri           Added disconnectClient
 // 03 Mar 2019 Duncan Camilleri           Added locking for clients list
+// 11 Mar 2019 Duncan Camilleri           Added disconnectAllClients()
+// 11 Mar 2019 Duncan Camilleri           disconnectClient() becomes virtual
+// 11 Mar 2019 Duncan Camilleri           Added fdset and fdMax functionality
+// 11 Mar 2019 Duncan Camilleri           Added onDisconnect callback
+// 11 Mar 2019 Duncan Camilleri           Added support for select on user fd
+// 12 Mar 2019 Duncan Camilleri           Added clientsHead() and clientsTail()
 //
 
 #ifndef __SERVER_H__
@@ -33,9 +39,10 @@ using namespace std;
 // Forward declarations and typedefs.
 class clientrec;
 class netdataraw;
+class server;
 
 typedef void (*servercallback)(clientrec* pClient, void* pUserData);
-
+typedef void (*userfdcallback)(server* pServer, int fd);
 
 
 //
@@ -85,20 +92,46 @@ public:
    // level and is defined by the user with callbackUserData.
    void callbackUserData(void* pUserData);
    void callbackOnConnect(servercallback callback);
+   void callbackOnDisconnect(servercallback callback);
+   void callbackOnData(servercallback callback);
+   void callbackOnUserReadFd(userfdcallback callback);
+
+   // Clients.
+   vector<clientrec>::const_iterator clientsHead();
+   vector<clientrec>::const_iterator clientsTail();
 
    // Connections.
    virtual bool waitForClients() = 0;
-   void disconnectClient(clientrec* pClient);
+   virtual void disconnectAllClients();
+   virtual void disconnectClient(clientrec* pClient);
+
+   // fdset
+   void captureUserReadFd(int fd, bool enable = true);
 
 protected:
-   mutex mCliLock;
-   vector<clientrec> mClients;
+   recursive_mutex mCliLock;           // lock to prevent data clients conflicts
+   vector<clientrec> mClients;         // list of clients connected
+   vector<int> mUserReadFds;           // list of user file descriptors
+   fd_set mfdAll;                      // all fdsets to wait on (copied for use)
+   int mfdMax = 0;                     // largest socket number (for pselect)
+
+   // fdset
+   void updateFdMax();                 // update largest socket number
 
    // Callbacks.
    // Note: Callbacks should not entertain blocking operations as they
    //       will jeopardize the behaviour of the server.
+   //       This applies equally to both servercallback's and fdcallback's.
    void* mpUserData = nullptr;
    servercallback mOnClientConnect = nullptr;
+   servercallback mOnClientDisconnect = nullptr;
+   servercallback mOnClientData = nullptr;
+   userfdcallback mOnUserReadFd = nullptr;
+
+private:
+   // User read fds' maintenance.
+   void addUserReadFd(int n);
+   void delUserReadFd(int n);
 };
 
 #endif      // __SERVER_H__

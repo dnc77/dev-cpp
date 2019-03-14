@@ -1,8 +1,9 @@
 // Date:    27th January 2019
-// Purpose: Implements an synchronous single threaded basic network server.
+// Purpose: Implements a synchronous single threaded basic network server.
 //
 // Version control
 // 27 Jan 2019 Duncan Camilleri           Initial development
+// 12 Mar 2019 Duncan Camilleri           Introduced user read fd's processing
 //
 
 #ifndef __SERVERSYNC_H__
@@ -41,7 +42,8 @@ protected:
    // Accepting loop.
    bool sessionStop = false;           // indicates the accept loop terminated
    once_flag mAcceptOnce;              // make sure waiting happens only once!
-   void acceptLoop();                  // called once by waitForClients()
+   void selectLoop();                  // called once by waitForClients()
+   bool selectProcess(fd_set* pfd);
 };
 
 #endif         // __SERVERSYNC_H__

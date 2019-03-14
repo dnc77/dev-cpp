@@ -1,5 +1,5 @@
 // Date:    27th January 2019
-// Purpose: Implements an asynchronous multi threaded basic network server.
+// Purpose: Implements a synchronous basic network server.
 //
 // Version control
 // 27 Jan 2019 Duncan Camilleri           Initial development
@@ -9,8 +9,10 @@
 // 04 Feb 2019 Duncan Camilleri           Added logging support
 // 24 Feb 2019 Duncan Camilleri           Added OnClientConnect callback support
 // 03 Mar 2019 Duncan Camilleri           Added locking for clients list
-//
-
+// 08 Mar 2019 Duncan Camilleri           Purpose of file updated
+// 11 Mar 2019 Duncan Camilleri           Bug fix moving rc to vector too early
+// 14 Mar 2019 Duncan Camilleri           Introduced user read fd's processing
+// 
 #include <string>
 #include <vector>
 #include <mutex>
@@ -103,27 +105,21 @@ bool serversync::term()
 // ACCEPT CONNECTIONS
 //
 
-// Calls the acceptLoop function to accept any clients that connect to the
+// Calls the selectLoop function to accept any clients that connect to the
 // server. This is a blocking call.
 bool serversync::waitForClients()
 {
    logInfo(mLog, logfull, "serversync accept - running accept loop once");
 
-   std::call_once(mAcceptOnce, &serversync::acceptLoop, this);
+   std::call_once(mAcceptOnce, &serversync::selectLoop, this);
    return true;
 }
 
 // This loop is called by waitForClients only once.
-void serversync::acceptLoop()
+void serversync::selectLoop()
 {
    // no socket to accept from
    if (mSocket == 0) return;
-
-   // Initialize fd sets for select wait operation.
-   fd_set fdmain;
-   fd_set fdrd;
-   FD_ZERO(&fdmain);
-   FD_SET(mSocket, &fdmain);
 
    // Timer struct.
    timeval tv;
@@ -132,10 +128,10 @@ void serversync::acceptLoop()
    const int maxsec = mMaxTimeoutSec;
 
    do {
-      // Wait for a connection request.      
-      fdrd = fdmain;
+      // Initialize fd sets for select wait operation.
+      fd_set fdrd = mfdAll;
       timeval activetime = tv;
-      int selected = select(mSocket + 1, &fdrd, nullptr, nullptr, &activetime);
+      int selected = select(mfdMax + 1, &fdrd, nullptr, nullptr, &activetime);
       if (-1 == selected) {
          // Fail tasks because select failed for some reason.
          logErr(mLog, lognormal, "serversync accept - select fail");
@@ -143,7 +139,7 @@ void serversync::acceptLoop()
       } else if (0 == selected) {
          // No communication received. Double time to wait and wait again.
          logInfo(mLog, logfull,
-            "serversync accept - timeout after %ds %dusec",
+            "serversync select - timeout after %ds %dusec",
             tv.tv_sec, tv.tv_usec
          );
 
@@ -151,51 +147,102 @@ void serversync::acceptLoop()
          continue;
       }
 
-      // Otherwise something just arrived...
-      // If mSocket has been closed, break out.
-      if (0 == mSocket) {
-         break;
+      // If something came through, process the request based
+      // on which socket has received data.
+      if (selectProcess(&fdrd)) {
+         // Since some data has come through, reset timeout.
+         tv.tv_sec = tv.tv_usec = 0;
       }
 
-      // Has a connection request been made?
-      if (FD_ISSET(mSocket, &fdrd)) {
-         logInfo(mLog, logmore, "serversync accept - connection request");
-
-         // A connection request has been made.
-         // Prepare a client address information.
-         sockaddr_storage ss;
-         socklen_t addrsize = sizeof(sockaddr_storage);
-         memset(&ss, 0, addrsize);
-         sockaddr* psaddr = reinterpret_cast<sockaddr*>(&ss);
-
-         // Accept the connection.
-         int sock = accept(mSocket, psaddr, &addrsize);
-         if (sock > 0) {
-            clientrec rc;
-            rc.mSocket = sock;
-            rc.mSockAddr = ss;
-            mCliLock.lock();
-            mClients.push_back(std::move(rc));
-            
-            // Reset timeout.
-            tv.tv_sec = tv.tv_usec = 0;
-
-            // If a client has connected, call the OnClientConnect callback.
-            if (nullptr != mOnClientConnect)
-               mOnClientConnect(&rc, mpUserData);
-
-            mCliLock.unlock();
-            logInfo(mLog, lognormal, "serversync accept - accepted %s:%d",
-               netaddress::address(&ss).c_str(), netaddress::port(&ss)
-            );
-         } else {
-            logWarn(mLog, lognormal, "serversync accept - accept failed");
-         }
-      }
-   } while (mSocket > 0);
+   // Do not continue selecting if there are no file descriptors to wait on.
+   // This happens when all the clients are disconnected and the server has
+   // also stopped accepting connections.
+   } while (mfdMax > 0);
 
    // Update session status - term() signal.
-   logInfo(mLog, logmore, "serversync accept - term() signal");
+   logInfo(mLog, logmore, "serversync select - term() signal");
    sessionStop = true;
 }
 
+// If the select loop above detects an input request, it will be processed here.
+// This will cater for accepting new clients and also calling the mOnClientData
+// callback whenever any client has sent data to the server via that client's
+// socket.
+// Returns true when a client has been accepted or when a socket is waiting for
+// data retrieval.
+bool serversync::selectProcess(fd_set* pfd)
+{
+   bool actioned = false;
+
+   // First check if a connection request by a new client has been made.
+   if (FD_ISSET(mSocket, pfd)) {
+      logInfo(mLog, logmore, "serversync incoming - connection request");
+
+      // A connection request has been made.
+      // Prepare a client address information.
+      sockaddr_storage ss;
+      socklen_t addrsize = sizeof(sockaddr_storage);
+      memset(&ss, 0, addrsize);
+      sockaddr* psaddr = reinterpret_cast<sockaddr*>(&ss);
+
+      // Accept the connection.
+      int sock = accept(mSocket, psaddr, &addrsize);
+      if (sock > 0) {
+         clientrec rc;
+         rc.mSocket = sock;
+         rc.mSockAddr = ss;
+ 
+         // Update maximum and set in mfdAll.
+         if (sock > mfdMax) mfdMax = sock;
+         FD_SET(sock, &mfdAll);
+
+         // If a client has connected, call the OnClientConnect callback.
+         if (nullptr != mOnClientConnect)
+            mOnClientConnect(&rc, mpUserData);
+
+         logInfo(mLog, lognormal, "serversync incoming - accepted %s:%d",
+            netaddress::address(&ss).c_str(), netaddress::port(&ss)
+         );
+
+         // Valid action has been performed.
+         mClients.push_back(std::move(rc));
+         actioned = true;
+      } else {
+         logWarn(mLog, lognormal, "serversync incoming - accept failed");
+      }
+   }
+
+   // Go through each client socket to see if data has been received
+   // and if so, call the onClientData callback.
+   if (nullptr != mOnClientData) {
+      for (clientrec& cli : mClients) {
+         if (FD_ISSET(cli.mSocket, pfd)) {
+            logInfo(mLog, logmore,
+               "serversync incoming - data avail. from %s:%d",
+               netaddress::address(&cli.mSockAddr).c_str(),
+               netaddress::port(&cli.mSockAddr)
+            );
+
+            // Callback.
+            mOnClientData(&cli, mpUserData);
+
+            // Valid action has been performed.
+            actioned = true;
+         }
+      }
+   }
+
+   // Go through user defined fd's and call the user fd's call back.
+   if (nullptr != mOnUserReadFd) {
+      for (int rd : mUserReadFds) {
+         if (FD_ISSET(rd, pfd)) {
+            logInfo(mLog, logmore, "serversync incoming - user input");
+
+            // Callback.
+            mOnUserReadFd(this, rd);
+         }
+      }
+   }
+
+   return actioned;
+}

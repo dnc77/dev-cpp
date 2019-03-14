@@ -9,8 +9,9 @@
 // 03 Feb 2019 Duncan Camilleri           Added logging support
 // 24 Feb 2019 Duncan Camilleri           Added OnClientConnect callback support
 // 03 Mar 2019 Duncan Camilleri           Added locking for clients list
-//
-
+// 11 Mar 2019 Duncan Camilleri           Bug fix moving rc to vector too early
+// 12 Mar 2019 Duncan Camilleri           Introduced user read fd's processing
+// 
 #include <string>
 #include <vector>
 #include <mutex>
@@ -32,7 +33,7 @@ extern "C" {
 }
 
 //
-// CONSTRUCTOR/DESCTRUCTOR
+// CONSTRUCTOR/DESTRUCTOR
 //
 serverasync::serverasync(const char* address /*= nullptr*/,
    unsigned short port /*= 0*/)
@@ -90,7 +91,7 @@ bool serverasync::term()
    // server::term fails and if it does, socket is still reset
    // so accept loop will break out anyway. 
    logInfo(mLog, logmore, "serverasync term - waiting for accept thread");
-   mAcceptThread.join();
+   mClientsThread.join();
 
    // Termination done.
    // In the unlikely event that the socket failed to close,
@@ -100,19 +101,20 @@ bool serverasync::term()
 }
 
 //
-// ACCEPT CONNECTIONS
+// CONNECTIONS
 //
 
-// Creates a thread which calls the acceptLoop function to accept any clients
-// that connect to the server.
+// Creates a thread which calls the selectLoop function to accept any clients
+// that connect to the server or for detecting any data that is coming through
+// from any of the already connected clients.
 bool serverasync::waitForClients()
 {
    try {
       logInfo(mLog, logfull, "serverasync accept - running accept loop once");
 
-      std::call_once(mAcceptOnce, [&]() {
-         thread t(&serverasync::acceptLoop, this);
-         mAcceptThread = move(t);
+      std::call_once(mClientsOnce, [&]() {
+         thread t(&serverasync::selectLoop, this);
+         mClientsThread = move(t);
       });
    } catch(const std::exception& e) {
       return false;
@@ -123,17 +125,17 @@ bool serverasync::waitForClients()
 }
 
 // This loop is called by waitForClients as a separate thread via
-// mAcceptThread. This is only executed once.
-void serverasync::acceptLoop()
+// mClientsThread. This is only executed once. It's job is to wait
+// for client connections or client data to come through. If
+// mOnClientData callback is set, will also call the callback to
+// notify the server that the client is sending data. Why anyone would
+// want to select for client data to come through independently is beyond scope.
+// This task is being handled here also in order to centralize all
+// wait operations. It is seen as an efficient thing to do.
+void serverasync::selectLoop()
 {
    // no socket to accept from
    if (mSocket == 0) return;
-
-   // Initialize fd sets for select wait operation.
-   fd_set fdmain;
-   fd_set fdrd;
-   FD_ZERO(&fdmain);
-   FD_SET(mSocket, &fdmain);
 
    // Timer struct.
    timeval tv;
@@ -142,18 +144,19 @@ void serverasync::acceptLoop()
    const int maxsec = mMaxTimeoutSec;
 
    do {
-      // Wait for a connection request.      
-      fdrd = fdmain;
+      // Initialize fd sets for select wait operation.
+      fd_set fdrd = mfdAll;
       timeval activetime = tv;
-      int selected = select(mSocket + 1, &fdrd, nullptr, nullptr, &activetime);
+      int selected = select(mfdMax + 1, &fdrd, nullptr, nullptr, &activetime);
       if (-1 == selected) {
          // Fail tasks because select failed for some reason.
-         logErr(mLog, lognormal, "serverasync accept - select fail");
+         logErr(mLog, lognormal, "serverasync select - fail: '%s'",
+            strerror(errno));
          break;
       } else if (0 == selected) {
          // No communication received. Double time to wait and wait again.
          logInfo(mLog, logfull,
-            "serverasync accept - timeout after %ds %dusec",
+            "serverasync select - timeout after %ds %dusec",
             tv.tv_sec, tv.tv_usec
          );
 
@@ -161,51 +164,103 @@ void serverasync::acceptLoop()
          continue;
       }
 
-      // Otherwise something just arrived...
-      // If mSocket has been closed, stop accepting.
-      if (0 == mSocket) {
-         break;
+      // If something came through, process the request based
+      // on which socket has received data.
+      if (selectProcess(&fdrd)) {
+         // Since some data has come through, reset timeout.
+         tv.tv_sec = tv.tv_usec = 0;
       }
 
-      // Has a connection request been made?
-      if (FD_ISSET(mSocket, &fdrd)) {
-         logInfo(mLog, logmore, "serverasync accept - connection request");
-
-         // A connection request has been made.
-         // Prepare a client address information.
-         sockaddr_storage ss;
-         socklen_t addrsize = sizeof(sockaddr_storage);
-         memset(&ss, 0, addrsize);
-         sockaddr* psaddr = reinterpret_cast<sockaddr*>(&ss);
-
-         // Accept the connection.
-         int sock = accept(mSocket, psaddr, &addrsize);
-         if (sock > 0) {
-            clientrec rc;
-            rc.mSocket = sock;
-            rc.mSockAddr = ss;
-            mCliLock.lock();
-            mClients.push_back(std::move(rc));
-            
-            // Reset timeout.
-            tv.tv_sec = tv.tv_usec = 0;
-            
-            // If a client has connected, call the OnClientConnect callback.
-            if (nullptr != mOnClientConnect)
-               mOnClientConnect(&rc, mpUserData);
-
-            mCliLock.unlock();
-            logInfo(mLog, lognormal, "serverasync accept - accepted %s:%d",
-               netaddress::address(&ss).c_str(), netaddress::port(&ss)
-            );
-         } else {
-            logWarn(mLog, lognormal, "serverasync accept - accept failed");
-         }
-      }
-   } while (mSocket > 0);
+   // Do not continue selecting if there are no file descriptors to wait on.
+   // This happens when all the clients are disconnected and the server has
+   // also stopped accepting connections.
+   } while (mfdMax > 0);
 
    // term() signal
-   logInfo(mLog, logmore, "serverasync accept - term() signal");
+   logInfo(mLog, logmore, "serverasync select - term() signal");
 }
 
+// If the select loop above detects an input request, it will be processed here.
+// This will cater for accepting new clients and also calling the mOnClientData
+// callback whenever any client has sent data to the server via that client's
+// socket.
+// Returns true when a client has been accepted or when a socket is waiting for
+// data retrieval.
+bool serverasync::selectProcess(fd_set* pfd)
+{
+   bool actioned = false;
 
+   // First check if a connection request by a new client has been made.
+   if (FD_ISSET(mSocket, pfd)) {
+      logInfo(mLog, logmore, "serverasync incoming - connection request");
+
+      // A connection request has been made.
+      // Prepare a client address information.
+      sockaddr_storage ss;
+      socklen_t addrsize = sizeof(sockaddr_storage);
+      memset(&ss, 0, addrsize);
+      sockaddr* psaddr = reinterpret_cast<sockaddr*>(&ss);
+
+      // Accept the connection.
+      int sock = accept(mSocket, psaddr, &addrsize);
+      if (sock > 0) {
+         clientrec rc;
+         rc.mSocket = sock;
+         rc.mSockAddr = ss;
+
+         // Update maximum and set in mfdAll.
+         mCliLock.lock();
+         if (sock > mfdMax) mfdMax = sock;
+         FD_SET(sock, &mfdAll);
+
+         // If a client has connected, call the OnClientConnect callback.
+         if (nullptr != mOnClientConnect)
+            mOnClientConnect(&rc, mpUserData);
+
+         mCliLock.unlock();
+         logInfo(mLog, lognormal, "serverasync incoming - accepted %s:%d",
+            netaddress::address(&ss).c_str(), netaddress::port(&ss)
+         );
+
+         // Valid action has been performed.
+         mClients.push_back(std::move(rc));
+         actioned = true;
+      } else {
+         logWarn(mLog, lognormal, "serverasync incoming - accept failed");
+      }
+   }
+
+   // Go through each client socket to see if data has been received
+   // and if so, call the onClientData callback.
+   if (nullptr != mOnClientData) {
+      for (clientrec& cli : mClients) {
+         if (FD_ISSET(cli.mSocket, pfd)) {
+            logInfo(mLog, logmore,
+               "serverasync incoming - data avail. from %s:%d",
+               netaddress::address(&cli.mSockAddr).c_str(),
+               netaddress::port(&cli.mSockAddr)
+            );
+
+            // Callback.
+            mOnClientData(&cli, mpUserData);
+
+            // Valid action has been performed.
+            actioned = true;
+         }
+      }
+   }
+
+   // Go through user defined fd's and call the user fd's call back.
+   if (nullptr != mOnUserReadFd) {
+      for (int rd : mUserReadFds) {
+         if (FD_ISSET(rd, pfd)) {
+            logInfo(mLog, logmore, "serverasync incoming - user input");
+
+            // Callback.
+            mOnUserReadFd(this, rd);
+         }
+      }
+   }
+
+   return actioned;
+}

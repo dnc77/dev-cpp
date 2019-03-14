@@ -35,10 +35,21 @@ is picked up and used by the system for client purposes.
 A data transfer class can be instantiated and assigned to a client in order to
 perform data transfer between client and server.
 From a server's perspective, since it has a list of clients, each client has its
-own socket. If a callback function is set for client connection, then a data
-transfer class can also be assigned to said client's socket at that point.
-When the server needs to communicate to said client(s), it may use the data
-transfer class.
+own socket.
+
+Callbacks are introduced to support the user whenever interesting events happen.
+When a client connects, disconnects or is sending data to the server, a callback
+can be set to capture the event(s).
+
+The server also provides support to check for extra file descriptors that the
+user specifies. This is to prevent the user from having extra waiting calls
+making the process much more efficient and streamlined.
+If the user has a file descriptor that they are waiting for input from, this
+can be assigned to the server and a callback is set. Whenever input is detected
+from user descriptors, the callback is called.
+
+When using callbacks, one rule of thumb is to never use blocking functions
+otherwise the integrity of the server become compromised. 
 
 How to use:
 Create an instance of either serversync or serverasync. If init() succeeds,
@@ -48,11 +59,21 @@ passed to any callback function. This can be assigned by calling
 callbackUserData(). A call to waitForClients will wait for accepting
 connections. If using serverasync, the program will resume immediately. If using
 serversync, the call will block.
+
+Callback functions can be assigned with the several callback*() functions.
+callbackOnUserReadFd can be used to define the callback to call whenever a user
+file descriptor is signalled. These descriptors can be added and/or removed by
+calling addUserReadFd() and delUserReadFd() respectively.
+
 If a callback function was assigned, as soon as a client connects to the server,
-the callback is called. Within the callbackOnConnect, one can assign a data
+the callback is called. Within the OnClientConnect(), one can assign a data
 transfer class (netdataraw) to the client socket to allow communication with
 that client. This can be done by netdataraw = netdataraw << socket; Any reads
-or writes on the netdataraw buffer will automatically be sent over the socket.
+or writes on the netdataraw buffer will automatically be transmitted over the
+socket. To process incoming data, the data transfer class can be used on a call
+to onClientData(). When a client disconnects, a call to onClientDisconnect() is
+made and at this point, any concluding actions can be done. The socket will be
+closed by the server thereafter.
 
 Create a client instance with the server's ip address and port as parameters to
 the constructor and call init(). At this point, there's the option to choose a
@@ -63,7 +84,7 @@ be done by netdataraw = netdataraw << (netnode&)client;
 Following this, a call to connect() may be done and the data transfer class can
 be used to transmit data from the client to the server and vice-versa.
 
-Further extensions to this library are expected.
+The core of this library is close to completion.
 
 
 Thanks

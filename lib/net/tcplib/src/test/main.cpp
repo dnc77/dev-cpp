@@ -6,8 +6,10 @@
 // 28 Jan 2019 Duncan Camilleri           Added basic client test
 // 29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
 // 03 Mar 2019 Duncan Camilleri           echo client/server *(experimental)*
+// 08 Mar 2019 Duncan Camilleri           Comment typo
 //
 
+#include <assert.h>
 #include <stdio.h>
 #include <unistd.h>           // read
 #include <memory.h>
@@ -69,7 +71,9 @@ loghdl gLog = 0;
 int svrmain(int argc, char** argv);
 int climain(int argc, char** argv);
 void onClientConnect(clientrec* pRec, void* pUserData);
-
+void onClientDisconnect(clientrec* pRec, void* pUserData);
+void onClientData(clientrec* pRec, void* pUserData);
+void onConsoleInput(server* pServer, int fd);
 
 // 
 //      |         |         |    
@@ -161,8 +165,15 @@ bool serverinit()
    if (!gSvrApp.mpServer->init())
       return fail();
 
-   // Callback.
+   // Allow console input detection during wait process in server.
+   gSvrApp.mpServer->captureUserReadFd(0);
+
+   // Callbacks.
    gSvrApp.mpServer->callbackOnConnect(onClientConnect);
+   gSvrApp.mpServer->callbackOnDisconnect(onClientDisconnect);
+   gSvrApp.mpServer->callbackOnData(onClientData);
+   gSvrApp.mpServer->callbackOnUserReadFd(onConsoleInput);
+
    return true;
 }
 
@@ -179,9 +190,136 @@ void serverterm()
 // MAIN APP
 //
 
-// Data should be available in the client socket.
-// Read it, print it out and free it.
-void recvSvrSocket(clientrec* pRec, void* pUserData)
+// For the server, this sends a buffer of a certain size to all the clients
+// connected to the server.
+void svrSendBufToAll(server* pServer, byte* buf, ssize_t in)
+{
+   for (auto it = pServer->clientsHead(); it != pServer->clientsTail(); ++it) {
+      // Get data transfer buffer.
+      clientrec& rec = const_cast<clientrec&>(*it);
+      netdataraw* pXfer = rec.mpXfer;
+      if (!pXfer) {
+         printf("send buffer: cannot send to %s:%d\n",
+            netaddress::address(&rec.mSockAddr).c_str(),
+            netaddress::port(&rec.mSockAddr)
+         );
+      }
+
+      // Send.
+      ssize_t remaining = in;
+      while (remaining > 0) {
+         ndstate nds;
+         size_t bufSize = 0;
+         byte* pOut = pXfer->getSendBuf(bufSize);
+
+         // Copy incoming buffer to send buffer.
+         int toCopy = min(bufSize, remaining);
+         memcpy(pOut, buf, toCopy);
+
+         // Send!
+         pXfer->commitSendBuf(toCopy);
+         pXfer->send(nds);
+
+         // Check state.
+         if (nds == ndstate::disconnected) {
+            printf("send buffer: %s:%d has disconnected\n",
+               netaddress::address(&rec.mSockAddr).c_str(),
+               netaddress::port(&rec.mSockAddr)
+            );
+            pServer->disconnectClient(&rec);
+            break;
+         } else if (nds == ndstate::fail) {
+            printf("send buffer: failed to send to %s:%d - disconnecting\n",
+               netaddress::address(&rec.mSockAddr).c_str(),
+               netaddress::port(&rec.mSockAddr)
+            );
+            pServer->disconnectClient(&rec);
+            break;
+         }
+
+         // Data sent.
+         remaining -= toCopy;
+      }
+   }
+}
+
+// Client connected callback.
+void onClientConnect(clientrec* pRec, void* pUserData)
+{
+   // Log info about client.
+   printf("new client connected: %s:%d\n",
+      netaddress::address(&pRec->mSockAddr).c_str(),
+      netaddress::port(&pRec->mSockAddr)
+   );
+
+   // Create a data transfer buffer and wait for data.
+   pRec->mpXfer = new netdataraw();
+   if (nullptr == pRec->mpXfer) {
+      printf("could not create transfer buffer!\n");
+      return;
+   }
+
+   // Assign data transfer buffer to client socket and
+   // wait for data to come through.
+   (*pRec->mpXfer) << pRec->mSocket;
+}
+
+void onClientDisconnect(clientrec* pRec, void* pUserData)
+{
+   // Log info about client.
+   printf("client disconnecting: request by %s:%d\n",
+      netaddress::address(&pRec->mSockAddr).c_str(),
+      netaddress::port(&pRec->mSockAddr)
+   );
+
+   // Before acknowledging the connection, check if any data exists and
+   // process it.
+   fd_set fd;
+   FD_ZERO(&fd);
+   FD_SET(pRec->mSocket, &fd);
+
+   timeval tv;
+   memset(&tv, 0, sizeof(tv));
+   int sel = select(pRec->mSocket + 1, &fd, nullptr, nullptr, &tv);
+   if (0 == sel || -1 == sel) return;
+   
+   // Data exists.
+   if (!FD_ISSET(pRec->mSocket, &fd))
+      return;
+
+   // Since the file descriptor is set, try to receive some data and if that
+   // doesn't return anything, then just quit.
+   ndstate nds = ndstate::ok;
+   pRec->mpXfer->recv(nds);
+   while (nds != ndstate::disconnected && nds != ndstate::fail) {
+      // Process data.
+      size_t size = 0;
+      const byte* pBuf = pRec->mpXfer->getRecvBuf(size);
+      if (nullptr == pBuf) {
+         // No more data received.
+         break;
+      }
+
+      // Dump the buffer and free it.
+      printf("%s:%d: ",
+         netaddress::address(&pRec->mSockAddr).c_str(),
+         netaddress::port(&pRec->mSockAddr)
+      );
+      printf("recv>>:");
+      dumpbuf(pBuf, size);
+
+      // Clear receive buffer and continue receiving more...
+      pRec->mpXfer->clearRecvBuf(size);
+      pRec->mpXfer->recv(nds);
+   }
+
+   if (nds == ndstate::disconnected || nds == ndstate::fail)
+      return;
+
+
+}
+
+void onClientData(clientrec* pRec, void* pUserData)
 {
    auto printclient = [&]() {
       printf("%s:%d: ",
@@ -190,13 +328,17 @@ void recvSvrSocket(clientrec* pRec, void* pUserData)
       );
    };
 
+   if (!pRec || pRec->mSocket == 0 || pRec->mpXfer == nullptr)
+      return;
+
    // Receive available data.
    ndstate nds;
    pRec->mpXfer->recv(nds);
 
    // Check receive result.
    if (nds == ndstate::disconnected) {
-      // Call client disconnect from server end for clean disconnection.
+      // Client mae a request to disconnect.
+      // Disconnect also from server for clean disconnection.
       printclient();
       printf("client disconnected\n");
       gSvrApp.mpServer->disconnectClient(pRec);
@@ -224,134 +366,36 @@ void recvSvrSocket(clientrec* pRec, void* pUserData)
    pRec->mpXfer->clearRecvBuf(size);
 }
 
-// Data inputted. Send it back to client.
-void sendSvrKeyboard(clientrec* pRec, void* pUserData)
+// Console input call back from server. This is called when the server's
+// select picks up input from one of the user's file descriptors. In this
+// case there's only one (the console input).
+// When processing input, we must make sure that the process does not
+// block at this point otherwise it will break the server.
+void onConsoleInput(server* pServer, int fd)
 {
-   // Check for a send buffer.
-   size_t size = 0;
-   byte* pBuf = pRec->mpXfer->getSendBuf(size);
-   if (nullptr == pBuf) {
-      return;
-   }
+   // We only ever use standard in.
+   assert(pServer != nullptr && fd == 0);
 
-   // Send buffer available for this client.
-   char* pStart = (char*)pBuf;
-   char* pEnd = (char*)(pBuf + size);
+   // Since this will be sent to all clients, the buffer needs to be copied
+   // first.
+   byte buf[1024];
+   memset(buf, 0, 1024);
 
-   // pselect in processClientData sends control to here suggesting
-   // there is keyboard input to pick up. At this point, and attempt to
-   // fill the send buffer is made. Since stdin is marked as non-blocking
-   // for this program, read will return immediately, either empty or with
-   // some data.
-   size_t res = read(0, pStart, size);
-   if (-1 == res) {
-      printf("error reading stdin!\n");
-   } else if (0 < res) {
-      // Got some data. Update send buffer and send it.
-      printf("%s:%d: send>>:'%s'\n",
-         netaddress::address(&pRec->mSockAddr).c_str(),
-         netaddress::port(&pRec->mSockAddr),
-         pStart
-      );
-      pRec->mpXfer->commitSendBuf(res);
-
-      // Send.
-      ndstate nds;
-      pRec->mpXfer->send(nds);
-      switch (nds) {
-      case ndstate::disconnected:
-         // Call client disconnect from server end for clean disconnection.
-         printf("client disconnected\n");
-         gSvrApp.mpServer->disconnectClient(pRec);
-         break;
-      case ndstate::fail:
-         printf("send failed\n");
-         break;
-      default:
-         break;
-      }
-   }
-}
-
-// Client processing thread.
-void processClientData(clientrec* pRec, void* pUserData)
-{
-   // Terminate client connection lambda.
-   auto terminate = [&]() {
-      // Close socket first.
-      close(pRec->mSocket);
-
-      // Delete transfer buffer.
-      if (nullptr != pRec->mpXfer) {
-         delete pRec->mpXfer;
-         pRec->mpXfer = 0;
-      }
-   };
-
-   // Wait for socket data or keyboard data.
-   fd_set rfds;
-   fd_set fds;
-   FD_ZERO(&rfds);
-   FD_SET(pRec->mSocket, &rfds);
-   FD_SET(0, &rfds);
-
-   int ret = 0;
+   // Since data is available from standard input, read it in
+   // and send it to all clients. Ensure no blocking happens at this stage.
+   ssize_t in = 0;
    do {
-      fds = rfds;
+      // Since fd is non-blocking, this will (should) break if there is no data.
+      in = read(fd, buf, 1023);
 
-      // Wait here.
-      ret = select(
-         max(pRec->mSocket, 0) + 1,
-         &fds, nullptr, nullptr, nullptr
-      );
-
-      // Check whether data has arrived from standard input
-      // or from the network socket.
-      if (ret == -1) {
-         terminate();
-         printf("unexpected error condition!\n");
-         break;
-      } else if (ret) {
-         if (FD_ISSET(pRec->mSocket, &fds)) {
-            // Data available in socket, read and print it.
-            recvSvrSocket(pRec, pUserData);
-         }
-
-         if (FD_ISSET(0, &fds)) {
-            // User input, send it.
-            sendSvrKeyboard(pRec, pUserData);
-         }
-      } else {
-         // return 0 (not possible as we don't have a timeout on wait.
-         terminate();
-         printf("unexpected error condition!\n");
-         break;
+      if (-1 == in) {
+         printf("stdin fail\n");
+      } else if (in > 0) {
+         svrSendBufToAll(pServer, buf, in);
       }
-   } while(pRec->mSocket > 0);
-}
+   } while (in == 1023);   // for when there may be more data to read.
 
-// Client connected callback.
-void onClientConnect(clientrec* pRec, void* pUserData)
-{
-   // Log info about client.
-   printf("new client connected: %s:%d\n",
-      netaddress::address(&pRec->mSockAddr).c_str(),
-      netaddress::port(&pRec->mSockAddr)
-   );
-
-   // Create a data transfer buffer and wait for data.
-   pRec->mpXfer = new netdataraw();
-   if (nullptr == pRec->mpXfer) {
-      printf("could not create transfer buffer!\n");
-      return;
-   }
-
-   // Assign data transfer buffer to client socket and
-   // wait for data to come through.
-   (*pRec->mpXfer) << pRec->mSocket;
-
-   // Call a thread to process client data and exit.
-   gSvrApp.mThreads.push_back(thread(processClientData, pRec, pUserData));
+   // All data sent to all clients.
 }
 
 int svrmain(int argc, char** argv)
@@ -373,15 +417,16 @@ int svrmain(int argc, char** argv)
    }
 
    // Wait for clients for ever. When a client connects, onClientConnect
-   // gets called. This will create a data transfer class and initiate
-   // a thread to process incoming and outgoing data. Remembering that
-   // onClientConnect should not block because that will break the integrity
-   // of the server.
+   // gets called. This will create a data transfer class which will allow
+   // for data to be transmitted from and to the client.
+   // When data is received by the server from the client, onClientData is
+   // called.
+   // When the client makes a request to disconnect, onClientDisconnect is
+   // called.
    gSvrApp.mpServer->waitForClients();
 
-   // When using a sync server, simulate execution of app below.
+   // When using async server, simulate execution of app below.
    if (!gSvrApp.mSyncServer) {
-      printf("waiting...\n");
       while(true);   // (continue running app)
    }
 

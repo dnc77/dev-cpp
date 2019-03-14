@@ -3,6 +3,7 @@
 //
 // Version control
 // 27 Jan 2019 Duncan Camilleri           Initial development
+// 12 Mar 2019 Duncan Camilleri           Introduced user read fd's processing
 //
 
 #ifndef __SERVERASYNC_H__
@@ -35,16 +36,17 @@ public:
    virtual bool init();
    virtual bool term();
 
-   // Accept connections (threaded non blocking call).
+   // Connections.
    virtual bool waitForClients();
 
 protected:
    int mMaxTimeoutSec = 30;            // max timeout - 30 sec (incl. term())
 
-   // Accepting thread - a thread that accepts clients can only be run once.
-   once_flag mAcceptOnce;              // make sure only one thread is accepting
-   thread mAcceptThread;               // thread that is accepting connections
-   void acceptLoop();                  // threaded by waitForClients()
+   // Clients thread - accepts clients or receives data (run once only).
+   once_flag mClientsOnce;             // make sure only one thread is waiting
+   thread mClientsThread;              // accept connections and listen for data
+   void selectLoop();                  // threaded by waitForClients()
+   bool selectProcess(fd_set* pfd);    // processes any sockets requesting attn
 };
 
 #endif         // __SERVERASYNC_H__
