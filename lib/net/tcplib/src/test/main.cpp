@@ -31,6 +31,7 @@ Version control
 03 Mar 2019 Duncan Camilleri           echo client/server *(experimental)*
 08 Mar 2019 Duncan Camilleri           Comment typo
 22 Mar 2019 Duncan Camilleri           Added copyright notice
+23 Mar 2019 Duncan Camilleri           No blocking stdin required
 */
 
 #include <assert.h>
@@ -38,7 +39,6 @@ Version control
 #include <unistd.h>           // read
 #include <memory.h>
 #include <netdb.h>
-#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>         // timeval
@@ -424,10 +424,6 @@ void onConsoleInput(server* pServer, int fd)
 
 int svrmain(int argc, char** argv)
 {
-   // Set standard input as non blocking so that when a read is called, it
-   // won't keep waiting for input
-   fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
-
    // Get command line parameters.
    if (!processSvrCmdline(argc, argv)) {
       usage(argv[0]);
@@ -474,7 +470,7 @@ int svrmain(int argc, char** argv)
 bool processCliCmdline(int argc, char** argv)
 {
    memset(&gCliApp.mCmd, 0, sizeof(clicmd));
-   
+
    if (argc < 4) return false;
    sprintf(gCliApp.mCmd.mServer, "%s", argv[2]);
    sscanf(argv[3], "%d", &gCliApp.mCmd.mPort);
@@ -548,10 +544,6 @@ void cliRecvThread()
 
 int climain(int argc, char** argv)
 {
-   // Set standard input as non blocking so that when a read is called, it
-   // won't keep waiting for input
-   fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
-
    // Get command line parameters.
    if (!processCliCmdline(argc, argv)) {
       usage(argv[0]);

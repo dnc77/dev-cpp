@@ -2,10 +2,10 @@
 #
 # 28 Jan 2019              added client
 # 03 Feb 2019              added logger
-#
+# 23 Mar 2019              added root directory notice and check
 
 # Root path
-ROOTDIR                    := /home/duncan/cpp/tcplib/
+ROOTDIR                    := /home/duncan/dev-cpp/lib/net/tcplib/
 
 # Main build directories
 INCDIR                     := $(ROOTDIR)inc/
@@ -31,7 +31,7 @@ RMDIR                      := rm -Rf
 AR                         := ar
 GCC                        := gcc
 TOUCH                      := touch
-ECHO                       := echo
+ECHO                       := @echo
 VALGRIND                   := valgrind
 VALGRINDOPTFULL            := --leak-check=full --track-origins=yes \
                               --track-fds=yes
@@ -164,14 +164,21 @@ OBJGCCOPT_RREL             := $(GCCCOMPILEONLY) $(GCCSTD14) \
 BINGCCOPT_RDBG             := $(GCCDEBUG) $(GCCSTD14) $(GCCINCDIR)$(INCDIR)
 BINGCCOPT_RREL             := $(GCCSTD14) $(GCCINCDIR)$(INCDIR)
 
-rules :
-	@echo '   all:    all projects (debug and release)'
-	@echo '   dbg:    all the debug projects'
-	@echo '   rel:    all the release projects'
-	@echo '   clean:  remove all'
+rules : rootnotice
+	$(ECHO) '   all:    all projects (debug and release)'
+	$(ECHO) '   dbg:    all the debug projects'
+	$(ECHO) '   rel:    all the release projects'
+	$(ECHO) '   clean:  remove all'
+	$(ECHO) ""
+
+rootnotice :
+	$(ECHO) '** NOTE: working root directory is $(ROOTDIR) **'
+	$(ECHO) '   Is this correct in makefile?'
+	@[ -d $(ROOTDIR) ]
+	$(ECHO) ""
 
 # All builds
-all : dbg rel
+all : rootnotice dbg rel
 
 dbg : mkdbgdirs \
       $(LOGGERBIN_RDBG) \
@@ -192,15 +199,15 @@ rel : mkreldirs \
       $(TESTBIN_RREL)
 
 # Create required directories
-mkdbgdirs :
+mkdbgdirs : rootnotice
 	$(MKDIR) $(BINDIR_RDBG)
 	$(MKDIR) $(OBJDIR_RDBG)
 
-mkreldirs :
+mkreldirs : rootnotice
 	$(MKDIR) $(BINDIR_RREL)
 	$(MKDIR) $(OBJDIR_RREL)
 
-clean :
+clean : rootnotice
 	$(RMDIR) $(BINDIR)*
 	$(RMDIR) $(OBJDIR)*
 

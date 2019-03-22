@@ -33,13 +33,14 @@ Version control
 27 Feb 2019 Duncan Camilleri           Introduced send and receive buffers
 28 Feb 2019 Duncan Camilleri           Added netdata state ndstate support
 22 Mar 2019 Duncan Camilleri           Added copyright notice
+23 Mar 2019 Duncan Camilleri           Cyclic buffer check fix
 */
 
 #ifndef __NETDATARAW_H_70782149FBD14889D4E41E8CA2976B0C__
 #define __NETDATARAW_H_70782149FBD14889D4E41E8CA2976B0C__
 
 // Check for missing includes.
-#if not defined __CYCBUF_H__
+#if not defined __CYCBUF_H_2A18CFFE1476BE00673E358841C878E9__
 #error "netdataraw.h: missing include - cycbuf.h"
 #endif
 
