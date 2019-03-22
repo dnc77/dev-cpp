@@ -1,12 +1,36 @@
-// Date:    28th January 2019
-// Purpose: Various helper utilities.
-//
-// Version control
-// 28 Jan 2019 Duncan Camilleri           Initial development
-// 
+/*
+Date: 22 Mar 2019 22:39:14.719439310
+File: helpers.h
 
-#ifndef __HELPERS_H__
-#define __HELPERS_H__
+Copyright Notice
+This document is protected by the GNU General Public License v3.0.
+
+This allows for commercial use, modification, distribution, patent and private
+use of this software only when the GNU General Public License v3.0 and this
+copyright notice are both attached in their original form.
+
+For developer and author protection, the GPL clearly explains that there is no
+warranty for this free software and that any source code alterations are to be
+shown clearly to identify the original author as well as any subsequent changes
+made and by who.
+
+For any questions or ideas, please contact:
+github:  https://github(dot)com/dnc77
+email:   dnc77(at)hotmail(dot)com
+web:     http://www(dot)dnc77(dot)com
+
+Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
+End of Copyright Notice
+
+Purpose: Various helper utilities.
+
+Version control
+28 Jan 2019 Duncan Camilleri           Initial development
+22 Mar 2019 Duncan Camilleri           Added copyright notice
+*/
+
+#ifndef __HELPERS_H_1181F24416A281704183E457A90E8460__
+#define __HELPERS_H_1181F24416A281704183E457A90E8460__
 
 // Check for missing includes.
 #if not defined _SYS_TIME_H
@@ -62,4 +86,4 @@ inline void doubletime(timeval& tv,
    }
 }
 
-#endif      // __HELPERS_H__
+#endif   // __HELPERS_H_1181F24416A281704183E457A90E8460__

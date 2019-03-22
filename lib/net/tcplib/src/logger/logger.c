@@ -1,13 +1,35 @@
-// Date:    15 April 2014
-// Purpose: Provides generic log functionality.
-//
-// Version control
-// Date        Author         Summary
-// 15 Apr 2014 Duncan Camilleri  Initial development
-// 28 Oct 2016 Duncan Camilleri  Added comments to handle members
-// 28 Oct 2016 Duncan Camilleri  Added indentation functionality
-// 
-// 
+/*
+Date: 22 Mar 2019 22:38:36.548196414
+File: logger.c
+
+Copyright Notice
+This document is protected by the GNU General Public License v3.0.
+
+This allows for commercial use, modification, distribution, patent and private
+use of this software only when the GNU General Public License v3.0 and this
+copyright notice are both attached in their original form.
+
+For developer and author protection, the GPL clearly explains that there is no
+warranty for this free software and that any source code alterations are to be
+shown clearly to identify the original author as well as any subsequent changes
+made and by who.
+
+For any questions or ideas, please contact:
+github:  https://github(dot)com/dnc77
+email:   dnc77(at)hotmail(dot)com
+web:     http://www(dot)dnc77(dot)com
+
+Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
+End of Copyright Notice
+
+Purpose: Provides generic log functionality.
+
+Version control
+15 Apr 2014 Duncan Camilleri           Initial development
+28 Oct 2016 Duncan Camilleri           Added comments to handle members
+28 Oct 2016 Duncan Camilleri           Added indentation functionality
+22 Mar 2019 Duncan Camilleri           Added copyright notice
+*/
 
 #include <stdio.h>
 #include <malloc.h>
@@ -274,6 +296,3 @@ void logoutdent(loghdl h)
 
    p->mIndent--;
 }
-
-
-

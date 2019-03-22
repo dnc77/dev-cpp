@@ -1,21 +1,45 @@
-// Date:    05th February 2019
-// Purpose: A cyclic buffer of a defined size
-//
-// Version control
-// 05 Feb 2019 Duncan Camilleri           Initial development
-// 10 Feb 2019 Duncan Camilleri           isEmpty() and isFull() are now public
-// 20 Feb 2019 Duncan Camilleri           Renamed pushHead() to pushReadHead()
-// 21 Feb 2019 Duncan Camilleri           Readjusted buffer sizes
-// 21 Feb 2019 Duncan Camilleri           Added copy constructor
-//
+/*
+Date: 22 Mar 2019 22:39:13.791437689
+File: cycbuf.h
 
-#ifndef __CYCBUF_H__
-#define __CYCBUF_H__
+Copyright Notice
+This document is protected by the GNU General Public License v3.0.
+
+This allows for commercial use, modification, distribution, patent and private
+use of this software only when the GNU General Public License v3.0 and this
+copyright notice are both attached in their original form.
+
+For developer and author protection, the GPL clearly explains that there is no
+warranty for this free software and that any source code alterations are to be
+shown clearly to identify the original author as well as any subsequent changes
+made and by who.
+
+For any questions or ideas, please contact:
+github:  https://github(dot)com/dnc77
+email:   dnc77(at)hotmail(dot)com
+web:     http://www(dot)dnc77(dot)com
+
+Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
+End of Copyright Notice
+
+Purpose: A cyclic buffer of a defined size.
+
+Version control
+05 Feb 2019 Duncan Camilleri           Initial development
+10 Feb 2019 Duncan Camilleri           isEmpty() and isFull() are now public
+20 Feb 2019 Duncan Camilleri           Renamed pushHead() to pushReadHead()
+21 Feb 2019 Duncan Camilleri           Readjusted buffer sizes
+21 Feb 2019 Duncan Camilleri           Added copy constructor
+22 Mar 2019 Duncan Camilleri           Added copyright notice
+*/
+
+#ifndef __CYCBUF_H_2A18CFFE1476BE00673E358841C878E9__
+#define __CYCBUF_H_2A18CFFE1476BE00673E358841C878E9__
 
 // Check for missing includes.
 #if not defined _GLIBCXX_STRING
 #error "cycbuf.h: missing include - string"
-#elif not defined __HELPERS_H__
+#elif not defined __HELPERS_H_1181F24416A281704183E457A90E8460__
 #error "cycbuf.h: missing include - helpers.h"     // byte definition (no c++17)
 #endif
 
@@ -95,4 +119,4 @@ private:
    bool isWriteReady();
 };
 
-#endif      // __CYCBUF_H__
+#endif   // __CYCBUF_H_2A18CFFE1476BE00673E358841C878E9__

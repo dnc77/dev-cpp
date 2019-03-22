@@ -1,23 +1,47 @@
-// Date:    19th January 2019
-// Purpose: Implements a basic network server.
-//
-// Version control
-// 19 Jan 2019 Duncan Camilleri           Initial development
-// 24 Feb 2019 Duncan Camilleri           Added callback support
-// 25 Feb 2019 Duncan Camilleri           Added data transfer class to clientrec
-// 26 Feb 2019 Duncan Camilleri           Added note about blocking callbacks
-// 03 Mar 2019 Duncan Camilleri           Added disconnectClient
-// 03 Mar 2019 Duncan Camilleri           Added locking for clients list
-// 11 Mar 2019 Duncan Camilleri           Added disconnectAllClients()
-// 11 Mar 2019 Duncan Camilleri           disconnectClient() becomes virtual
-// 11 Mar 2019 Duncan Camilleri           Added fdset and fdMax functionality
-// 11 Mar 2019 Duncan Camilleri           Added onDisconnect callback
-// 11 Mar 2019 Duncan Camilleri           Added support for select on user fd
-// 12 Mar 2019 Duncan Camilleri           Added clientsHead() and clientsTail()
-//
+/*
+Date: 22 Mar 2019 22:39:14.140709360
+File: server.h
 
-#ifndef __SERVER_H__
-#define __SERVER_H__
+Copyright Notice
+This document is protected by the GNU General Public License v3.0.
+
+This allows for commercial use, modification, distribution, patent and private
+use of this software only when the GNU General Public License v3.0 and this
+copyright notice are both attached in their original form.
+
+For developer and author protection, the GPL clearly explains that there is no
+warranty for this free software and that any source code alterations are to be
+shown clearly to identify the original author as well as any subsequent changes
+made and by who.
+
+For any questions or ideas, please contact:
+github:  https://github(dot)com/dnc77
+email:   dnc77(at)hotmail(dot)com
+web:     http://www(dot)dnc77(dot)com
+
+Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
+End of Copyright Notice
+
+Purpose: Implements a basic network server.
+
+Version control
+19 Jan 2019 Duncan Camilleri           Initial development
+24 Feb 2019 Duncan Camilleri           Added callback support
+25 Feb 2019 Duncan Camilleri           Added data transfer class to clientrec
+26 Feb 2019 Duncan Camilleri           Added note about blocking callbacks
+03 Mar 2019 Duncan Camilleri           Added disconnectClient
+03 Mar 2019 Duncan Camilleri           Added locking for clients list
+11 Mar 2019 Duncan Camilleri           Added disconnectAllClients()
+11 Mar 2019 Duncan Camilleri           disconnectClient() becomes virtual
+11 Mar 2019 Duncan Camilleri           Added fdset and fdMax functionality
+11 Mar 2019 Duncan Camilleri           Added onDisconnect callback
+11 Mar 2019 Duncan Camilleri           Added support for select on user fd
+12 Mar 2019 Duncan Camilleri           Added clientsHead() and clientsTail()
+22 Mar 2019 Duncan Camilleri           Added copyright notice
+*/
+
+#ifndef __SERVER_H_D20860FF17C3436CF1326F2A1D1C13AA__
+#define __SERVER_H_D20860FF17C3436CF1326F2A1D1C13AA__
 
 // Check for missing includes.
 #ifndef _GLIBCXX_VECTOR
@@ -28,9 +52,9 @@
 #error "server.h: missing include - sys/socket.h"
 #elif not defined _NETDB_H
 #error "server.h: missing include - netdb.h"
-#elif not defined __NETADDRESS_H__
+#elif not defined __NETADDRESS_H_6E1F7A0493BF8A3A85BFC6B3372995A7__
 #error "server.h: missing include - netaddress.h"
-#elif not defined __NETNODE_H__
+#elif not defined __NETNODE_H_F8E386017993EF09D0EA13C34C3DAD32__
 #error "server.h: missing include - netnode.h"
 #endif
 
@@ -134,4 +158,5 @@ private:
    void delUserReadFd(int n);
 };
 
-#endif      // __SERVER_H__
+#endif   // __SERVER_H_D20860FF17C3436CF1326F2A1D1C13AA__
+

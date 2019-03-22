@@ -1,9 +1,35 @@
-// File: CElGamal.cpp
-// Purpose: ElGamal Encryption of messages
-// Changes
-// 09 Mar 2006: Duncan Camilleri - Initial development
-// 10 Mar 2007: Duncan Camilleri - Completed encryption and decryption
-// 28 Oct 2010: Duncan Camilleri - Introduced 16 bit prime + dependencies
+/*
+Date: 22 Mar 2019 22:39:22.601879524
+File: CElGamal.cpp
+
+Copyright Notice
+This document is protected by the GNU General Public License v3.0.
+
+This allows for commercial use, modification, distribution, patent and private
+use of this software only when the GNU General Public License v3.0 and this
+copyright notice are both attached in their original form.
+
+For developer and author protection, the GPL clearly explains that there is no
+warranty for this free software and that any source code alterations are to be
+shown clearly to identify the original author as well as any subsequent changes
+made and by who.
+
+For any questions or ideas, please contact:
+github:  https://github(dot)com/dnc77
+email:   dnc77(at)hotmail(dot)com
+web:     http://www(dot)dnc77(dot)com
+
+Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
+End of Copyright Notice
+
+Purpose: ElGamal Encryption of messages.
+
+Version control
+09 Mar 2006 Duncan Camilleri           Initial development
+10 Mar 2007 Duncan Camilleri           Completed encryption and decryption
+28 Oct 2010 Duncan Camilleri           Introduced 16 bit prime + dependencies
+22 Mar 2019 Duncan Camilleri           Added copyright notice
+*/
 
 #include <assert.h>
 #include <stdio.h>
@@ -141,4 +167,3 @@ void CElGamal<T>::printGenerators(uint16_t lPrime) {
 
   printf ("\n");
 }
-

@@ -1,20 +1,44 @@
-// Date:    19th January 2019
-// Purpose: Implements a basic network server.
-//
-// Version control
-// 19 Jan 2019 Duncan Camilleri           Initial development
-// 29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
-// 31 Jan 2019 Duncan Camilleri           New netaddress changes
-// 03 Feb 2019 Duncan Camilleri           Address reuse socket option
-// 03 Feb 2019 Duncan Camilleri           Added logging support
-// 24 Feb 2019 Duncan Camilleri           Added callback support
-// 03 Mar 2019 Duncan Camilleri           Added disconnectClient
-// 03 Mar 2019 Duncan Camilleri           Added locking for clients list
-// 11 Mar 2019 Duncan Camilleri           Added disconnectAllClients()
-// 11 Mar 2019 Duncan Camilleri           Added fdset and fdMax functionality
-// 11 Mar 2019 Duncan Camilleri           Added onDisconnect callback
-// 12 Mar 2019 Duncan Camilleri           Added clientsHead() and clientsTail()
-//
+/*
+Date: 22 Mar 2019 22:39:21.906329077
+File: server.cpp
+
+Copyright Notice
+This document is protected by the GNU General Public License v3.0.
+
+This allows for commercial use, modification, distribution, patent and private
+use of this software only when the GNU General Public License v3.0 and this
+copyright notice are both attached in their original form.
+
+For developer and author protection, the GPL clearly explains that there is no
+warranty for this free software and that any source code alterations are to be
+shown clearly to identify the original author as well as any subsequent changes
+made and by who.
+
+For any questions or ideas, please contact:
+github:  https://github(dot)com/dnc77
+email:   dnc77(at)hotmail(dot)com
+web:     http://www(dot)dnc77(dot)com
+
+Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
+End of Copyright Notice
+
+Purpose: Implements a basic network server.
+
+Version control
+19 Jan 2019 Duncan Camilleri           Initial development
+29 Jan 2019 Duncan Camilleri           netaddress needs utility for pair
+31 Jan 2019 Duncan Camilleri           New netaddress changes
+03 Feb 2019 Duncan Camilleri           Address reuse socket option
+03 Feb 2019 Duncan Camilleri           Added logging support
+24 Feb 2019 Duncan Camilleri           Added callback support
+03 Mar 2019 Duncan Camilleri           Added disconnectClient
+03 Mar 2019 Duncan Camilleri           Added locking for clients list
+11 Mar 2019 Duncan Camilleri           Added disconnectAllClients()
+11 Mar 2019 Duncan Camilleri           Added fdset and fdMax functionality
+11 Mar 2019 Duncan Camilleri           Added onDisconnect callback
+12 Mar 2019 Duncan Camilleri           Added clientsHead() and clientsTail()
+22 Mar 2019 Duncan Camilleri           Added copyright notice
+*/
 
 // Includes
 #include <stdio.h>

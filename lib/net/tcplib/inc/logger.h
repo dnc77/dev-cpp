@@ -1,13 +1,36 @@
-// Date:    15 April 2014
-// Purpose: Provides generic log functionality.
-//
-// Version control
-// Date        Author         Summary
-// 15 Apr 2014 Duncan         Initial development
-//
+/*
+Date: 22 Mar 2019 22:39:13.676720082
+File: logger.h
 
-#ifndef __LOGGER_H__
-#define __LOGGER_H__
+Copyright Notice
+This document is protected by the GNU General Public License v3.0.
+
+This allows for commercial use, modification, distribution, patent and private
+use of this software only when the GNU General Public License v3.0 and this
+copyright notice are both attached in their original form.
+
+For developer and author protection, the GPL clearly explains that there is no
+warranty for this free software and that any source code alterations are to be
+shown clearly to identify the original author as well as any subsequent changes
+made and by who.
+
+For any questions or ideas, please contact:
+github:  https://github(dot)com/dnc77
+email:   dnc77(at)hotmail(dot)com
+web:     http://www(dot)dnc77(dot)com
+
+Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
+End of Copyright Notice
+
+Purpose: Provides generic log functionality.
+
+Version control
+15 Apr 2014 Duncan Camilleri           Initial development
+22 Mar 2019 Duncan Camilleri           Added copyright notice
+*/
+
+#ifndef __LOGGER_H_35EB83B50B7DEFA4CB39D6D640C53174__
+#define __LOGGER_H_35EB83B50B7DEFA4CB39D6D640C53174__
 
 //
 // STRUCTS
@@ -47,5 +70,4 @@ void logCri(loghdl h, int showLevel, const char* const fmt, ...);
 void logindent(loghdl h);
 void logoutdent(loghdl h);
 
-#endif      // __LOGGER_H__
-
+#endif   // __LOGGER_H_35EB83B50B7DEFA4CB39D6D640C53174__

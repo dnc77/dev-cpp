@@ -1,14 +1,38 @@
-// Date:    20th January 2019
-// Purpose: Implements address information retrieval.
-//
-// Version control
-// 20 Jan 2019 Duncan Camilleri           Initial development
-// 29 Jan 2019 Duncan Camilleri           Added late assignment functionality
-// 31 Jan 2019 Duncan Camilleri           netaddress revamp
-//
+/*
+Date: 22 Mar 2019 22:39:14.025607949
+File: netaddress.h
 
-#ifndef __NETADDRESS_H__
-#define __NETADDRESS_H__
+Copyright Notice
+This document is protected by the GNU General Public License v3.0.
+
+This allows for commercial use, modification, distribution, patent and private
+use of this software only when the GNU General Public License v3.0 and this
+copyright notice are both attached in their original form.
+
+For developer and author protection, the GPL clearly explains that there is no
+warranty for this free software and that any source code alterations are to be
+shown clearly to identify the original author as well as any subsequent changes
+made and by who.
+
+For any questions or ideas, please contact:
+github:  https://github(dot)com/dnc77
+email:   dnc77(at)hotmail(dot)com
+web:     http://www(dot)dnc77(dot)com
+
+Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
+End of Copyright Notice
+
+Purpose: Implements address information retrieval.
+
+Version control
+20 Jan 2019 Duncan Camilleri           Initial development
+29 Jan 2019 Duncan Camilleri           Added late assignment functionality
+31 Jan 2019 Duncan Camilleri           netaddress revamp
+22 Mar 2019 Duncan Camilleri           Added copyright notice
+*/
+
+#ifndef __NETADDRESS_H_6E1F7A0493BF8A3A85BFC6B3372995A7__
+#define __NETADDRESS_H_6E1F7A0493BF8A3A85BFC6B3372995A7__
 
 // Check for missing includes.
 #if not defined _GLIBCXX_STRING
@@ -63,4 +87,4 @@ public:
    static unsigned short port(const sockaddr_storage* pss);
 };
 
-#endif      // __NETADDRESS_H__
+#endif   // __NETADDRESS_H_6E1F7A0493BF8A3A85BFC6B3372995A7__

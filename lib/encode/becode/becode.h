@@ -1,13 +1,37 @@
-// Date:    13th February 2019
-// Purpose: A big endian data encoder/decoder.
-//
-// Version control
-// 13 Feb 2019 Duncan Camilleri           Initial development
-// 19 Feb 2019 Duncan Camilleri           Removed byte* swap() function
-//
+/*
+Date: 22 Mar 2019 22:39:14.835297030
+File: becode.h
 
-#ifndef __BECODE_H__
-#define __BECODE_H__
+Copyright Notice
+This document is protected by the GNU General Public License v3.0.
+
+This allows for commercial use, modification, distribution, patent and private
+use of this software only when the GNU General Public License v3.0 and this
+copyright notice are both attached in their original form.
+
+For developer and author protection, the GPL clearly explains that there is no
+warranty for this free software and that any source code alterations are to be
+shown clearly to identify the original author as well as any subsequent changes
+made and by who.
+
+For any questions or ideas, please contact:
+github:  https://github(dot)com/dnc77
+email:   dnc77(at)hotmail(dot)com
+web:     http://www(dot)dnc77(dot)com
+
+Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
+End of Copyright Notice
+
+Purpose: A big endian data encoder/decoder.
+
+Version control
+13 Feb 2019 Duncan Camilleri           Initial development
+19 Feb 2019 Duncan Camilleri           Removed byte* swap() function
+22 Mar 2019 Duncan Camilleri           Added copyright notice
+*/
+
+#ifndef __BECODE_H_CF8D7A167175FE6F73F454BA473DB959__
+#define __BECODE_H_CF8D7A167175FE6F73F454BA473DB959__
 
 // Check for missing includes.
 #if not defined _GLIBCXX_CSTDINT
@@ -50,6 +74,4 @@ public:
    bool ieee754doubleDec(double& f, byte* in);
 };
 
-
-#endif      // __BECODE_H__
-
+#endif   // __BECODE_H_CF8D7A167175FE6F73F454BA473DB959__

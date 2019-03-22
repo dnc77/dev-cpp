@@ -1,3 +1,34 @@
+/*
+Date: 22 Mar 2019 22:39:20.977018449
+File: main.cpp
+
+Copyright Notice
+This document is protected by the GNU General Public License v3.0.
+
+This allows for commercial use, modification, distribution, patent and private
+use of this software only when the GNU General Public License v3.0 and this
+copyright notice are both attached in their original form.
+
+For developer and author protection, the GPL clearly explains that there is no
+warranty for this free software and that any source code alterations are to be
+shown clearly to identify the original author as well as any subsequent changes
+made and by who.
+
+For any questions or ideas, please contact:
+github:  https://github(dot)com/dnc77
+email:   dnc77(at)hotmail(dot)com
+web:     http://www(dot)dnc77(dot)com
+
+Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
+End of Copyright Notice
+
+Purpose: Sample cyclic buffer test.
+
+Version control
+22 Mar 2019 Duncan Camilleri           Added copyright notice
+22 Mar 2019 Duncan Camilleri           Fixed bug with pushRead() old name call
+*/
+
 #include <string>
 #include <memory.h>
 #include "cycbuf.h"
@@ -74,7 +105,7 @@ void cyclicdaTest()
          size_t s = 0;
          byte const* buf = cyc.getReadHead(s);
          printf(" ==> read: %d bytes => '%s' ==> ", s, buf);
-         cyc.pushHead(s);
+         cyc.pushReadHead(s);
       }
 
       out = cyc.toString();
@@ -114,4 +145,3 @@ int main(int argc, char** argv)
    cyclicdaTest();
    return 0;
 }
-

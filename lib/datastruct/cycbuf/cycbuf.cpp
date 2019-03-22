@@ -1,11 +1,35 @@
-// Date:    05th February 2019
-// Purpose: A cyclic buffer of a defined size
-//
-// Version control
-// 05 Feb 2019 Duncan Camilleri           Initial development
-// 20 Feb 2019 Duncan Camilleri           Renamed pushHead() to pushReadHead()
-// 21 Feb 2019 Duncan Camilleri           Added copy constructor
-//
+/*
+Date: 22 Mar 2019 22:39:21.093549703
+File: cycbuf.cpp
+
+Copyright Notice
+This document is protected by the GNU General Public License v3.0.
+
+This allows for commercial use, modification, distribution, patent and private
+use of this software only when the GNU General Public License v3.0 and this
+copyright notice are both attached in their original form.
+
+For developer and author protection, the GPL clearly explains that there is no
+warranty for this free software and that any source code alterations are to be
+shown clearly to identify the original author as well as any subsequent changes
+made and by who.
+
+For any questions or ideas, please contact:
+github:  https://github(dot)com/dnc77
+email:   dnc77(at)hotmail(dot)com
+web:     http://www(dot)dnc77(dot)com
+
+Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
+End of Copyright Notice
+
+Purpose: A cyclic buffer of a defined size.
+
+Version control
+05 Feb 2019 Duncan Camilleri           Initial development
+20 Feb 2019 Duncan Camilleri           Renamed pushHead() to pushReadHead()
+21 Feb 2019 Duncan Camilleri           Added copy constructor
+22 Mar 2019 Duncan Camilleri           Added copyright notice
+*/
 
 // Includes
 #include <sys/time.h>
