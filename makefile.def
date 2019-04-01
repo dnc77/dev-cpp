@@ -1,0 +1,54 @@
+# Global root definitions
+# History of changes:
+#
+# 27 Mar 2019              creation
+
+# Get root path
+GLOBALROOTDIR              := $(shell dirname\
+                                 $(realpath $(lastword $(MAKEFILE_LIST)))\
+                              )/
+
+
+#
+# Build configurations
+#
+
+RASPDEBUG                  := dbg
+RASPREL                    := rel
+
+
+#
+# All projects
+#
+
+# Top level folders
+TOPLIB                     := lib
+TOPBIN                     := bin
+TOPOBJ                     := obj
+TOPSRC                     := src
+TOPINC                     := inc
+
+# Top level categories
+LIBCAT_DATASTRUCT          := datastruct
+LIBCAT_ENCODE              := encode
+LIBCAT_NET                 := net
+
+# All projects (first three chars are top level categories)
+LIBDAT_CYCBUF              := cycbuf
+LIBDAT_OCTREE              := octree
+LIBENC_BECODE              := becode
+LIBENC_ELGAMAL             := elgamal
+LIBNET_TCPLIB              := tcplib
+
+#
+# Additional paths
+#
+
+# Full paths at top level
+TOPLIBDIR                  := $(GLOBALROOTDIR)$(TOPLIB)/
+TOPBINDIR                  := $(GLOBALROOTDIR)$(TOPBIN)/
+TOPOBJDIR                  := $(GLOBALROOTDIR)$(TOPOBJ)/
+TOPSRCDIR                  := $(GLOBALROOTDIR)$(TOPSRC)/
+TOPINCDIR                  := $(GLOBALROOTDIR)$(TOPINC)/
+
+
