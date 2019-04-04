@@ -23,6 +23,9 @@ Copyright (C) 2000-2019 Duncan Camilleri, All rights reserved.
 End of Copyright Notice
 
 Purpose: Implements a basic network data transmission module.
+         While possible, all sockets assigned to this class should not block.
+         This and all child implementations of this class are not designed with
+         blocking operations in mind.
 
 Version control
 10 Feb 2019 Duncan Camilleri           Initial development
@@ -33,7 +36,10 @@ Version control
 28 Feb 2019 Duncan Camilleri           Added netdata state ndstate support
 22 Mar 2019 Duncan Camilleri           Added copyright notice
 31 Mar 2019 Duncan Camilleri           Use libraries from same repository
-
+02 Apr 2019 Duncan Camilleri           Try cycle buffer when recv() done
+02 Apr 2019 Duncan Camilleri           Bug not checking for no data available
+02 Apr 2019 Duncan Camilleri           ::recv() returns ssize_t not size_t
+02 Apr 2019 Duncan Camilleri           Support for a full buffer
 */
 
 // Includes
@@ -164,34 +170,87 @@ bool netdataraw::send(ndstate& nds)
 }
 
 // When receiving data, just return as soon as some data is received.
-// This could then be processed instantly and freed from the buffer.
+// This data could then be processed by calling getRecvBuf() to retrieve the
+// contents and clearRecvBuf() to release it.
 // Function returns false when
-// - the buffer is full and there is no space to receive more data.
 // - when the receive on the socket fails.
 // - the socket has disconnected.
+// Function returns true when
+// - data has been received successfully.
+// - when the buffer is full (nds = bufferfull).
 bool netdataraw::recv(ndstate& nds)
 {
-   // First get output buffer.
+   // Initialize.
    nds = ndstate::ok;
+   char* pBuf = nullptr;
    size_t size = 0;
-   char* pBuf = (char*)mRecvBuf.getWriteTail(size);
-   if (!pBuf || size == 0) return false;
+   ssize_t recvd = 0;
+
+   // Lambda to receive data. Will return -1 or 0 to suggest the
+   // whole operation should return with a failure or success
+   // respectively.
+   // Will return 1 to suggest that data has been received and the
+   // operation should proceed.
+   auto recvnow = [&]() -> ssize_t {
+       // Get buffer.
+      pBuf = (char*)mRecvBuf.getWriteTail(size);
+      if (!pBuf || size == 0) {
+         nds = ndstate::bufferfull;
+         return 0;
+      }
+
+      // Receive data to buffer.
+      recvd = ::recv(mSocket, pBuf, size, 0);
+      if (-1 == recvd) {
+         if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // No data to receive (success).
+            return 0;
+         } else {
+            // Operation failed.
+            nds = ndstate::fail;
+            return -1;
+         }
+      } else if (0 == recvd) {
+         // Disconnected?
+         nds = ndstate::disconnected;
+         return -1;
+      }
+
+      // Data received. Move write tail pointer by the number of bytes
+      // received to avoid overwriting.
+      mRecvBuf.pushWriteTail(recvd);
+      return 1;
+   };
 
    // A buffer exists for receiving - just receive the next packet.
-   size_t ret = ::recv(mSocket, pBuf, size, 0);
-   if (-1 == ret) {
-      nds = ndstate::fail;
-      return false;
+   ssize_t resume = recvnow();
+   if (-1 == resume) return false;
+   else if (0 == resume) return true;
+
+   // If the buffer has been filled to the end, then try receiving more data
+   // after cycling the buffer (if possible).
+   if (recvd == size) {             // recvd cannot be greater than size.
+      // Since the intention for this class is to operate on non blocking
+      // sockets, just receive again - do not check whether there is data
+      // for transmission as the function will exit anyway. If the socket
+      // were blocking, this would be a problem which can be circumvented
+      // by introducing a loop with a call to select or poll. Alas;
+      // select has a bug where by; on rare occasion, it will suggest data
+      // is available when there is not. The intention of this class is to
+      // operate on non-blocking sockets.
+
+      // Cycle the buffer and fetch more data (if possible).
+      resume = recvnow();
+      if (-1 == resume) return false;
+      else if (0 == resume) return true;
+
+      // At this point, check to see if the buffer is full.
+      // In such a case, there would be more data that needs to be received.
+      // This should not be likely as the max size of an ethernet level frame
+      // is less than the size of the entire cyclic buffer.
+      if (recvd == size) nds = ndstate::bufferfull;
    }
 
-   // Disconnected?
-   if (0 == ret) {
-      nds = ndstate::disconnected;
-      return false;
-   }
-
-   // If data has been received, then push the write tail so that
-   // received data is retained.
-   mRecvBuf.pushWriteTail(ret);
+   // All data received.
    return true;
 }

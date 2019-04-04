@@ -34,6 +34,9 @@ Version control
 28 Feb 2019 Duncan Camilleri           Added netdata state ndstate support
 22 Mar 2019 Duncan Camilleri           Added copyright notice
 23 Mar 2019 Duncan Camilleri           Cyclic buffer check fix
+02 Apr 2019 Duncan Camilleri           Resized cycbuf to contain ethernet frame
+04 Apr 2019 Duncan Camilleri           Added support for buffer full ndstate
+
 */
 
 #ifndef __NETDATARAW_H_70782149FBD14889D4E41E8CA2976B0C__
@@ -48,9 +51,10 @@ Version control
 // structure (given that netdataraw is the main parent of any other
 // netdata child).
 enum class ndstate {
-   ok = 0x00,
-   fail = 0x01,
-   disconnected = 0x02
+   ok = 0x00,                    // successful
+   fail = 0x01,                  // error while sending/receiving
+   disconnected = 0x02,          // socket no longer connected
+   bufferfull = 0x03             // no more space in receive buffer
 };
 
 // netdataraw transmits data over the network without any
@@ -76,7 +80,7 @@ public:
    // Socket assignment.
    netdataraw& operator<<(netnode& net);
    netdataraw& operator>>(netnode& net);
-   netdataraw& operator<<(int socket); 
+   netdataraw& operator<<(int socket);
    netdataraw& operator>>(int socket);
 
    // Transmission.
@@ -85,8 +89,8 @@ public:
 
 protected:
    int mSocket = 0;
-   cycbuf<medium> mSendBuf;
-   cycbuf<medium> mRecvBuf;
+   cycbuf<large> mSendBuf;
+   cycbuf<large> mRecvBuf;
 
 private:
 };

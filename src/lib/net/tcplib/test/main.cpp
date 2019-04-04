@@ -34,6 +34,7 @@ Version control
 23 Mar 2019 Duncan Camilleri           No blocking stdin required
 31 Mar 2019 Duncan Camilleri           Use libraries from same repository
 01 Apr 2019 Duncan Camilleri           Missing program name in usage for server
+02 Apr 2019 Duncan Camilleri           Improvements to disconnect and receive
 
 */
 
@@ -293,57 +294,46 @@ void onClientConnect(clientrec* pRec, void* pUserData)
 
 void onClientDisconnect(clientrec* pRec, void* pUserData)
 {
+   auto printclient = [&]() {
+      printf("%s:%d: ",
+         netaddress::address(&pRec->mSockAddr).c_str(),
+         netaddress::port(&pRec->mSockAddr)
+      );
+   };
+
    // Log info about client.
    printf("client disconnecting: request by %s:%d\n",
       netaddress::address(&pRec->mSockAddr).c_str(),
       netaddress::port(&pRec->mSockAddr)
    );
 
-   // Before acknowledging the connection, check if any data exists and
-   // process it.
-   fd_set fd;
-   FD_ZERO(&fd);
-   FD_SET(pRec->mSocket, &fd);
-
-   timeval tv;
-   memset(&tv, 0, sizeof(tv));
-   int sel = select(pRec->mSocket + 1, &fd, nullptr, nullptr, &tv);
-   if (0 == sel || -1 == sel) return;
-   
-   // Data exists.
-   if (!FD_ISSET(pRec->mSocket, &fd))
-      return;
-
-   // Since the file descriptor is set, try to receive some data and if that
-   // doesn't return anything, then just quit.
-   ndstate nds = ndstate::ok;
-   pRec->mpXfer->recv(nds);
-   while (nds != ndstate::disconnected && nds != ndstate::fail) {
-      // Process data.
-      size_t size = 0;
+   // Process any final packet and buffer data.
+   size_t size = 0;
+   do {
+      // Before acknowledging the disconnection request,
+      // dump any pending buffer data and check for any remaining buffer data.
       const byte* pBuf = pRec->mpXfer->getRecvBuf(size);
-      if (nullptr == pBuf) {
-         // No more data received.
-         break;
+      while (size > 0) {
+         if (nullptr == pBuf) break;
+
+         // Dump the buffer and release it from the cyclic buffer.
+         printclient();
+         printf("recv>>:");
+         dumpbuf(pBuf, size);
+         pRec->mpXfer->clearRecvBuf(size);
+
+         // Could fetch a buffer again when received data has cycled the buffer.
+         pBuf = pRec->mpXfer->getRecvBuf(size);
       }
 
-      // Dump the buffer and free it.
-      printf("%s:%d: ",
-         netaddress::address(&pRec->mSockAddr).c_str(),
-         netaddress::port(&pRec->mSockAddr)
-      );
-      printf("recv>>:");
-      dumpbuf(pBuf, size);
-
-      // Clear receive buffer and continue receiving more...
-      pRec->mpXfer->clearRecvBuf(size);
+      // ensure there is no more data for processing from the socket.
+      ndstate nds;
       pRec->mpXfer->recv(nds);
-   }
+      pBuf = pRec->mpXfer->getRecvBuf(size);
+   } while (size > 0);
 
-   if (nds == ndstate::disconnected || nds == ndstate::fail)
-      return;
-
-
+   // Log info about client.
+   printf("   disconnected\n");
 }
 
 void onClientData(clientrec* pRec, void* pUserData)
@@ -360,37 +350,42 @@ void onClientData(clientrec* pRec, void* pUserData)
 
    // Receive available data.
    ndstate nds;
-   pRec->mpXfer->recv(nds);
+   do {
+      pRec->mpXfer->recv(nds);
 
-   // Check receive result.
-   if (nds == ndstate::disconnected) {
-      // Client mae a request to disconnect.
-      // Disconnect also from server for clean disconnection.
-      printclient();
-      printf("client disconnected\n");
-      gSvrApp.mpServer->disconnectClient(pRec);
-      return;
-   } else if (nds == ndstate::fail) {
-      printclient();
-      printf("transfer failed!\n");
-      return;
-   }
+      // Check receive result.
+      if (nds == ndstate::disconnected) {
+         // Client made a request to disconnect.
+         // Disconnect also from server for clean disconnection.
+         printclient();
+         printf("client disconnected\n");
+         gSvrApp.mpServer->disconnectClient(pRec);
+         return;
+      } else if (nds == ndstate::fail) {
+         printclient();
+         printf("transfer failed!\n");
+         return;
+      }
 
-   // Data received - get buffer, process and relieve it.
-   size_t size = 0;
-   const byte* pBuf = pRec->mpXfer->getRecvBuf(size);
-   if (nullptr == pBuf) {
-      printclient();
-      printf("no buffer or space available!\n");
-      return;
-   }
+      // Data received - get buffer, process and empty it.
+      size_t size = 0;
+      const byte* pBuf = pRec->mpXfer->getRecvBuf(size);
+      while (size > 0) {
+         if (nullptr == pBuf) break;
 
-   // Dump the buffer and free it.
-   printclient();
-   printf("recv>>:");
-   dumpbuf(pBuf, size);
+         // Dump the buffer and release it from the cyclic buffer.
+         printclient();
+         printf("recv>>:");
+         dumpbuf(pBuf, size);
+         pRec->mpXfer->clearRecvBuf(size);
 
-   pRec->mpXfer->clearRecvBuf(size);
+         // Could fetch a buffer again when received data has cycled the buffer.
+         pBuf = pRec->mpXfer->getRecvBuf(size);
+      }
+
+   // Keep receiving data until the buffer is not full. This should not happen
+   // as the size of an ethernet frame should be smaller than our cyclic buffer.
+   } while (nds == ndstate::bufferfull); 
 }
 
 // Console input call back from server. This is called when the server's

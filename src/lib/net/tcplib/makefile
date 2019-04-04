@@ -8,8 +8,8 @@
 # Get global definitions makefile.
 MKPATH                     := $(shell dirname\
                                  $(realpath $(lastword $(MAKEFILE_LIST)))\
-                              )
-include                    $(MKPATH)/../../../../makefile.def
+                              )/
+include                    $(MKPATH)../../../../makefile.def
 
 LIBCATEGORY                := $(LIBCAT_NET)
 PRJMAIN                    := $(LIBNET_TCPLIB)
