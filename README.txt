@@ -12,11 +12,12 @@ Top level categories:
    lib/net                    : network programming libraries
 
 projects:
-  lib/datastruct/cycbuf       : a cyclic buffer for reading/writing data
-  lib/datastruct/octree       : can be used for 3D collision detection
-  lib/encode/becode           : big endian coding for IEEE-754, 16, 32, 64 bit
-  lib/encode/elgamal          : an encryption/decryption alg. using mod and exp
-  lib/net/tcplib              : a compact TCP/IP library
+   lib/datastruct/cycbuf      : a cyclic buffer for reading/writing data
+   lib/datastruct/octree      : can be used for 3D collision detection
+   lib/encode/becode          : big endian coding for IEEE-754, 16, 32, 64 bit
+   lib/encode/elgamal         : an encryption/decryption alg. using mod and exp
+   lib/net/tcplib             : a compact TCP/IP library
+   experimental/net/ethframe  : ethframe dumper (experiment)
 
 Notes:
 
