@@ -10,6 +10,7 @@ Top level categories:
    lib/datastruct             : data presentation, structures, containers etc.
    lib/encode                 : encoding/decoding structures and algorithms
    lib/net                    : network programming libraries
+   experimental/net           : experiments related to networking
 
 projects:
    lib/datastruct/cycbuf      : a cyclic buffer for reading/writing data
