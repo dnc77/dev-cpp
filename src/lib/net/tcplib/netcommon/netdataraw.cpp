@@ -169,9 +169,17 @@ bool netdataraw::send(ndstate& nds)
    return send(nds);
 }
 
-// When receiving data, just return as soon as some data is received.
-// This data could then be processed by calling getRecvBuf() to retrieve the
-// contents and clearRecvBuf() to release it.
+// Since the intention for this class is to operate on non blocking
+// sockets, there is no need to check whether there is data before receiving.
+// If the socket were blocking, this would be a problem which can be solved
+// by introducing select or poll. Alas; select has a bug where by; on rare
+// occasion, it will suggest data is available when there is not. The intention
+// of this class is to operate on non-blocking sockets so as soon as recv is
+// called, this is done on the cyclic buffer immediately. If the buffer is
+// exhausted, an attempt is made to receive again after cycling the buffer.
+// When recv finishes, nds state is updated accordingly.
+// The received data could be processed by calling getRecvBuf() and released by
+// calling clearRecvBuf().
 // Function returns false when
 // - when the receive on the socket fails.
 // - the socket has disconnected.
@@ -230,24 +238,12 @@ bool netdataraw::recv(ndstate& nds)
    // If the buffer has been filled to the end, then try receiving more data
    // after cycling the buffer (if possible).
    if (recvd == size) {             // recvd cannot be greater than size.
-      // Since the intention for this class is to operate on non blocking
-      // sockets, just receive again - do not check whether there is data
-      // for transmission as the function will exit anyway. If the socket
-      // were blocking, this would be a problem which can be circumvented
-      // by introducing a loop with a call to select or poll. Alas;
-      // select has a bug where by; on rare occasion, it will suggest data
-      // is available when there is not. The intention of this class is to
-      // operate on non-blocking sockets.
-
-      // Cycle the buffer and fetch more data (if possible).
       resume = recvnow();
       if (-1 == resume) return false;
       else if (0 == resume) return true;
 
       // At this point, check to see if the buffer is full.
       // In such a case, there would be more data that needs to be received.
-      // This should not be likely as the max size of an ethernet level frame
-      // is less than the size of the entire cyclic buffer.
       if (recvd == size) nds = ndstate::bufferfull;
    }
 

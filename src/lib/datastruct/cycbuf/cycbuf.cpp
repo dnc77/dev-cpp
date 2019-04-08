@@ -31,6 +31,7 @@ Version control
 22 Mar 2019 Duncan Camilleri           Added copyright notice
 26 Mar 2019 Duncan Camilleri           cycbuf.h moved to global inc dir
 31 Mar 2019 Duncan Camilleri           helpers.h needed for byte buffer
+05 Apr 2019 Duncan Camilleri           Introduced reset()
 
 */
 
@@ -231,6 +232,18 @@ void cycbuf<size>::pushWriteTail(size_t s)
 
    // Move tail.
    mpTail += bypass;
+}
+
+// Empties the buffer and resets all pointers.
+template <unsigned int size>
+void cycbuf<size>::reset()
+{
+   mpHead = mBuf;             // head of data
+   mpTail = mpHead;           // tail of data
+   mpStart = mBuf;            // start of buffer
+   mpEnd = &mBuf[size - 1];   // end of buffer
+
+   memset(mBuf, 0, size);
 }
 
 //

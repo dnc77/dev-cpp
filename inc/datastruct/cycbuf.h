@@ -32,6 +32,7 @@ Version control
 21 Feb 2019 Duncan Camilleri           Added copy constructor
 22 Mar 2019 Duncan Camilleri           Added copyright notice
 31 Mar 2019 Duncan Camilleri           Using helpers.h for byte support
+05 Apr 2019 Duncan Camilleri           Introduced reset()
 
 */
 
@@ -101,6 +102,8 @@ public:
    void pushReadHead(size_t s);
    byte* getWriteTail(size_t& s);
    void pushWriteTail(size_t s);
+
+   void reset();
 
 private:
    bool mFailWrite = false;               // when the buffer is not big enough
