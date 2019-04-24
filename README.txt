@@ -19,6 +19,7 @@ projects:
    lib/encode/elgamal         : an encryption/decryption alg. using mod and exp
    lib/net/tcplib             : a compact TCP/IP library
    experimental/net/ethframe  : ethframe dumper (experiment)
+   experimental/concurrency/* : concurrency testing and reviewing tools
 
 Notes:
 
