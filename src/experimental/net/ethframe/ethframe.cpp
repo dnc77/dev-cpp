@@ -26,19 +26,23 @@ Purpose:
 
 Version control
 05 Apr 2019 Duncan Camilleri           Initial development
+09 Apr 2019 Duncan Camilleri           ethProto returns protocol back
+
 */
 
 #include <arpa/inet.h>        // inet_ntop
 #include <linux/if_ether.h>   // ETH_P_ALL
+#include <sys/time.h>         // helpers.h
 #include <string>
 #include <memory.h>
+#include <helpers.h>
 #include "ethframe.h"
 
 using namespace std;
 
 
 // Determine protocol string based on protocol id hproto.
-void ethProto(uint16_t hproto, std::string& out)
+uint16_t ethProto(uint16_t hproto, std::string& out)
 {
    char tmp[32];
    memset(tmp, 0, 32);
@@ -133,5 +137,6 @@ void ethProto(uint16_t hproto, std::string& out)
    }
 
    out = tmp;
+   return proto;
 }
 
