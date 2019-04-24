@@ -85,11 +85,13 @@ RAWRECV_INCDIR             := $(INCDIR)
 RAWRECV_SRCDIR             := $(SRCDIR)
 
 # Individual project include files
-RAWRECVINC                 := $(RAWRECV_SRCDIR)ethframe.h
+RAWRECVINC                 := $(RAWRECV_SRCDIR)ethframe.h \
+                              $(RAWRECV_SRCDIR)ethlog.h
 
 # Individual project source files
 RAWRECVSRC                 := $(RAWRECV_SRCDIR)main.cpp \
-                              $(RAWRECV_SRCDIR)ethframe.cpp
+                              $(RAWRECV_SRCDIR)ethframe.cpp \
+                              $(RAWRECV_SRCDIR)ethlog.cpp
 
 # Project object files
 RAWRECV_OBJ_RDBG           := $(OBJDIR_RDBG)$(PRJMAIN).o
@@ -100,8 +102,8 @@ RAWRECV_OBJ_RREL           := $(OBJDIR_RREL)$(PRJMAIN).o
 # stdc++ - c++ library
 # m - math library
 # dl - dynamic loading library
-RAWRECV_LNKLIB_RDBG        := $(GCCLIB)stdc++
-RAWRECV_LNKLIB_RREL        := $(GCCLIB)stdc++
+RAWRECV_LNKLIB_RDBG        := $(GCCLIB)pthread $(GCCLIB)stdc++
+RAWRECV_LNKLIB_RREL        := $(GCCLIB)pthread $(GCCLIB)stdc++
 
 # Project output files
 RAWRECV_RDBG               := $(BINDIR_RDBG)$(PRJMAIN)
