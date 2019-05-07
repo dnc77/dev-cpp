@@ -26,6 +26,7 @@ Purpose: Logging functionality for ethernet data structures.
 
 Version control
 10 Apr 2019 Duncan Camilleri           Initial development
+24 Apr 2019 Duncan Camilleri           Support for IPV4 header
 
 */
 
@@ -35,11 +36,14 @@ Version control
 // Check for missing includes.
 #ifndef _LINUX_IF_ETHER_H
 #error "ethlog.h: missing include - linux/if_ether.h"
+#elif not defined __NETINET_IP_H
+#error "ethlog.h: missing include - netinet/ip.h"
 #elif not defined _STDINT_H
 #error "ethlog.h: missing include - stdint.h"
 #endif
 
 void logEthFrame(ethhdr* p, uint32_t len, uint16_t& protocol);
+void logIPV4Header(iphdr* p);
 
 
 #endif   // __ETHLOG_H_4A3F44793D6D6F761B6E15B74E53C951__

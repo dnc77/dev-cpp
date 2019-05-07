@@ -111,8 +111,20 @@ void logLoop()
       ethhdr* pEthHdr = (ethhdr*)fi.mBuf;
 
       // Log the last frame.
+      printf("\nethframe\n--------\n\n");
       uint16_t beprotocol = pEthHdr->h_proto;
       logEthFrame(pEthHdr, fi.mSize, beprotocol);
+
+      // Dump IPv4 Header if it is.
+      if (beprotocol == ETH_P_IP) {
+         printf("\nipv4 header\n-----------\n\n");
+         byte* pIpAddr = fi.mBuf + sizeof(ethhdr);
+         iphdr* pIP = (iphdr*)pIpAddr;
+         logIPV4Header(pIP);
+      }
+
+      // Full dump.
+      printf("\nhexdump\n-------\n\n");
       hexdump((const char* const)fi.mBuf, fi.mSize, 80);
 
       // Remove last frame info.

@@ -86,12 +86,14 @@ RAWRECV_SRCDIR             := $(SRCDIR)
 
 # Individual project include files
 RAWRECVINC                 := $(RAWRECV_SRCDIR)ethframe.h \
-                              $(RAWRECV_SRCDIR)ethlog.h
+                              $(RAWRECV_SRCDIR)ethlog.h \
+                              $(RAWRECV_SRCDIR)ipv4.h
 
 # Individual project source files
 RAWRECVSRC                 := $(RAWRECV_SRCDIR)main.cpp \
                               $(RAWRECV_SRCDIR)ethframe.cpp \
-                              $(RAWRECV_SRCDIR)ethlog.cpp
+                              $(RAWRECV_SRCDIR)ethlog.cpp \
+                              $(RAWRECV_SRCDIR)ipv4.cpp
 
 # Project object files
 RAWRECV_OBJ_RDBG           := $(OBJDIR_RDBG)$(PRJMAIN).o
