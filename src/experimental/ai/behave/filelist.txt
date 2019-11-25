@@ -1,0 +1,13 @@
+mood.*               - 8 emotional intensities
+action.*             - an actionable action that leaves emotional impact
+being.*              - body that can perform actions and has a mood
+gathering.*          - a group of beings
+behavefactory.*      - instantiates and stores actions, beings and gatherings
+weightedbinary.*     - a random weighted state machine
+stringlist.*         - an efficient constant string storage container
+serializer.*         - serializer/deserializer for storage of things
+objref.*             - reference to a loaded/unloaded object by id
+objrefinstances.cpp  - adds files to be compiled with template instantiation
+config.xml           - current configuration of objects
+main.cpp             - ditto
+makefile             - ditto

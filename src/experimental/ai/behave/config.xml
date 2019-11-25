@@ -1,0 +1,427 @@
+<behavefactory>
+   <lastids>
+      <actionid>9</actionid>
+      <beingid>4</beingid>
+      <gatheringid>0</gatheringid>
+   </lastids>
+   <action>bob-laysbrick
+      <id>1</id>
+      <mood>triggers
+         <joy>0.00</joy>
+         <trust>0.00</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.30</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>reactions
+         <joy>0.00</joy>
+         <trust>0.00</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>-0.20</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+   </action>
+   <action>bob-concreting
+      <id>2</id>
+      <mood>triggers
+         <joy>0.00</joy>
+         <trust>0.00</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.50</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>reactions>
+         <joy>0.00</joy>
+         <trust>0.00</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>-0.10</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+   </action>
+   <action>bob-landscaping
+      <id>3</id>
+      <mood>triggers
+         <joy>0.00</joy>
+         <trust>0.00</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.20</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>reactions
+         <joy>0.20</joy>
+         <trust>0.00</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>-0.15</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+   </action>
+   <action>bob-plastering
+      <id>4</id>
+      <mood>triggers
+         <joy>0.00</joy>
+         <trust>0.00</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.45</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>reactions>
+         <joy>0.00</joy>
+         <trust>0.00</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>-0.10</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+   </action>
+   <action>bob-painting
+      <id>5</id>
+      <mood>triggers
+         <joy>0.00</joy>
+         <trust>0.00</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.20</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>reactions>
+         <joy>0.30</joy>
+         <trust>0.00</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>-0.30</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+   </action>
+   <action>jane-sell
+      <id>6</id>
+      <mood>triggers
+         <joy>0.00</joy>
+         <trust>0.20</trust>
+         <fear>-0.01</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.00</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.20</anticipation>
+      </mood>
+      <mood>reactions
+         <sadness>-0.02</sadness>
+         <joy>0.486</joy>
+         <trust>0.05</trust>
+         <fear>-0.02</fear>
+         <surprise>0.01</surprise>
+         <sadness>0.00</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+   </action>
+   <action>jane-accounting
+      <id>7</id>
+      <mood>triggers
+         <joy>0.00</joy>
+         <trust>0.00</trust>
+         <fear>0.13</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.00</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.04</anticipation>
+      </mood>
+      <mood>reactions
+         <joy>0.00</joy>
+         <trust>0.02</trust>
+         <fear>-0.05</fear>
+         <surprise>0.00</surprise>
+         <sadness>-0.01</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+   </action>
+   <action>peter-solvecomputingproblem
+      <id>8</id>
+      <mood>triggers
+         <joy>0.00</joy>
+         <trust>0.40</trust>
+         <fear>0.15</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.00</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.43</anticipation>
+      </mood>
+      <mood>reactions
+         <joy>0.15</joy>
+         <trust>0.05</trust>
+         <fear>-0.02</fear>
+         <surprise>0.01</surprise>
+         <sadness>-0.05</sadness>
+         <disgust>-0.1</disgust>
+         <anger>-0.05</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+   </action>
+   <action>peter-actoutcybercrime
+      <id>9</id>
+      <mood>triggers
+         <joy>0.00</joy>
+         <trust>0.00</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.00</sadness>
+         <disgust>0.60</disgust>
+         <anger>0.30</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>reactions
+         <joy>-0.20</joy>
+         <trust>-0.70</trust>
+         <fear>0.18</fear>
+         <surprise>0.50</surprise>
+         <sadness>0.14</sadness>
+         <disgust>0.27</disgust>
+         <anger>0.02</anger>
+         <anticipation>0.01</anticipation>
+      </mood>
+   </action>
+   <being>Bob
+      <comment>About Bob
+         Bob is a tradesman. He can lay bricks, concrete yards, landscape,
+         plaster and paint.
+         For Bob to lay a brick, he needs to a trigger emotion which will cause
+         him to take that action and also leave a reactional impact on his
+         emotions.
+
+         For this example, we assume that Bob has become a tradesman because he 
+         finds that laying bricks brings some form of emotional response that
+         counters the experiences that bring/brought sadness into his life.
+         See, the thing with Bob is that when he was young he fell deeply in
+         love with a young maiden who cheated on him and left him for some
+         other dude. Being a creative person, Bob found his passion of brick
+         work when he was with his father working on their house. Bob found that
+         the process of laying bricks helped him feel relieved of the loss and
+         he kind of kept going with it. This has brought him great joy.
+         Therefore we can say that for Bob, laying bricks can be represented by
+         the following triggers and reactions:
+         triggers: sadness, reactions: joy
+         For short these will be represented as action(sadness => joy)
+         A bit more about Bob is that he has a close relationship with his
+         father whose had a loss (his wife). This means that his father was
+         protective and loving to Bob, maintained a good balance of love,
+         camaraderie, trust and freedom. This has made Bob (who lost his mother)
+         be of a great example to others' needs as he is sensitive and
+         understanding of hardship. As a result, he also is a person who gets
+         things done as he has grown to love brickwork.
+         We can generally say that Bob's 'starting' mood (based only on the
+         above conditions) are as follows:
+         mood(joy:-0.25,trust:0.7,fear:0.4,surprise:0.12,sadness:0.4,
+         disgust:0.2,anger:0.38,anticipation:0.2)
+         Bob's level of trust in himself and his father has led him forward to
+         expand on his skillset and he also became proficient in concreting
+         yards, landscaping, plastering as well as painting. This has brought
+         in more confidence and passion within him because he was more joyful,
+         even more trusting, less fearful, and a bit more surprised as what he
+         achieved felt really good.
+         This has shifted his mood as follows:
+         mood(joy:+0.4,trust:+0.2,fear:-0.25,surprise:+0.2,sadness:-0.5,
+            disgust:-0.6,anger:-0.5,anticipation:+0.02)
+         Following this, Bob's mood becomes:
+         mood(joy:0.15,trust:0.9,fear:0.15,surprise:0.32,sadness:-0.1,
+            disgust:-0.4,anger:-0.12,anticipation:0.22)
+         As a result, we can say that Bob's general mood has shifted from one
+         mood to the other. An action was triggered because of his emotions
+         which has left him with a reactive emotional response. This can
+         subsequently trigger more actions to be taken, forming a chain reaction
+         of events and emotional shifts.
+      </comment>
+      <id>1</id>
+      <mood>bias
+         <comment>
+            The bias should ideally be formed starting from 0. This will give
+            a model the opportunity to start from scratch. A being will then
+            have all actions impacted upon recorded throughout their lifetime.
+            The bias would also reflect the real scenario partaking to all the
+            actions involved.
+         </comment>
+         <joy>-0.25</joy>
+         <trust>0.70</trust>
+         <fear>0.40</fear>
+         <surprise>0.12</surprise>
+         <sadness>0.40</sadness>
+         <disgust>0.20</disgust>
+         <anger>0.38</anger>
+         <anticipation>0.20</anticipation>
+      </mood>
+      <mood>currentmood
+         <joy>-0.25</joy>
+         <trust>0.70</trust>
+         <fear>0.40</fear>
+         <surprise>0.12</surprise>
+         <sadness>0.40</sadness>
+         <disgust>0.20</disgust>
+         <anger>0.38</anger>
+         <anticipation>0.20</anticipation>
+      </mood>
+      <doableactions>
+         <actionid>1</actionid>
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>4</actionid>
+         <actionid>5</actionid>
+      </doableactions>
+      <impactactions>
+         <comment>
+            No actions recorded initially. By right, these should be all the
+            actions the being has been influenced by to cause him to be in the
+            current bias mood.
+         </comment>
+      </impactactions>
+   </being>
+   <being>Jane
+      <comment>About Jane
+         Jane has been brought up under a strict father who wanted her to
+         succeed in life and therefore has been pushed to achieve a lot of
+         targets. Her mother also instilled in her the importance of success and
+         as a result Jane hasn't really focused much on relationships. Jane has
+         been focusing on selling products and built her knowledge of accounting
+         while she was working for a small business. Jane's initial disposition
+         is:
+         mood(joy:-0.18,trust:0.28,fear:0.35,surprise:-0.2,sadness:0.004,
+            disgust:-0.7,anger:-0.4,anticipation:0.32)
+      </comment>
+      <id>2</id>
+      <mood>bias
+         <joy>-0.18</joy>
+         <trust>0.28</trust>
+         <fear>0.35</fear>
+         <surprise>-0.2</surprise>
+         <sadness>0.004</sadness>
+         <disgust>-0.70</disgust>
+         <anger>-0.40</anger>
+         <anticipation>0.32</anticipation>
+      </mood>
+      <mood>currentmood
+         <joy>-0.18</joy>
+         <trust>0.28</trust>
+         <fear>0.35</fear>
+         <surprise>-0.2</surprise>
+         <sadness>0.004</sadness>
+         <disgust>-0.70</disgust>
+         <anger>-0.40</anger>
+         <anticipation>0.32</anticipation>
+      </mood>
+      <doableactions>
+         <actionid>6</actionid>
+         <actionid>7</actionid>
+      </doableactions>
+      <impactactions>
+      </impactactions>
+   </being>
+   <being>Peter
+      <comment>About Peter
+         Peter has been bullied when he was much younger and as a result, he
+         ended up not socializing a lot. He resorted to the life of computers
+         and when he was young found pleasure in trying to break into computer
+         systems or build new models. As a result he has a lot of experience in
+         his field and knows his stuff. He is considered an elite in his field.
+         Peter remained single because he grew up as a reserved person. Peter's
+         initial disposition is:
+         mood(joy:-0.4,trust:0.2,fear:0.56,surprise:-0.4,sadness:-0.4,
+            disgust:0.002,anger:0.64,anticipation:0.6)
+      </comment>
+      <id>3</id>
+      <mood>bias
+         <joy>-0.4</joy>
+         <trust>0.20</trust>
+         <fear>0.56</fear>
+         <surprise>-0.40</surprise>
+         <sadness>-0.40</sadness>
+         <disgust>-0.002</disgust>
+         <anger>-0.64</anger>
+         <anticipation>0.60</anticipation>
+      </mood>
+      <mood>currentmood
+         <joy>-0.4</joy>
+         <trust>0.20</trust>
+         <fear>0.56</fear>
+         <surprise>-0.40</surprise>
+         <sadness>-0.40</sadness>
+         <disgust>-0.002</disgust>
+         <anger>-0.64</anger>
+         <anticipation>0.60</anticipation>
+      </mood>
+      <doableactions>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+      </doableactions>
+      <impactactions>
+      </impactactions>
+   </being>
+   <being>Alice
+      <comment>About Alice
+         Alice had a lot of freedom when she was young and was allowed to pursue
+         all that she desired. She played guitar, rode bikes, travelled, and
+         done a lot of fun stuff. She is a little bit of an entrepreneur and has
+         been trying to set up a business of her own by selling some home made
+         candles, and other paraphernalia. While her financial health is not
+         very strong, she still enjoys a wealthy life emotionally and that is
+         what's most important for her. Alice's initial disposition is as
+         follows:
+         mood(joy:0.6,trust:0.002,fear:0.2,surprise:0.4,sadness:0.158,
+            disgust:-0.72,anger:-0.42,anticipation:0.463)
+      </comment>
+      <id>4</id>
+      <mood>bias
+         <joy>0.6</joy>
+         <trust>0.002</trust>
+         <fear>0.2</fear>
+         <surprise>0.40</surprise>
+         <sadness>0.158</sadness>
+         <disgust>-0.72</disgust>
+         <anger>-0.42</anger>
+         <anticipation>0.463</anticipation>
+      </mood>
+      <mood>currentmood
+         <joy>0.6</joy>
+         <trust>0.002</trust>
+         <fear>0.2</fear>
+         <surprise>0.40</surprise>
+         <sadness>0.158</sadness>
+         <disgust>-0.72</disgust>
+         <anger>-0.42</anger>
+         <anticipation>0.463</anticipation>
+      </mood>
+      <doableactions>
+      </doableactions>
+      <impactactions>
+      </impactactions>
+   </being>
+</behavefactory>
