@@ -21,6 +21,7 @@
 #include "action.h"
 #include "being.h"
 #include "gathering.h"
+#include "environment.h"
 #include "behavefactory.h"
 
 using namespace std;

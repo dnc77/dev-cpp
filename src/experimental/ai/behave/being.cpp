@@ -29,6 +29,7 @@ Version control
 06 Oct 2019 Duncan Camilleri           Removed shortname
 24 Nov 2019 Duncan Camilleri           Doable actions converted to ObjRef
 25 Nov 2019 Duncan Camilleri           Bias mood in operator= was missing
+26 Nov 2019 Duncan Camilleri           reset() on constructor to initialize
 
 */
 
@@ -60,6 +61,7 @@ using namespace std;
 
 Being::Being()
 {
+   reset();
 }
 
 Being::Being(const Being& being)

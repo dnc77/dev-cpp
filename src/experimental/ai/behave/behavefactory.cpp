@@ -29,6 +29,7 @@ Version control
 19 Oct 2019 Duncan Camilleri           Moved from bwfactory.h
 02 Nov 2019 Duncan Camilleri           Introduced node
 08 Nov 2019 Duncan Camilleri           Basic serialization complete
+26 Nov 2019 Duncan Camilleri           Added Environments!
 
 */
 
@@ -51,6 +52,7 @@ Version control
 #include "action.h"
 #include "being.h"
 #include "gathering.h"
+#include "environment.h"
 #include "behavefactory.h"
 
 using namespace std;
@@ -116,6 +118,21 @@ Gathering* BehaveFactory::spawnGathering(const char* const name)
    }
 }
 
+Environment* BehaveFactory::spawnEnvironment(const char* const name)
+{
+   try {
+      // Create an environment and return it.
+      Environment env;
+      env.name(++sidEnvironment, name);
+      mEnvironments.push_back(env);
+
+      return &mEnvironments.back();
+   } catch (exception& e) {
+      // push_back failure.
+      return nullptr;
+   }
+}
+
 //
 // SEARCH
 //
@@ -146,7 +163,7 @@ bool BehaveFactory::find(Action& a, const uint64_t id)
 // Otherwise false is returned.
 bool BehaveFactory::find(Being& b, const uint64_t id)
 {
-   // Compares action's id with passed id.
+   // Compares being's id with passed id.
    auto compare = [&](const Being& iter) -> bool {
       return iter.id() == id;
    };
@@ -163,11 +180,11 @@ bool BehaveFactory::find(Being& b, const uint64_t id)
 }
 
 // Will find a gathering that has mId = id.
-// If found, g will be populated with that being and true is returned.
+// If found, g will be populated with that gathering and true is returned.
 // Otherwise false is returned.
 bool BehaveFactory::find(Gathering& g, const uint64_t id)
 {
-   // Compares action's id with passed id.
+   // Compares gathering's id with passed id.
    auto compare = [&](const Gathering& iter) -> bool {
       return iter.id() == id;
    };
@@ -180,6 +197,27 @@ bool BehaveFactory::find(Gathering& g, const uint64_t id)
 
    // Found!
    g = (*i);
+   return true;   
+}
+
+// Will find an environment that has mId = id.
+// If found, e will be populated with that environment and true is returned.
+// Otherwise false is returned.
+bool BehaveFactory::find(Environment& e, const uint64_t id)
+{
+   // Compares environment's id with passed id.
+   auto compare = [&](const Environment& iter) -> bool {
+      return iter.id() == id;
+   };
+
+   // Find object.
+   list<Environment>::const_iterator i = std::find_if(
+      mEnvironments.begin(), mEnvironments.end(), compare);
+
+   if (i == mEnvironments.end()) return false;
+
+   // Found!
+   e = (*i);
    return true;   
 }
 
@@ -220,6 +258,10 @@ bool BehaveFactory::load(const char* const filename)
          }
       } else if (strncmp(child.getName(), "gathering", 9) == 0) {
          if (!loadGatheringNode(child)) {
+            return false;
+         }
+      } else if (strncmp(child.getName(), "env", 3) == 0) {
+         if (!loadEnvironmentNode(child)) {
             return false;
          }
       }
@@ -284,7 +326,7 @@ bool BehaveFactory::loadGatheringNode(Node& child)
          return false;
       }
 
-      // Add action - this should create a new gathering in the
+      // Add gathering - this should create a new gathering in the
       // list and not reference the current gathering node.
       // See operator overloading in Gathering.
       mGatherings.push_back(const_cast<const GatheringNode&>(gathering));
@@ -292,6 +334,30 @@ bool BehaveFactory::loadGatheringNode(Node& child)
       // Update sid.
       if (sidGathering < gathering.id())
          sidGathering = gathering.id();
+   } catch (exception& e) {
+      // Catch push_back exceptions (if any).
+      return false;
+   }
+
+   // Done.
+   return true;
+}
+bool BehaveFactory::loadEnvironmentNode(Node& child)
+{
+   try {
+      EnvironmentNode env(child);
+      if (!env.fromNode()) {
+         return false;
+      }
+
+      // Add environment - this should create a new environment in the
+      // list and not reference the current environment node.
+      // See operator overloading in Environment.
+      mEnvironments.push_back(const_cast<const EnvironmentNode&>(env));
+
+      // Update sid.
+      if (sidEnvironment < env.id())
+         sidEnvironment = env.id();
    } catch (exception& e) {
       // Catch push_back exceptions (if any).
       return false;
@@ -362,6 +428,21 @@ bool BehaveFactory::save(const char* const filename)
       }
    }
 
+   // Go through each environment and serialize into the node.
+   for (Environment& e : mEnvironments) {
+      // Spawn child node.
+      Node* pChild = root.spawnChild();
+      if (!pChild) {
+         return fail();
+      }
+
+      // Create a environment node and populate.
+      EnvironmentNode en(e, *pChild);
+      if (!en.toNode()) {
+         return fail();
+      }
+   }
+
    // Save file.
    if (!root.toFile(filename)) {
       return fail();
@@ -406,9 +487,11 @@ void BehaveFactory::toStdout()
 
 void BehaveFactory::destroy()
 {
+   mEnvironments.clear();
    mGatherings.clear();
    mBeings.clear();
    mActions.clear();
+   sidEnvironment = 0;
    sidGathering = 0;
    sidBeing = 0;
    sidAction = 0;

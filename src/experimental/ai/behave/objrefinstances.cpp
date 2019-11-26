@@ -49,9 +49,13 @@ Version control
 #include "mood.h"
 #include "action.h"
 #include "being.h"
+#include "gathering.h"
 
 // Include source files here.
 #include "objref.cpp"
-template class ObjRef<Being>;
 template class ObjRef<Action>;
 template class ObjRef<const Action>;
+template class ObjRef<Being>;
+template class ObjRef<const Being>;
+template class ObjRef<Gathering>;
+template class ObjRef<const Gathering>;

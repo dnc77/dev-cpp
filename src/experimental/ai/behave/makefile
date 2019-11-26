@@ -92,6 +92,7 @@ BEHAVEINC                  := $(BEHAVE_SRCDIR)stringlist.h \
                                  $(BEHAVE_SRCDIR)action.h \
                                  $(BEHAVE_SRCDIR)being.h \
                                  $(BEHAVE_SRCDIR)gathering.h \
+                                 $(BEHAVE_SRCDIR)environment.h \
                                  $(BEHAVE_SRCDIR)behavefactory.h \
 
 # Individual project source files
@@ -102,6 +103,7 @@ BEHAVESRC                  := $(BEHAVE_SRCDIR)stringlist.cpp \
                                  $(BEHAVE_SRCDIR)action.cpp \
                                  $(BEHAVE_SRCDIR)being.cpp \
                                  $(BEHAVE_SRCDIR)gathering.cpp \
+                                 $(BEHAVE_SRCDIR)environment.cpp \
                                  $(BEHAVE_SRCDIR)behavefactory.cpp \
                                  $(BEHAVE_SRCDIR)objrefinstances.cpp \
                                  $(BEHAVE_SRCDIR)main.cpp

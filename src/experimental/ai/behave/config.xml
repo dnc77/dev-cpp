@@ -3,6 +3,7 @@
       <actionid>9</actionid>
       <beingid>4</beingid>
       <gatheringid>0</gatheringid>
+      <envid>0</envid>
    </lastids>
    <action>bob-laysbrick
       <id>1</id>
@@ -424,4 +425,72 @@
       <impactactions>
       </impactactions>
    </being>
+   <env>Portland Residential
+      <comment>
+         Environments provide a playground for all the actors
+         (beings and gatherings) to act (actions) together or within
+         the environment.
+         Portland Residential is where Bob works. He goes there to
+         build houses at this time!
+      </comment>
+      <id>1</id>
+      <possibleactions>
+         <actionid>1</actionid>
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>4</actionid>
+         <actionid>5</actionid>
+         <actionid>6 <comment>Jane can sell stuff here.</comment></actionid>
+      </possibleactions>
+   </env>
+   <env>Bob's house
+      <id>2</id>
+      <possibleactions>
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>4</actionid>
+         <actionid>5</actionid>
+         <actionid>6</actionid>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+      </possibleactions>
+   </env>
+   <env>Portland school
+      <id>3</id>
+      <possibleactions>
+         <actionid>1</actionid>
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>4</actionid>
+         <actionid>5</actionid>
+         <actionid>6</actionid>
+         <actionid>7</actionid>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+      </possibleactions>
+   </env>
+   <env>Portland church
+      <id>4</id>
+      <possibleactions>
+         <actionid>1</actionid>
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>4</actionid>
+         <actionid>5</actionid>
+         <actionid>7</actionid>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+      </possibleactions>
+   </env>
+   <env>Portland public park
+      <id>5</id>
+      <possibleactions>
+         <actionid>1</actionid>
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>4</actionid>
+         <actionid>5</actionid>
+         <actionid>6</actionid>
+      </possibleactions>
+   </env>
 </behavefactory>

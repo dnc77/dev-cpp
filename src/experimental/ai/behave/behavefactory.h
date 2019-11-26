@@ -29,6 +29,7 @@ Version control
 19 Oct 2019 Duncan Camilleri           Moved from bwfactory.h
 02 Nov 2019 Duncan Camilleri           Introduced node
 08 Nov 2019 Duncan Camilleri           Basic serialization complete
+26 Nov 2019 Duncan Camilleri           Added Environments!
 
 */
 
@@ -55,6 +56,8 @@ Version control
 #error "behavefactory.h: missing include - being.h"
 #elif not defined __GATHERING_H_7C194EDF338C8266B57A8FB4606C6495__
 #error "behavefactory.h: missing include - gathering.h"
+#elif not defined __ENVIRONMENT_H_98216C8B541FBFB5FD5CA3DC5B6355BF__
+#error "behavefactory.h: missing include - environment.h"
 #endif
 
 class BehaveFactory
@@ -70,17 +73,20 @@ public:
       const Mood& triggers, const Mood& reactions);
    Being* spawnBeing(const char* const name);
    Gathering* spawnGathering(const char* const name);
+   Environment* spawnEnvironment(const char* const name);
 
    // Search
    bool find(Action& a, const uint64_t id);
    bool find(Being& b, const uint64_t id);
    bool find(Gathering& g, const uint64_t id);
+   bool find(Environment& g, const uint64_t id);
 
    // Serialization
    bool load(const char* const filename);
    bool loadActionNode(Node& child);
    bool loadBeingNode(Node& child);
    bool loadGatheringNode(Node& child);
+   bool loadEnvironmentNode(Node& child);
    bool save(const char* const filename);
 
    // Info
@@ -94,6 +100,7 @@ private:
    uint64_t sidAction = 0;
    uint64_t sidBeing = 0;
    uint64_t sidGathering = 0;
+   uint64_t sidEnvironment = 0;
 
    // Node data
    StringList<slsiz::large> mNodeData;
@@ -102,6 +109,7 @@ private:
    std::list<Action> mActions;
    std::list<Being> mBeings;
    std::list<Gathering> mGatherings;
+   std::list<Environment> mEnvironments;
 };
 
 #endif   // __BEHAVEFACTORY_H_F15CB7E7A7397E6132CB1BCC3C95F0B9__

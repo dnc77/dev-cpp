@@ -21,7 +21,7 @@ RASPREL                    := rel
 # All projects
 #
 
-# Top level folders
+# Top level folders - type of files inside folder
 TOPLIB                     := lib
 TOPBIN                     := bin
 TOPOBJ                     := obj
@@ -29,10 +29,12 @@ TOPSRC                     := src
 TOPINC                     := inc
 
 # Top level categories
+# Top Level Folder followed by name of project category
 LIBCAT_DATASTRUCT          := datastruct
 LIBCAT_ENCODE              := encode
 LIBCAT_NET                 := net
 BINCAT_NET                 := net
+BINCAT_AI                  := ai
 
 # All projects (first six chars are top level folders/categories)
 LIBDAT_CYCBUF              := cycbuf
@@ -41,6 +43,7 @@ LIBENC_BECODE              := becode
 LIBENC_ELGAMAL             := elgamal
 LIBNET_TCPLIB              := tcplib
 BINNET_ETHFRAME            := ethframe
+BINAI_BEHAVE               := behave
 
 #
 # Additional paths
