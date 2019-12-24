@@ -26,6 +26,9 @@ Purpose:
 
 Version control
 21 Aug 2019 Duncan Camilleri           Initial development
+29 Nov 2019 Duncan Camilleri           Added accessor for ratio
+29 Nov 2019 Duncan Camilleri           Fixed interchanging float and double
+
 */
 
 #include <sys/time.h>
@@ -66,7 +69,12 @@ bool WeightedBinary::changeState()
    return mValue;
 }
 
-void WeightedBinary::setRatio(float r)
+double WeightedBinary::getRatio()
+{
+   return mRatio;
+}
+
+void WeightedBinary::setRatio(double r)
 {
    mRatio = r;
 

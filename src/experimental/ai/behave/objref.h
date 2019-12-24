@@ -34,6 +34,8 @@ Purpose: An object reference is just an id for an object which may or may not
 Version control
 05 Nov 2019 Duncan Camilleri           Initial development
 25 Nov 2019 Duncan Camilleri           Added default constructor
+11 Dec 2019 Duncan Camilleri           Alterations to load and added unload
+18 Dec 2019 Duncan Camilleri           Added set()
 
 */
 
@@ -44,12 +46,19 @@ Version control
 #error "objref.h: missing include - cstdint"
 #endif
 
-// Function pointer to allow ObjRef to load an object of a specific
+// Function pointers to allow ObjRef to load/unload an object of a specific
 // id using user related data as needed. This is to be provided by the
-// user if ObjRef is to load any objects in memory. User is responsible
-// for freeing any loaded objects.
+// user if ObjRef is to load any objects in memory or return any already loaded
+// objects. Any memory allocated with the load function should be freed with the
+// unload function. Typically, the objects may already be loaded by other
+// mechanisms, in which case, the unload function UnloadObjRef need not be set.
+// User is responsible for making the right calls to UnloadObjRef and ensuring
+// all ObjRef do not dereference any freed data.
+template <class T> class ObjRef;
 template <class T>
-using LoadObjRef = T*(*)(uint64_t id, void* userptr);
+using LoadObjRef = T*(*)(uint64_t id);
+template <class T>
+using UnloadObjRef = void(*)(ObjRef<T>& obj);
 
 template <class T>
 class ObjRef
@@ -64,18 +73,21 @@ public:
    ObjRef& operator=(const ObjRef& objref);
 
    // Accessors
-   void setLoadObjRef(LoadObjRef<T> load = nullptr, void* pUserdata = nullptr);
+   void set(T* pObj, uint64_t id);
    void setId(uint64_t id);
+   void dereference();
    uint64_t getId() const;
    T* getObj();
 
 protected:
    uint64_t mId;
    T* mpObj;
-   void* mpUserdata;
 
-   // Object load function.
-   LoadObjRef<T> mLoader = nullptr;
+public:
+   // Static object loading functions.
+   static LoadObjRef<T> mLoader;
+   static UnloadObjRef<T> mUnloader;
+   static void* mpUserdata;
 };
 
 #endif   // __OBJREF_H_508BC7820E23F9ECDC1F73EB27A6B36E__

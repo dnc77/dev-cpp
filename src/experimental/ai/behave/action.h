@@ -41,6 +41,11 @@ Version control
 04 Nov 2019 Duncan Camilleri           Introduced ActionNode and ActionQtyNode
 13 Nov 2019 Duncan Camilleri           Added name retrieval
 25 Nov 2019 Duncan Camilleri           ActionQty now uses ObjRef
+05 Dec 2019 Duncan Camilleri           Added relationship requirement for action
+06 Dec 2019 Duncan Camilleri           Differentiate actor/recipient reactions
+06 Dec 2019 Duncan Camilleri           Initiated chain reactions
+16 Dec 2019 Duncan Camilleri           Introduced 'formsRel'
+20 Dec 2019 Duncan Camilleri           Actor terminology changed to instigator
 
 */
 
@@ -74,8 +79,9 @@ class Action
 public:
    Action();
    Action(const Action& action);
-   Action(const Mood& triggers, const Mood& reactions);
-   virtual ~Action();
+   Action(const Mood& triggers,
+      const Mood& actorReactions, const Mood& recipientReactions);
+    virtual ~Action();
 
    // Assignment
    Action& operator=(const Action& action);
@@ -86,10 +92,14 @@ public:
    void name(const uint64_t id, const char* const name);
 
    // Accessors
-   const uint64_t& id() const       { return mId;        }
-   const char* const name() const   { return mName;      }
-   const Mood& getTriggers() const  { return mTriggers;  }
-   const Mood& getReactions() const { return mReactions; }
+   const uint64_t& id() const                   { return mId;                 }
+   const char* const name() const               { return mName;               }
+   const Mood& getTriggers() const              { return mTriggers;           }
+   const Mood& getInstigateReactions() const    { return mInstigateReactions; }
+   const Mood& getRecipientReactions() const    { return mRecipientReactions; }
+   bool forgesRelationship() const              { return mForgesRel;          }
+   bool requiresRelationship() const            { return mRequireRel;         }
+   const std::list<ObjRef<const Action>>& getChainResponses() const;
 
 protected:
    // Name of action.
@@ -98,9 +108,30 @@ protected:
    // Identify different intensities of emotions at which this action may get
    // triggered by default.
    Mood mTriggers;
-   // Identifies the intensity level change on emotions when a default entity is
-   // the target of this action.
-   Mood mReactions;
+   // Identifies an intensifier change on emotions when the action is taken
+   // by an actor.
+   Mood mInstigateReactions;
+   // Identifies an intensifier change on emotions of recipients when the action
+   // is taken by an actor.
+   Mood mRecipientReactions;
+   // Determines whether an action will form a relationship after completed.
+   bool mForgesRel;
+   // Determines whether an action requires at least two beings in a
+   // relationship for it to take effect.
+   bool mRequireRel;
+
+   // Chain responses
+   // Chain responses are potential actions that a recipient may trigger due to
+   // an action taken on him/her. For example, if someone starts a fight with
+   // someone, a potential chain response is to fight back. This will be
+   // processed like a normal action only this time, the receiver of the
+   // previous action will be the one initiating the following action.
+   // This will trigger a chain of responses as two actors keep acting on each
+   // other alternately. Once an actor has acted on a recipient, the recipient
+   // becomes the actor and performs one or more of the chain responses
+   // available. This keeps alternating between actor and recipient until
+   // one of the actors does not trigger any action.
+   std::list<ObjRef<const Action>> mChainResponses;
 };
 
 //
@@ -128,6 +159,9 @@ public:
 
 protected:
    Node* mpNode;
+
+   // From node privates
+   bool fromChainResponses(Node& node);
 };
 
 //
@@ -150,7 +184,7 @@ public:
    void reset();
 
    // Operators
-   ActionQty& operator=(const ActionQty& qty); 
+   ActionQty& operator=(const ActionQty& qty);
    ActionQty& operator=(const ActionQtyNode& node);
    const ActionQty& operator++();
    const ActionQty& operator++(int postfix);

@@ -30,6 +30,11 @@ Version control
 24 Nov 2019 Duncan Camilleri           Doable actions converted to ObjRef
 25 Nov 2019 Duncan Camilleri           Bias mood in operator= was missing
 26 Nov 2019 Duncan Camilleri           reset() on constructor to initialize
+28 Nov 2019 Duncan Camilleri           Doable actions become Actable actions
+28 Nov 2019 Duncan Camilleri           Accessor for actable actions
+09 Dec 2019 Duncan Camilleri           Reviewed mood impact calculations
+12 Dec 2019 Duncan Camilleri           Added name() accessor
+16 Dec 2019 Duncan Camilleri           Added environment where being resides
 
 */
 
@@ -43,6 +48,7 @@ Version control
 #include "serializer.h"
 #include "mood.h"
 #include "action.h"
+#include "environment.h"
 #include "being.h"
 
 using namespace std;
@@ -75,6 +81,48 @@ Being::~Being()
 }
 
 //
+// Accessors
+//
+
+const uint64_t& Being::id() const
+{
+   return mId;
+}
+
+const char* const Being::name() const
+{
+   return mName;
+}
+
+const uint64_t Being::getEnvironmentId() const
+{
+   return mEnvironmentRef.getId();
+}
+
+// Returns the environment the being is in. Should be kept
+// in mind that getObj() may actually change the pointer member
+// to the loaded object.
+Environment* Being::getEnvironment()
+{
+   return mEnvironmentRef.getObj();
+}
+
+const Mood& Being::getBiasMood() const
+{
+   return mBias;
+}
+
+const Mood& Being::getCurrentMood() const
+{
+   return mMood;
+}
+
+const std::list<ObjRef<const Action>>& Being::getActableActions() const
+{
+   return mActableActionRefs;
+}
+
+//
 // Assignment
 //
 
@@ -87,7 +135,8 @@ Being& Being::operator=(const Being& being)
    memcpy(mName, being.mName, 32);
    mBias = being.mBias;
    mMood = being.mMood;
-   mDoableActionRefs = being.mDoableActionRefs;
+   mEnvironmentRef = being.mEnvironmentRef;
+   mActableActionRefs = being.mActableActionRefs;
    mImpactActions = being.mImpactActions;
 
    return *this;
@@ -116,7 +165,8 @@ void Being::reset()
    memset(mName, 0, 32);
    mBias.neutralize();
    mMood.neutralize();
-   mDoableActionRefs.clear();
+   mEnvironmentRef.setId(0);
+   mActableActionRefs.clear();
    mImpactActions.clear();
 }
 
@@ -127,7 +177,11 @@ void Being::reset()
 void Being::name(const uint64_t id, const char* const name)
 {
    mId = id;
-   strncpy(mName, name, 31);
+   if (name == nullptr) {
+      memset(mName, 0, 32);
+   } else {
+      strncpy(mName, name, 31);
+   }
 }
 
 //
@@ -147,11 +201,16 @@ void Being::forceMood(const Mood& mood)
 // Impact the being's current mood based on the action a.
 // Action a has been acted upon the being so the being's emotions are affected.
 // This may also have an impact on the being's bias mood if the action is
-// significant enough  or has happened too frequently.
-void Being::impact(const Action& a)
+// significant enough or has happened too frequently.
+// When instigator is true, then it's assumed that the action's
+// instigateReactions are to be considered to have an impact on the being.
+// In that case, it means that the being being impacted is the same one that
+// has taken said action and therefore the InstigateReactions will be considered
+// impactful. If the being being impacted is being so by another being, then
+// instigator will need to be false and in that case, the being is a recipient.
+// The RecipientReactions will be used in that case.
+void Being::impact(const Action& a, bool instigator /*= false*/)
 {
-   mMood += a.getReactions();
-
    // Locate ActionQty with a.name and if found increment quantity, otherwise
    // add a new ActionQty item for this action.
    list<ActionQty>::iterator i = mImpactActions.begin();
@@ -163,19 +222,39 @@ void Being::impact(const Action& a)
       }
    }
 
-   // TODO: Logic to impact the bias node as well.
+   // Impact the current mood - intensify
+   const Mood& impactingMood =
+      (instigator ? a.getInstigateReactions() : a.getRecipientReactions());
+   unsigned short emotion = 0;
+   for (; emotion < Mood::plutchikCount; ++emotion) {
+      const intensity i = impactingMood.get((Mood::Plutchik)emotion);
+      mMood.intensify((Mood::Plutchik)emotion, i);
+   }
+
+   // Impact the bias mood.
+   Mood diminished = impactingMood;
+   impactingMood.diminish(diminished, 2);
+
+   // Apply diminished impacting mood to bias.
+   for (emotion = 0; emotion < Mood::plutchikCount; ++emotion) {
+      Mood::Plutchik e = (Mood::Plutchik)emotion;
+      mBias.intensify(e, diminished.get(e));
+   }
 
    // Action has not been added as a previous impact action yet.
    ActionQty qty(a);
    mImpactActions.push_back(qty);
 }
 
+//
 // Actions
+//
+
 bool Being::supportAction(const Action& a)
 {
    try {
       // Shouldn't allow duplicate actions.
-      for (ObjRef<const Action>& actionref : mDoableActionRefs) {
+      for (ObjRef<const Action>& actionref : mActableActionRefs) {
          if (actionref.getId() == a.id()) {
             // Treat action as already supported.
             return true;
@@ -184,7 +263,7 @@ bool Being::supportAction(const Action& a)
 
       // Action doesn't exist. Push it on to the list.
       ObjRef<const Action> actionref(&a, a.id());
-      mDoableActionRefs.push_back(actionref);
+      mActableActionRefs.push_back(actionref);
    } catch (exception& e) {
       // push_back failures can happen.
       return false;
@@ -235,9 +314,10 @@ BeingNode& BeingNode::operator=(const Being& being)
 //    <id>id</id>
 //    <mood>bias...</mood>
 //    <mood>currentmood moodcontent</mood>
-//    <doableactions>
+//    <environmentid>id</environmentid>
+//    <actableactions>
 //       <actionid>id</actionid>...<actionid>id</actionid>
-//    </doableactions>
+//    </actableactions>
 //    <impactactions>
 //       <actionqty>
 //          <actionid>id</actionid>
@@ -297,8 +377,10 @@ bool BeingNode::fromNode()
 
          // Demote.
          mBias = n;
-      } else if (strncmp(pName, "doableactions", 13) == 0) {
-         if (!fromDoableActionsNode(child)) {
+      } else if (strncmp(pName, "environmentid", 13) == 0) {
+         mEnvironmentRef.setId(child.getUint64(pValue));
+      } else if (strncmp(pName, "actableactions", 14) == 0) {
+         if (!fromActableActionsNode(child)) {
             return fail();
          }
       } else if (strncmp(pName, "impactactions", 13) == 0) {
@@ -333,10 +415,12 @@ bool BeingNode::toNode()
    Node* pId = mpNode->spawnChild();
    Node* pBias = mpNode->spawnChild();
    Node* pMood = mpNode->spawnChild();
-   Node* pDoableActions = mpNode->spawnChild();
+   Node* pEnvironment = mpNode->spawnChild();
+   Node* pActableActions = mpNode->spawnChild();
    Node* pImpactActions = mpNode->spawnChild();
    if (nullptr == pId || nullptr == pBias || nullptr == pMood) return fail();
-   if (nullptr == pDoableActions || nullptr == pImpactActions) return fail();
+   if (nullptr == pEnvironment) return fail();
+   if (nullptr == pActableActions || nullptr == pImpactActions) return fail();
 
    // Set Id.
    if (!pId->setValue("id", mId)) {
@@ -354,14 +438,19 @@ bool BeingNode::toNode()
       return fail();
    }
 
-   // Doable actions.
-   if (!pDoableActions->setValue("doableactions", "")) {
+   // Environment
+   if (!pEnvironment->setValue("environmentid", mEnvironmentRef.getId())) {
       return fail();
    }
 
-   for (ObjRef<const Action>& actionref : mDoableActionRefs) {
+   // Actable actions.
+   if (!pActableActions->setValue("actableactions", "")) {
+      return fail();
+   }
+
+   for (ObjRef<const Action>& actionref : mActableActionRefs) {
       // Create a node for an object reference.
-      Node* pChild = pDoableActions->spawnChild();
+      Node* pChild = pActableActions->spawnChild();
       if (!pChild) return fail();
 
       // Store action object reference only.
@@ -393,10 +482,10 @@ bool BeingNode::toNode()
 // From node privates
 //
 
-// <doableactions>
+// <actableactions>
 //    <actionid>id</actionid>...<actionid>id</actionid>
-// </doableactions>
-bool BeingNode::fromDoableActionsNode(Node& node)
+// </actableactions>
+bool BeingNode::fromActableActionsNode(Node& node)
 {
    try {
       std::list<Node>& children = node.getChildren();
@@ -407,7 +496,7 @@ bool BeingNode::fromDoableActionsNode(Node& node)
 
          if (strncmp(pName, "actionid", 8) == 0) {
             ObjRef<const Action> actionref(child.getUint64(pValue));
-            mDoableActionRefs.push_back(actionref);
+            mActableActionRefs.push_back(actionref);
          }
       }
    } catch (std::exception& e) {

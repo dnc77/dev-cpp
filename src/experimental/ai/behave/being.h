@@ -37,6 +37,9 @@ Version control
 11 Nov 2019 Duncan Camilleri           Added bias mood
 24 Nov 2019 Duncan Camilleri           Doable actions converted to ObjRef
 25 Nov 2019 Duncan Camilleri           Bias mood in operator= was missing
+28 Nov 2019 Duncan Camilleri           Doable actions become Actable actions
+28 Nov 2019 Duncan Camilleri           Accessor for actable actions
+16 Dec 2019 Duncan Camilleri           Added environment where being resides
 
 */
 
@@ -46,14 +49,18 @@ Version control
 // Check for missing includes.
 #if not defined _GLIBCXX_CSTDINT
 #error "being.h: missing include - cstdint"
+#elif not defined __OBJREF_H_508BC7820E23F9ECDC1F73EB27A6B36E__
+#error "being.h: missing include - objref.h"
 #elif not defined __STRINGLIST_H_3F91B722978DC8F00D1E31EF68DC35C8__
-#error "mood.h: missing include - stringlist.h"
+#error "being.h: missing include - stringlist.h"
 #elif not defined __SERIALIZER_H_B51368F9355D0A6C0E780E1F8D197E39__
-#error "mood.h: missing include - serializer.h"
+#error "being.h: missing include - serializer.h"
 #elif not defined __MOOD_H_AAB57A66720F9EDAC5D0668C603393AB__
 #error "being.h: missing include - mood.h"
 #elif not defined __ACTION_H_BA0DD2641DF3D0A449B1FA2732A6432E__
 #error "being.h: missing include - action.h"
+#elif not defined __ENVIRONMENT_H_98216C8B541FBFB5FD5CA3DC5B6355BF__
+#error "being.h: missing include - environment.h"
 #elif not defined _GLIBCXX_LIST
 #error "being.h: missing include - list"
 #endif
@@ -72,7 +79,13 @@ public:
    virtual ~Being();
 
    // Accessors
-   const uint64_t& id() const       { return mId;        }
+   const uint64_t& id() const;
+   const char* const name() const;
+   const uint64_t getEnvironmentId() const;
+   Environment* getEnvironment();
+   const Mood& getBiasMood() const;
+   const Mood& getCurrentMood() const;
+   const std::list<ObjRef<const Action>>& getActableActions() const;
 
    // Assignments
    Being& operator=(const Being& being);
@@ -87,23 +100,23 @@ public:
    // Mood shifting
    void forceBias(const Mood& bias);
    void forceMood(const Mood& mood);
-   void impact(const Action& a);
+   void impact(const Action& a, bool instigator = false);
 
    // Actions
    bool supportAction(const Action& a);
-   
 
 protected:
    // Name of being.
    uint64_t mId;
    char mName[32];
-
    // Biased, long term mood.
    Mood mBias;
    // Current mood.
    Mood mMood;
+   // Environment where being is currently situated.
+   ObjRef<Environment> mEnvironmentRef;
    // List of possible actions this being can perform.
-   std::list<ObjRef<const Action>> mDoableActionRefs;
+   std::list<ObjRef<const Action>> mActableActionRefs;
    // List of actions having an impact on this being.
    std::list<ActionQty> mImpactActions;
 };
@@ -137,7 +150,7 @@ protected:
    Node* mpNode;
 
    // From node privates
-   bool fromDoableActionsNode(Node& node);
+   bool fromActableActionsNode(Node& node);
    bool fromImpactActionsNode(Node& node);
 };
 

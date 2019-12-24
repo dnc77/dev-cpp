@@ -32,6 +32,7 @@ Version control
 31 Oct 2019 Duncan Camilleri           Initial development
 03 Nov 2019 Duncan Camilleri           spawnChild()
 07 Nov 2019 Duncan Camilleri           setValue() for uint32_t
+05 Dec 2019 Duncan Camilleri           bool value support
 
 */
 
@@ -61,6 +62,7 @@ public:
    // Access
    const char* const getName() const;
    const char* const getValue() const;
+   bool getBoolValue() const;
    uint32_t getUint32(const char* const value) const;
    uint64_t getUint64(const char* const value) const;
    double getDouble(const char* const value) const;
@@ -71,9 +73,11 @@ public:
    void empty();
    Node* spawnChild();
    bool setValue(const char* const name, const char* const value);
+   bool setValue(const char* const name, const bool value);
    bool setValue(const char* const name, const uint32_t value);
    bool setValue(const char* const name, const uint64_t value);
    bool setValue(const char* const name, const double value);
+   
 
    // Conversion
    sloffset toString(StringList<slsiz::large>& target);

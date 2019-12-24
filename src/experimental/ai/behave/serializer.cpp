@@ -37,6 +37,8 @@ Version control
 21 Nov 2019 Duncan Camilleri           toString checks length as adding to list
 22 Nov 2019 Duncan Camilleri           removed value ''
 23 Nov 2019 Duncan Camilleri           setValue bugfix with conflicting key vars
+05 Dec 2019 Duncan Camilleri           bool value support
+
 */
 
 #include <stdio.h>
@@ -122,6 +124,16 @@ const char* const Node::getValue() const
 {
    if (sloffsetbad == mValue) return nullptr;
    return mData[mValue];
+}
+
+bool Node::getBoolValue() const
+{
+   const char* const value = getValue();
+   if (value[0] == '1') return true;
+   if (strncasecmp(value, "true", 4) == 0) return true;
+   if (strncasecmp(value, "yes", 3) == 0) return true;
+
+   return false;
 }
 
 // Get the uint32_t equivalent of value. If value is nullptr,
@@ -213,6 +225,11 @@ bool Node::setValue(const char* const name, const char* const value)
    mName = slkey;
    mValue = slvalue;
    return true;
+}
+
+bool Node::setValue(const char* const name, const bool value)
+{
+   return setValue(name, value ? "true" : "false");
 }
 
 bool Node::setValue(const char* const name, const uint32_t value)

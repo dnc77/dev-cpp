@@ -28,6 +28,9 @@ Purpose: Implements a true/false value which is determined by a randomly
 Version control
 21 Aug 2019 Duncan Camilleri           Initial development
 30 Sep 2019 Duncan Camilleri           Introduced discrete_distribution
+29 Nov 2019 Duncan Camilleri           Added accessor for ratio
+29 Nov 2019 Duncan Camilleri           Fixed interchanging float and double
+
 */
 
 #ifndef __WEIGHTEDBINARY_H_B80BAFE8712B57100CB74EB5451E5437__
@@ -51,7 +54,8 @@ public:
    // Access
    bool getState();
    bool changeState();
-   void setRatio(float r);
+   double getRatio();
+   void setRatio(double r);
 
 protected:
    std::discrete_distribution<int> mDistribution;

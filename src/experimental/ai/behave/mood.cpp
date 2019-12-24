@@ -40,6 +40,17 @@ Purpose: Defines a mood based on Plutchik’s Wheel of Emotions.
          annoyance               anger          rage              fear
          interest                anticipation   vigilance         surprise
 
+         Further to this, 8 additional emotions (composites) exist that are a
+         combination of two emotions from the list above. These are as follows:
+         joy + trust = love
+         trust + fear = submission
+         fear + surprise = awe
+         surprise + sadness = disapproval
+         sadness + disgust = remorse
+         disgust + anger = contempt
+         anger + anticipation = aggression
+         anticipation + joy = optimism
+
 Version control
 30 Sep 2019 Duncan Camilleri           Initial development
 03 Oct 2019 Duncan camilleri           Introduced composite calculations
@@ -47,6 +58,11 @@ Version control
 07 Oct 2019 Duncan Camilleri           Added support for string conversion
 02 Nov 2019 Duncan Camilleri           Added neutralize()
 04 Nov 2019 Duncan Camilleri           Added MoodNode
+27 Nov 2019 Duncan Camilleri           Added +operators for mood and intensity
+27 Nov 2019 Duncan Camilleri           Added average()
+03 Dec 2019 Duncan Camilleri           Changed intensify() to be a multiplier
+03 Dec 2019 Duncan Camilleri           Added global intensify() function
+24 Dec 2019 Duncan Camilleri           Major alterations to intensify & diminish
 
 */
 
@@ -56,6 +72,7 @@ Version control
 #include <assert.h>
 #include <sys/time.h>
 #include <memory.h>
+#include <math.h>
 #include <cstdint>
 #include <string>
 #include <sstream>
@@ -79,6 +96,40 @@ void embraceIntensity(intensity& i)
 {
    if (i < MinIntensity) i = MinIntensity;
    if (i > MaxIntensity) i = MaxIntensity;
+}
+
+// To diminish an intensity 'i' by an index 'by', the following is done:
+// a) absolute of intensity 'i' is 'absf'
+// b) absf - (absf * (by / 10))
+// c) if i was negative, set results as negative
+void diminishIntensity(intensity& i, const intensity by)
+{
+   float fBy = (float)by / 10;
+   intensity orig = i;
+   intensity absf = fabsf(i);
+
+   i = absf - (absf * fBy);
+   if (orig < 0)
+      i = -i;
+
+   embraceIntensity(i);
+}
+
+// To diminish an intensity 'i' by an index 'by', the following is done:
+// a) absolute of intensity 'i' is 'absf'
+// b) absf + (absf * (by / 10))
+// c) if i was negative, set results as negative
+void intensifyIntensity(intensity& i, const intensity by)
+{
+   float fBy = (float)by / 10;
+   intensity orig = i;
+   intensity absf = fabsf(i);
+
+   i = absf + (absf * fBy);
+   if (orig < 0)
+      i = -i;
+
+   embraceIntensity(i);
 }
 
 // 
@@ -122,6 +173,21 @@ Mood::~Mood()
 // Operators
 //
 
+// Creates a new mood with this intensified by b.
+Mood Mood::operator+(const Mood& b) const
+{
+   Mood m;
+   unsigned short n = 0;
+   for (; n < plutchikCount; ++n) {
+      m.mEmotions[n] = mEmotions[n] + b.mEmotions[n];
+      embraceIntensity(m.mEmotions[n]);
+   }
+
+   // Update composites.
+   m.updateComposites();
+   return m;
+}
+
 // Intensifies each emotion by mood m's emotion value.
 Mood Mood::operator+=(const Mood& m)
 {
@@ -146,6 +212,25 @@ Mood Mood::operator-=(const Mood& m)
 
    // Update composites.
    updateComposites();
+}
+
+// Sets all emotions to intensity i.
+Mood& Mood::operator=(intensity i)
+{
+   // First ensure that the intensity provided is within bounds.
+   embraceIntensity(i);
+
+   mEmotions[joy] = i;
+   mEmotions[trust] = i;
+   mEmotions[fear] = i;
+   mEmotions[surprise] = i;
+   mEmotions[sadness] = i;
+   mEmotions[disgust] = i;
+   mEmotions[anger] = i;
+   mEmotions[anticipation] = i;
+   updateComposites();
+
+   return *this;
 }
 
 Mood& Mood::operator=(const Mood& mood)
@@ -188,19 +273,58 @@ const intensity& Mood::get(Plutchik emotion) const
 // Intensity computations
 //
 
-const intensity& Mood::intensify(Plutchik emotion, intensity by /*= 0.01*/)
+// Will call on the diminishIntensity function on each emotion of the mood.
+void Mood::diminish(Mood& target, const intensity by) const
+{
+   target = *this;
+   unsigned short n = 0;
+   for (; n < plutchikCount; ++n) {
+      diminishIntensity(target.mEmotions[n], by);
+   }
+
+   // Composites.
+   target.updateComposites();
+}
+
+// Will call on the intensifyIntensity function on each emotion of the mood.
+void Mood::intensify(const intensity by)
+{
+   unsigned short n = 0;
+   for (; n < plutchikCount; ++n) {
+      intensifyIntensity(mEmotions[n], by);
+   }
+
+   // Update composites.
+   updateComposites();
+}
+
+// This does not intensify 'this'. Instead, target is the intensified result of
+// this.
+void Mood::intensify(Mood& target, const intensity by) const
+{
+   target = *this;
+
+   unsigned short n = 0;
+   for (; n < plutchikCount; ++n) {
+      intensifyIntensity(target.mEmotions[n], by);
+   }
+
+   // Update composites.
+   target.updateComposites();
+}
+
+// Intensifies a single emotion.
+const intensity& Mood::intensify(Plutchik emotion, const intensity by)
 {
    assert(emotion < plutchikCount);
    if (emotion >= plutchikCount)
       return InvalidIntensity;
 
-   // Increment intensity.
-   mEmotions[emotion] += by;
-   embraceIntensity(mEmotions[emotion]);
+   // Intensify.
+   intensifyIntensity(mEmotions[emotion], by);
 
-   // Update any composites.
+   // Update any composites and return.
    updateComposites(emotion);
-
    return mEmotions[emotion];
 }
 
@@ -276,6 +400,28 @@ intensity Mood::compositeCalc(Plutchik ea, Plutchik eb)
    // Shouldn't need to embrace intensity here.
    return (mEmotions[ea] + mEmotions[eb]) / 2;
 }
+
+// Determines the average mood of all moods.
+Mood Mood::average(const Mood* const pMoods, int count)
+{
+   Mood result;
+
+   unsigned short p = 0;
+   for (; p < plutchikCount; ++p) {
+      result.mEmotions[p] = NeutralIntensity;
+      for (int n = 0; n < count; ++n) {
+         result.mEmotions[p] += pMoods[n].mEmotions[p];
+      }
+
+      // Average and embrace.
+      result.mEmotions[p] = result.mEmotions[p] / count;
+      embraceIntensity(result.mEmotions[p]);
+   }
+
+   // Done!
+   return result;
+}
+
 
 // 
 // ,-.-.              |,   .         |

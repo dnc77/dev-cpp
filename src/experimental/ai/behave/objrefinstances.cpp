@@ -36,6 +36,8 @@ Purpose: This is a temporary file which gathers all ObjRef instances
 
 Version control
 07 Nov 2019 Duncan Camilleri           Initial development
+16 Dec 2019 Duncan Camilleri           Environments added
+
 */
 
 #include <assert.h>
@@ -48,6 +50,7 @@ Version control
 #include "serializer.h"
 #include "mood.h"
 #include "action.h"
+#include "environment.h"
 #include "being.h"
 #include "gathering.h"
 
@@ -59,3 +62,5 @@ template class ObjRef<Being>;
 template class ObjRef<const Being>;
 template class ObjRef<Gathering>;
 template class ObjRef<const Gathering>;
+template class ObjRef<Environment>;
+template class ObjRef<const Environment>;

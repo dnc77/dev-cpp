@@ -26,6 +26,9 @@ Purpose:
 
 Version control
 26 Nov 2019 Duncan Camilleri           Initial development
+03 Dec 2019 Duncan Camilleri           Added ambience mood
+16 Dec 2019 Duncan Camilleri           Remove residing beings
+
 */
 
 #include <memory.h>
@@ -37,8 +40,6 @@ Version control
 #include "serializer.h"
 #include "mood.h"
 #include "action.h"
-#include "being.h"
-#include "gathering.h"
 #include "environment.h"
 
 using namespace std;
@@ -82,6 +83,25 @@ Environment::~Environment()
 }
 
 //
+// Accessors
+//
+
+const uint64_t& Environment::id() const
+{
+   return mId;
+}
+
+const char* const Environment::name() const
+{
+   return mName;
+}
+
+const Mood& Environment::getAmbienceMood() const
+{
+   return mAmbience;
+}
+
+//
 // Assignments
 //
 
@@ -92,9 +112,8 @@ Environment& Environment::operator=(const Environment& env)
 
    mId = env.mId;
    memcpy(mName, env.mName, 32);
+   mAmbience = env.mAmbience;
    mActionRefs = env.mActionRefs;
-   mBeingRefs = env.mBeingRefs;
-   mGatheringRefs = env.mGatheringRefs;
 
    // Done.
    return *this;
@@ -133,9 +152,8 @@ void Environment::reset()
 {
    mId = 0;
    memset(mName, 0, 32);
+   mAmbience.neutralize();
    mActionRefs.clear();
-   mBeingRefs.clear();
-   mGatheringRefs.clear();
 }
 
 //
@@ -145,7 +163,31 @@ void Environment::reset()
 void Environment::name(const uint64_t id, const char* const name)
 {
    mId = id;
-   strncpy(mName, name, 31);
+   if (name == nullptr) {
+      memset(mName, 0, 32);
+   } else {
+      strncpy(mName, name, 31);
+   }
+}
+
+//
+// Alterations
+//
+
+// An environment's ambience is impacted by actions of other beings.
+// Whenever an action happens in an environment, it's ambience also
+// changes at a more subtle note.
+void Environment::impact(const Action& a)
+{
+   // Diminish the recipient reactions and apply to ambience.
+   Mood diminished;
+   a.getRecipientReactions().diminish(diminished, 3);
+
+   // Apply diminished impacting mood to bias.
+   for (unsigned short emotion = 0; emotion < Mood::plutchikCount; ++emotion) {
+      Mood::Plutchik e = (Mood::Plutchik)emotion;
+      mAmbience.intensify(e, 1 + diminished.get(e));
+   }
 }
 
 // 
@@ -190,15 +232,10 @@ EnvironmentNode& EnvironmentNode::operator=(const Environment& env)
 // Format of node is as follows:
 // <env>name
 //    <id>id</id>
+//    <mood>ambience moodcontent</mood>
 //    <possibleactions>
 //       <actionid>id</actionid>...<actionid>id</actionid>
 //    </possibleactions>
-//    <beings>
-//       <beingid>id</beingid>...<beingid>id</beingid>
-//    </beings>
-//    <gatherings>
-//       <gatheringid>id</gatheringid>...<gatheringid>id</gatheringid>
-//    </gatherings>
 // </env>
 
 bool EnvironmentNode::fromNode()
@@ -234,16 +271,16 @@ bool EnvironmentNode::fromNode()
          // id.
          if (!pValue) return fail();
          mId = child.getUint64(pValue);
+      } else if (strncmp(pName, "mood", 15) == 0) {
+         // Ambience.
+         MoodNode n(child);
+         if (!n.fromNode())
+            return fail();
+
+         // Demote.
+         mAmbience = n;
       } else if (strncmp(pName, "possibleactions", 15) == 0) {
          if (!fromPossibleActionsNode(child)) {
-            return fail();
-         }
-      } else if (strncmp(pName, "beings", 6) == 0) {
-         if (!fromBeingsNode(child)) {
-            return fail();
-         }
-      } else if (strncmp(pName, "gatherings", 10) == 0) {
-         if (!fromGatheringsNode(child)) {
             return fail();
          }
       }
@@ -272,14 +309,19 @@ bool EnvironmentNode::toNode()
 
    // Spawn children and set their value.
    Node* pId = mpNode->spawnChild();
+   Node* pAmbience = mpNode->spawnChild();
    Node* pPossibleActions = mpNode->spawnChild();
-   Node* pBeings = mpNode->spawnChild();
-   Node* pGatherings = mpNode->spawnChild();
-   if (nullptr == pId || nullptr == pPossibleActions) return fail();
-   if (nullptr == pBeings || nullptr == pGatherings) return fail();
+   if (nullptr == pId || nullptr == pAmbience) return fail();
+   if (nullptr == pPossibleActions) return fail();
 
    // Set Id.
    if (!pId->setValue("id", mId)) {
+      return fail();
+   }
+
+   // Set ambience.
+   MoodNode mnAmbience(mAmbience, *pAmbience);
+   if (!mnAmbience.toNode("ambience")) {
       return fail();
    }
 
@@ -295,38 +337,6 @@ bool EnvironmentNode::toNode()
 
       // Store action object reference only.
       if (!pChild->setValue("actionid", actionref.getId())) {
-         return fail();
-      }
-   }
-
-   // Beings.
-   if (!pBeings->setValue("beings", "")) {
-      return fail();
-   }
-
-   for (ObjRef<const Being>& beingref : mBeingRefs) {
-      // Create a node for an object reference.
-      Node* pChild = pBeings->spawnChild();
-      if (!pChild) return fail();
-
-      // Store being object reference only.
-      if (!pChild->setValue("beingid", beingref.getId())) {
-         return fail();
-      }
-   }
-
-   // Gatherings.
-   if (!pGatherings->setValue("gatherings", "")) {
-      return fail();
-   }
-
-   for (ObjRef<const Gathering>& gatheringref : mGatheringRefs) {
-      // Create a node for an object reference.
-      Node* pChild = pGatherings->spawnChild();
-      if (!pChild) return fail();
-
-      // Store gathering object reference only.
-      if (!pChild->setValue("gatheringid", gatheringref.getId())) {
          return fail();
       }
    }
@@ -354,56 +364,6 @@ bool EnvironmentNode::fromPossibleActionsNode(Node& child)
          if (strncmp(pName, "actionid", 8) == 0) {
             ObjRef<const Action> actionref(child.getUint64(pValue));
             mActionRefs.push_back(actionref);
-         }
-      }
-   } catch (std::exception& e) {
-      return false;
-   }
-
-   // Done.
-   return true;
-}
-
-// <beings>
-//    <beingid>id</beingid>...<beingid>id</beingid>
-// </beings>
-bool EnvironmentNode::fromBeingsNode(Node& child)
-{
-   try {
-      std::list<Node>& children = child.getChildren();
-      for (Node& child : children) {
-         const char* const pName = child.getName();
-         const char* const pValue = child.getValue();
-         if (!pName) continue;
-
-         if (strncmp(pName, "beingid", 7) == 0) {
-            ObjRef<const Being> beingref(child.getUint64(pValue));
-            mBeingRefs.push_back(beingref);
-         }
-      }
-   } catch (std::exception& e) {
-      return false;
-   }
-
-   // Done.
-   return true;
-}
-
-// <gatherings>
-//    <gatheringid>id</gatheringid>...<gatheringid>id</gatheringid>
-// </gatherings>
-bool EnvironmentNode::fromGatheringsNode(Node& child)
-{
-   try {
-      std::list<Node>& children = child.getChildren();
-      for (Node& child : children) {
-         const char* const pName = child.getName();
-         const char* const pValue = child.getValue();
-         if (!pName) continue;
-
-         if (strncmp(pName, "gatheringid", 7) == 0) {
-            ObjRef<const Gathering> gatheringref(child.getUint64(pValue));
-            mGatheringRefs.push_back(gatheringref);
          }
       }
    } catch (std::exception& e) {

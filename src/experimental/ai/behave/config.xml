@@ -5,8 +5,713 @@
       <gatheringid>0</gatheringid>
       <envid>0</envid>
    </lastids>
+
+   <comment>
+   +--------------------+
+   |  BEHAVIOUR CORE    |
+   +--------------------+
+   </comment>
+
+   <action>talk
+      <id>2</id>
+      <mood>triggers
+         <joy>-0.73</joy>
+         <trust>-0.71</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.00</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.20</joy>
+         <trust>0.006</trust>
+         <fear>-0.01</fear>
+         <surprise>0.026</surprise>
+         <sadness>-0.008</sadness>
+         <disgust>-0.01</disgust>
+         <anger>-0.01</anger>
+         <anticipation>-0.002</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>0.20</joy>
+         <trust>0.006</trust>
+         <fear>-0.01</fear>
+         <surprise>0.026</surprise>
+         <sadness>-0.008</sadness>
+         <disgust>-0.01</disgust>
+         <anger>-0.01</anger>
+         <anticipation>-0.002</anticipation>
+      </mood>
+      <forgesrelationship>1</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>talk,cheer,support,disrespect,argue,raisevoice
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>4</actionid>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+         <actionid>10</actionid>
+      </chainresponses>
+   </action>
+
+   <action>cheer
+      <id>3</id>
+      <mood>triggers
+         <joy>0.280</joy>
+         <trust>0.32</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.00</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.206</joy>
+         <trust>0.000</trust>
+         <fear>-0.120</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.476</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>0.260</joy>
+         <trust>0.020</trust>
+         <fear>0.003</fear>
+         <surprise>0.380</surprise>
+         <sadness>-0.043</sadness>
+         <disgust>-0.023</disgust>
+         <anger>-0.008</anger>
+         <anticipation>0.000</anticipation>
+      </mood>
+      <forgesrelationship>1</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>cheer,hug,laughwith,dance
+         <actionid>3</actionid>
+         <actionid>5</actionid>
+         <actionid>6</actionid>
+         <actionid>14</actionid>
+      </chainresponses>
+   </action>
+
+   <action>support
+      <id>4</id>
+      <mood>triggers
+         <joy>0.000</joy>
+         <trust>0.413</trust>
+         <fear>0.00</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.00</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.021</joy>
+         <trust>0.021</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.103</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>0.002</joy>
+         <trust>0.360</trust>
+         <fear>-0.120</fear>
+         <surprise>0.008</surprise>
+         <sadness>-0.002</sadness>
+         <disgust>-0.010</disgust>
+         <anger>-0.004</anger>
+         <anticipation>0.310</anticipation>
+      </mood>
+      <forgesrelationship>1</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>cheer,hug,argue
+         <actionid>3</actionid>
+         <actionid>5</actionid>
+         <actionid>9</actionid>
+      </chainresponses>
+   </action>
+
+   <action>hug
+      <id>5</id>
+      <mood>triggers
+         <joy>0.100</joy>
+         <trust>0.100</trust>
+         <fear>0.000</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.00</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.008</joy>
+         <trust>0.036</trust>
+         <fear>-0.003</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.002</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.002</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>0.018</joy>
+         <trust>0.285</trust>
+         <fear>-0.120</fear>
+         <surprise>0.263</surprise>
+         <sadness>-0.010</sadness>
+         <disgust>-0.010</disgust>
+         <anger>-0.023</anger>
+         <anticipation>0.227</anticipation>
+      </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>cheer,hug,kiss,dance,dancedirty
+         <actionid>3</actionid>
+         <actionid>5</actionid>
+         <actionid>13</actionid>
+         <actionid>14</actionid>
+         <actionid>15</actionid>
+      </chainresponses>
+   </action>
+
+   <action>laughwith
+      <id>6</id>
+      <mood>triggers
+         <joy>0.120</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.00</sadness>
+         <disgust>0.00</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.306</joy>
+         <trust>0.020</trust>
+         <fear>-0.032</fear>
+         <surprise>0.013</surprise>
+         <sadness>-0.190</sadness>
+         <disgust>0.000</disgust>
+         <anger>-0.067</anger>
+         <anticipation>0.103</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>0.306</joy>
+         <trust>0.026</trust>
+         <fear>-0.038</fear>
+         <surprise>0.105</surprise>
+         <sadness>-0.160</sadness>
+         <disgust>-0.039</disgust>
+         <anger>-0.046</anger>
+         <anticipation>0.148</anticipation>
+      </mood>
+      <forgesrelationship>1</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>hug,laughwith,dance
+         <actionid>5</actionid>
+         <actionid>6</actionid>
+         <actionid>14</actionid>
+      </chainresponses>
+   </action>
+
+   <action>laughat
+      <id>7</id>
+      <mood>triggers
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.00</sadness>
+         <disgust>-0.326</disgust>
+         <anger>0.00</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>-0.180</joy>
+         <trust>0.020</trust>
+         <fear>0.000</fear>
+         <surprise>0.012</surprise>
+         <sadness>-0.200</sadness>
+         <disgust>-0.020</disgust>
+         <anger>-0.080</anger>
+         <anticipation>0.038</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>-0.060</joy>
+         <trust>-0.080</trust>
+         <fear>-0.020</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.160</sadness>
+         <disgust>0.382</disgust>
+         <anger>0.360</anger>
+         <anticipation>-0.230</anticipation>
+      </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>disrespect,argue,raisevoice,punch
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+      </chainresponses>
+   </action>
+
+   <action>disrespect
+      <id>8</id>
+      <mood>triggers
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.232</sadness>
+         <disgust>0.344</disgust>
+         <anger>0.143</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.026</joy>
+         <trust>-0.400</trust>
+         <fear>0.023</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.000</disgust>
+         <anger>-0.023</anger>
+         <anticipation>0.075</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>-0.089</joy>
+         <trust>0.000</trust>
+         <fear>0.023</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.036</sadness>
+         <disgust>0.382</disgust>
+         <anger>0.086</anger>
+         <anticipation>0.075</anticipation>
+      </mood>
+      <forgesrelationship>1</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>talk,laughat,disrespect,argue,raisevoice,punch
+         <actionid>2</actionid>
+         <actionid>7</actionid>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+      </chainresponses>
+   </action>
+
+   <action>argue
+      <id>9</id>
+      <mood>triggers
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.216</disgust>
+         <anger>0.015</anger>
+         <anticipation>0.00</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>0.068</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.030</sadness>
+         <disgust>0.010</disgust>
+         <anger>-0.016</anger>
+         <anticipation>0.217</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>0.074</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.021</sadness>
+         <disgust>0.006</disgust>
+         <anger>0.008</anger>
+         <anticipation>0.116</anticipation>
+      </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>talk,support,disrespect,argue,raisevoice
+         <actionid>2</actionid>
+         <actionid>4</actionid>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+         <actionid>10</actionid>
+      </chainresponses>
+   </action>
+
+   <action>raisevoice
+      <id>10</id>
+      <mood>triggers
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.348</disgust>
+         <anger>0.286</anger>
+         <anticipation>0.146</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>-0.087</surprise>
+         <sadness>0.000</sadness>
+         <disgust>-0.032</disgust>
+         <anger>-0.103</anger>
+         <anticipation>0.362</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>-0.362</joy>
+         <trust>0.000</trust>
+         <fear>0.216</fear>
+         <surprise>0.360</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.018</disgust>
+         <anger>0.196</anger>
+         <anticipation>0.000</anticipation>
+      </mood>
+      <forgesrelationship>1</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>talk,support,laughat,disrespect,argue,
+         raisevoice,punch,deescalate
+         <actionid>2</actionid>
+         <actionid>4</actionid>
+         <actionid>7</actionid>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+         <actionid>18</actionid>
+      </chainresponses>
+   </action>
+
+   <action>punch
+      <id>11</id>
+      <mood>triggers
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.416</disgust>
+         <anger>0.463</anger>
+         <anticipation>0.000</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.020</joy>
+         <trust>0.000</trust>
+         <fear>0.041</fear>
+         <surprise>-0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.165</disgust>
+         <anger>-0.087</anger>
+         <anticipation>0.416</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>-0.279</joy>
+         <trust>0.000</trust>
+         <fear>0.107</fear>
+         <surprise>0.00</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.418</disgust>
+         <anger>0.389</anger>
+         <anticipation>0.000</anticipation>
+      </mood>
+      <forgesrelationship>1</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>argue,punch,fight,deescalate
+         <actionid>9</actionid>
+         <actionid>11</actionid>
+         <actionid>12</actionid>
+         <actionid>18</actionid>
+      </chainresponses>
+   </action>
+
+   <action>fight
+      <id>12</id>
+      <mood>triggers
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.527</disgust>
+         <anger>0.472</anger>
+         <anticipation>0.000</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.000</joy>
+         <trust>-0.206</trust>
+         <fear>0.217</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.087</sadness>
+         <disgust>0.307</disgust>
+         <anger>-0.104</anger>
+         <anticipation>0.403</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>0.000</joy>
+         <trust>-0.206</trust>
+         <fear>0.217</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.087</sadness>
+         <disgust>0.307</disgust>
+         <anger>-0.104</anger>
+         <anticipation>0.403</anticipation>
+      </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>punch,fight,deescalate
+         <actionid>11</actionid>
+         <actionid>12</actionid>
+         <actionid>18</actionid>
+      </chainresponses>
+   </action>
+
+   <action>kiss
+      <id>13</id>
+      <mood>triggers
+         <joy>0.000</joy>
+         <trust>0.362</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.187</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.415</joy>
+         <trust>0.108</trust>
+         <fear>-0.205</fear>
+         <surprise>0.000</surprise>
+         <sadness>-0.114</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.512</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>0.103</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.136</surprise>
+         <sadness>-0.037</sadness>
+         <disgust>0.000</disgust>
+         <anger>-0.116</anger>
+         <anticipation>0.632</anticipation>
+      </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>kiss,dancedirty,makeout,deescalate
+         <actionid>13</actionid>
+         <actionid>15</actionid>
+         <actionid>16</actionid>
+         <actionid>18</actionid>
+      </chainresponses>
+   </action>
+
+   <action>dance
+      <id>14</id>
+      <mood>triggers
+         <joy>0.425</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.000</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.213</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>-0.403</sadness>
+         <disgust>0.000</disgust>
+         <anger>-0.216</anger>
+         <anticipation>0.000</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>0.182</joy>
+         <trust>0.121</trust>
+         <fear>0.000</fear>
+         <surprise>0.613</surprise>
+         <sadness>-0.387</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.368</anticipation>
+      </mood>
+      <forgesrelationship>1</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>introduce,talk,cheer,hug,laughwith,argue,kiss,
+         dance,dancedirty,deescalate
+         <actionid>1</actionid>
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>5</actionid>
+         <actionid>6</actionid>
+         <actionid>9</actionid>
+         <actionid>13</actionid>
+         <actionid>14</actionid>
+         <actionid>15</actionid>
+         <actionid>18</actionid>
+      </chainresponses>
+   </action>
+
+   <action>dancedirty
+      <id>15</id>
+      <mood>triggers
+         <joy>0.000</joy>
+         <trust>0.318</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.187</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.431</joy>
+         <trust>0.128</trust>
+         <fear>-0.158</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.197</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.306</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.163</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.443</anticipation>
+      </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>hug,laughwith,argue,punch,dance,dancedirty,makeout,
+         deescalate         
+         <actionid>5</actionid>
+         <actionid>6</actionid>
+         <actionid>9</actionid>
+         <actionid>11</actionid>
+         <actionid>14</actionid>
+         <actionid>15</actionid>
+         <actionid>16</actionid>
+         <actionid>18</actionid>
+      </chainresponses>
+   </action>
+
+   <action>makeout
+      <id>16</id>
+      <mood>triggers
+         <joy>0.000</joy>
+         <trust>0.432</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.326</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.336</joy>
+         <trust>0.347</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>-0.213</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.115</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>0.163</joy>
+         <trust>0.116</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.326</anticipation>
+      </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>hug,laughwith,kiss,makeout,deescalate
+         <actionid>5</actionid>
+         <actionid>6</actionid>
+         <actionid>13</actionid>
+         <actionid>16</actionid>
+         <actionid>18</actionid>
+      </chainresponses>
+   </action>
+
+   <action>deescalate
+      <id>18</id>
+      <mood>triggers
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.424</anticipation>
+      </mood>
+      <mood>instigatereactions
+         <joy>0.000</joy>
+         <trust>0.000</trust>
+         <fear>-0.386</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>-0.132</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.431</anticipation>
+      </mood>
+      <mood>recipientreactions
+         <joy>-0.086</joy>
+         <trust>0.000</trust>
+         <fear>0.000</fear>
+         <surprise>0.000</surprise>
+         <sadness>0.000</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>-0.516</anticipation>
+      </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>
+         <comment>
+            No chain responses for de-escalation.
+         </comment>
+      </chainresponses>
+   </action>
+
+   <comment>
+   +--------------------+
+   |  SCENARIO DATA     |
+   +--------------------+
+   </comment>
+
    <action>bob-laysbrick
-      <id>1</id>
+      <id>100</id>
       <mood>triggers
          <joy>0.00</joy>
          <trust>0.00</trust>
@@ -17,7 +722,7 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
-      <mood>reactions
+      <mood>instigatereactions
          <joy>0.00</joy>
          <trust>0.00</trust>
          <fear>0.00</fear>
@@ -27,9 +732,11 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>0</requiresrelationship>
    </action>
    <action>bob-concreting
-      <id>2</id>
+      <id>101</id>
       <mood>triggers
          <joy>0.00</joy>
          <trust>0.00</trust>
@@ -40,7 +747,7 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
-      <mood>reactions>
+      <mood>instigatereactions
          <joy>0.00</joy>
          <trust>0.00</trust>
          <fear>0.00</fear>
@@ -50,9 +757,11 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>0</requiresrelationship>
    </action>
    <action>bob-landscaping
-      <id>3</id>
+      <id>102</id>
       <mood>triggers
          <joy>0.00</joy>
          <trust>0.00</trust>
@@ -63,7 +772,7 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
-      <mood>reactions
+      <mood>instigatereactions
          <joy>0.20</joy>
          <trust>0.00</trust>
          <fear>0.00</fear>
@@ -73,9 +782,11 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>0</requiresrelationship>
    </action>
    <action>bob-plastering
-      <id>4</id>
+      <id>103</id>
       <mood>triggers
          <joy>0.00</joy>
          <trust>0.00</trust>
@@ -86,7 +797,7 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
-      <mood>reactions>
+      <mood>instigatereactions
          <joy>0.00</joy>
          <trust>0.00</trust>
          <fear>0.00</fear>
@@ -96,9 +807,11 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>0</requiresrelationship>
    </action>
    <action>bob-painting
-      <id>5</id>
+      <id>104</id>
       <mood>triggers
          <joy>0.00</joy>
          <trust>0.00</trust>
@@ -109,7 +822,7 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
-      <mood>reactions>
+      <mood>instigatereactions
          <joy>0.30</joy>
          <trust>0.00</trust>
          <fear>0.00</fear>
@@ -119,9 +832,11 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>0</requiresrelationship>
    </action>
    <action>jane-sell
-      <id>6</id>
+      <id>105</id>
       <mood>triggers
          <joy>0.00</joy>
          <trust>0.20</trust>
@@ -132,9 +847,8 @@
          <anger>0.00</anger>
          <anticipation>0.20</anticipation>
       </mood>
-      <mood>reactions
-         <sadness>-0.02</sadness>
-         <joy>0.486</joy>
+      <mood>instigatereactions
+         <joy>0.106</joy>
          <trust>0.05</trust>
          <fear>-0.02</fear>
          <surprise>0.01</surprise>
@@ -143,9 +857,25 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
+      <mood>recipientreactions
+         <joy>0.106</joy>
+         <trust>0.046</trust>
+         <fear>0.000</fear>
+         <surprise>0.138</surprise>
+         <sadness>-0.086</sadness>
+         <disgust>0.000</disgust>
+         <anger>0.000</anger>
+         <anticipation>0.451</anticipation>
+      </mood>
+      <forgesrelationship>1</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
+      <chainresponses>talk,cheer
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+      </chainresponses>
    </action>
    <action>jane-accounting
-      <id>7</id>
+      <id>106</id>
       <mood>triggers
          <joy>0.00</joy>
          <trust>0.00</trust>
@@ -156,7 +886,7 @@
          <anger>0.00</anger>
          <anticipation>0.04</anticipation>
       </mood>
-      <mood>reactions
+      <mood>instigatereactions
          <joy>0.00</joy>
          <trust>0.02</trust>
          <fear>-0.05</fear>
@@ -166,9 +896,11 @@
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>0</requiresrelationship>
    </action>
    <action>peter-solvecomputingproblem
-      <id>8</id>
+      <id>107</id>
       <mood>triggers
          <joy>0.00</joy>
          <trust>0.40</trust>
@@ -179,7 +911,7 @@
          <anger>0.00</anger>
          <anticipation>0.43</anticipation>
       </mood>
-      <mood>reactions
+      <mood>instigatereactions
          <joy>0.15</joy>
          <trust>0.05</trust>
          <fear>-0.02</fear>
@@ -189,9 +921,11 @@
          <anger>-0.05</anger>
          <anticipation>0.00</anticipation>
       </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>0</requiresrelationship>
    </action>
    <action>peter-actoutcybercrime
-      <id>9</id>
+      <id>108</id>
       <mood>triggers
          <joy>0.00</joy>
          <trust>0.00</trust>
@@ -202,7 +936,7 @@
          <anger>0.30</anger>
          <anticipation>0.00</anticipation>
       </mood>
-      <mood>reactions
+      <mood>instigatereactions
          <joy>-0.20</joy>
          <trust>-0.70</trust>
          <fear>0.18</fear>
@@ -212,6 +946,8 @@
          <anger>0.02</anger>
          <anticipation>0.01</anticipation>
       </mood>
+      <forgesrelationship>0</forgesrelationship>
+      <requiresrelationship>1</requiresrelationship>
    </action>
    <being>Bob
       <comment>About Bob
@@ -291,13 +1027,25 @@
          <anger>0.38</anger>
          <anticipation>0.20</anticipation>
       </mood>
-      <doableactions>
+      <actableactions>
          <actionid>1</actionid>
          <actionid>2</actionid>
          <actionid>3</actionid>
          <actionid>4</actionid>
          <actionid>5</actionid>
-      </doableactions>
+         <actionid>6</actionid>
+         <actionid>7</actionid>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+         <actionid>12</actionid>
+         <actionid>100</actionid>
+         <actionid>101</actionid>
+         <actionid>102</actionid>
+         <actionid>103</actionid>
+         <actionid>104</actionid>
+      </actableactions>
       <impactactions>
          <comment>
             No actions recorded initially. By right, these should be all the
@@ -339,10 +1087,22 @@
          <anger>-0.40</anger>
          <anticipation>0.32</anticipation>
       </mood>
-      <doableactions>
+      <actableactions>
+         <actionid>1</actionid>
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>4</actionid>
+         <actionid>5</actionid>
          <actionid>6</actionid>
          <actionid>7</actionid>
-      </doableactions>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+         <actionid>12</actionid>
+         <actionid>105</actionid>
+         <actionid>106</actionid>
+      </actableactions>
       <impactactions>
       </impactactions>
    </being>
@@ -379,10 +1139,22 @@
          <anger>-0.64</anger>
          <anticipation>0.60</anticipation>
       </mood>
-      <doableactions>
+      <actableactions>
+         <actionid>1</actionid>
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>4</actionid>
+         <actionid>5</actionid>
+         <actionid>6</actionid>
+         <actionid>7</actionid>
          <actionid>8</actionid>
          <actionid>9</actionid>
-      </doableactions>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+         <actionid>12</actionid>
+         <actionid>107</actionid>
+         <actionid>108</actionid>
+      </actableactions>
       <impactactions>
       </impactactions>
    </being>
@@ -420,8 +1192,20 @@
          <anger>-0.42</anger>
          <anticipation>0.463</anticipation>
       </mood>
-      <doableactions>
-      </doableactions>
+      <actableactions>
+         <actionid>1</actionid>
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>4</actionid>
+         <actionid>5</actionid>
+         <actionid>6</actionid>
+         <actionid>7</actionid>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+         <actionid>12</actionid>
+      </actableactions>
       <impactactions>
       </impactactions>
    </being>
@@ -434,25 +1218,49 @@
          build houses at this time!
       </comment>
       <id>1</id>
+      <possibleactions>jane-sell
+         <actionid>1</actionid>
+         <actionid>2</actionid>
+         <actionid>3</actionid>
+         <actionid>4</actionid>
+         <actionid>5</actionid>
+         <actionid>6</actionid>
+         <actionid>7</actionid>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+         <actionid>12</actionid>
+         <actionid>100</actionid>
+         <actionid>101</actionid>
+         <actionid>102</actionid>
+         <actionid>103</actionid>
+         <actionid>104</actionid>
+         <actionid>105></actionid>
+      </possibleactions>
+   </env>
+   <env>Bob's house
+      <id>2</id>
       <possibleactions>
          <actionid>1</actionid>
          <actionid>2</actionid>
          <actionid>3</actionid>
          <actionid>4</actionid>
          <actionid>5</actionid>
-         <actionid>6 <comment>Jane can sell stuff here.</comment></actionid>
-      </possibleactions>
-   </env>
-   <env>Bob's house
-      <id>2</id>
-      <possibleactions>
-         <actionid>2</actionid>
-         <actionid>3</actionid>
-         <actionid>4</actionid>
-         <actionid>5</actionid>
          <actionid>6</actionid>
+         <actionid>7</actionid>
          <actionid>8</actionid>
          <actionid>9</actionid>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+         <actionid>12</actionid>
+         <actionid>101</actionid>
+         <actionid>102</actionid>
+         <actionid>103</actionid>
+         <actionid>104</actionid>
+         <actionid>105</actionid>
+         <actionid>107</actionid>
+         <actionid>108</actionid>
       </possibleactions>
    </env>
    <env>Portland school
@@ -467,6 +1275,18 @@
          <actionid>7</actionid>
          <actionid>8</actionid>
          <actionid>9</actionid>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+         <actionid>12</actionid>
+         <actionid>100</actionid>
+         <actionid>101</actionid>
+         <actionid>102</actionid>
+         <actionid>103</actionid>
+         <actionid>104</actionid>
+         <actionid>105</actionid>
+         <actionid>106</actionid>
+         <actionid>107</actionid>
+         <actionid>108</actionid>
       </possibleactions>
    </env>
    <env>Portland church
@@ -477,9 +1297,21 @@
          <actionid>3</actionid>
          <actionid>4</actionid>
          <actionid>5</actionid>
+         <actionid>6</actionid>
          <actionid>7</actionid>
          <actionid>8</actionid>
          <actionid>9</actionid>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+         <actionid>12</actionid>
+         <actionid>100</actionid>
+         <actionid>101</actionid>
+         <actionid>102</actionid>
+         <actionid>103</actionid>
+         <actionid>104</actionid>
+         <actionid>106</actionid>
+         <actionid>107</actionid>
+         <actionid>108</actionid>
       </possibleactions>
    </env>
    <env>Portland public park
@@ -491,6 +1323,18 @@
          <actionid>4</actionid>
          <actionid>5</actionid>
          <actionid>6</actionid>
+         <actionid>7</actionid>
+         <actionid>8</actionid>
+         <actionid>9</actionid>
+         <actionid>10</actionid>
+         <actionid>11</actionid>
+         <actionid>12</actionid>
+         <actionid>100</actionid>
+         <actionid>101</actionid>
+         <actionid>102</actionid>
+         <actionid>103</actionid>
+         <actionid>104</actionid>
+         <actionid>105</actionid>
       </possibleactions>
    </env>
 </behavefactory>

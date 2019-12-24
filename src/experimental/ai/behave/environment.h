@@ -26,6 +26,9 @@ Purpose:
 
 Version control
 26 Nov 2019 Duncan Camilleri           Initial development
+03 Dec 2019 Duncan Camilleri           Added ambience mood
+16 Dec 2019 Duncan Camilleri           Remove residing beings
+
 */
 
 #ifndef __ENVIRONMENT_H_98216C8B541FBFB5FD5CA3DC5B6355BF__
@@ -48,10 +51,6 @@ Version control
 #error "environment.h: missing include - mood.h"
 #elif not defined __ACTION_H_BA0DD2641DF3D0A449B1FA2732A6432E__
 #error "environment.h: missing include - action.h"
-#elif not defined __BEING_H_B969CD487F2BA6EDED6F3DC728739CDC__
-#error "environment.h: missing include - being.h"
-#elif not defined __GATHERING_H_7C194EDF338C8266B57A8FB4606C6495__
-#error "environment.h: missing include - gathering.h"
 #endif
 
 
@@ -59,8 +58,7 @@ Version control
 // Environment
 //
 // An environment is a space in BehaveWorld within which beings can interact
-// with each other. Beings cannot interact with each other unless they are
-// not in the same environment.
+// with each other.
 // Some examples of environments can be: a room, a football ground, a park,
 // a phone call, a lift, a train etc...
 // Some actions can be performed in an environment and some actions cannot.
@@ -77,7 +75,9 @@ public:
    virtual ~Environment();
 
    // Accessors
-   const uint64_t& id() const       { return mId;        }
+   const uint64_t& id() const;
+   const char* const name() const;
+   const Mood& getAmbienceMood() const;
 
    // Assignments
    Environment& operator=(const Environment& env);
@@ -90,13 +90,16 @@ public:
    // Naming
    void name(const uint64_t id, const char* const name);
 
+   // Alterations
+   void impact(const Action& a);
+
 protected:
    uint64_t mId;
    char mName[32];
 
+   Mood mAmbience;
+
    std::list<ObjRef<const Action>> mActionRefs;       // possible actions
-   std::list<ObjRef<const Being>> mBeingRefs;         // present beings
-   std::list<ObjRef<const Gathering>> mGatheringRefs; // present full gatherings
 };
 
 
@@ -131,8 +134,6 @@ protected:
 
    // From node privates
    bool fromPossibleActionsNode(Node& child);
-   bool fromBeingsNode(Node& child);
-   bool fromGatheringsNode(Node& child);
 };
 #endif   // __ENVIRONMENT_H_98216C8B541FBFB5FD5CA3DC5B6355BF__
 

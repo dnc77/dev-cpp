@@ -30,6 +30,10 @@ Version control
 02 Nov 2019 Duncan Camilleri           Introduced node
 08 Nov 2019 Duncan Camilleri           Basic serialization complete
 26 Nov 2019 Duncan Camilleri           Added Environments!
+03 Dec 2019 Duncan Camilleri           Changed find() functions to return ptr
+09 Dec 2019 Duncan Camilleri           Removed toStdout for now
+11 Dec 2019 Duncan Camilleri           Introduced ObjRef loading functions
+17 Dec 2019 Duncan Camilleri           Revamp of relationship spawning rules
 
 */
 
@@ -52,14 +56,21 @@ Version control
 #error "behavefactory.h: missing include - mood.h"
 #elif not defined __ACTION_H_BA0DD2641DF3D0A449B1FA2732A6432E__
 #error "behavefactory.h: missing include - action.h"
+#elif not defined __ENVIRONMENT_H_98216C8B541FBFB5FD5CA3DC5B6355BF__
+#error "behavefactory.h: missing include - environment.h"
 #elif not defined __BEING_H_B969CD487F2BA6EDED6F3DC728739CDC__
 #error "behavefactory.h: missing include - being.h"
 #elif not defined __GATHERING_H_7C194EDF338C8266B57A8FB4606C6495__
 #error "behavefactory.h: missing include - gathering.h"
-#elif not defined __ENVIRONMENT_H_98216C8B541FBFB5FD5CA3DC5B6355BF__
-#error "behavefactory.h: missing include - environment.h"
+#elif not defined __RELATIONSHIP_H_F256603D5EE1002DE62E21BDC7758768__
+#error "behavefactory.h: missing include - relationship.h"
 #endif
 
+//
+// Behave Factory
+//
+
+class Enact;
 class BehaveFactory
 {
 public:
@@ -69,28 +80,30 @@ public:
    virtual ~BehaveFactory();
 
    // Instantiate
-   Action* spawnAction(const char* const name,
-      const Mood& triggers, const Mood& reactions);
+   Action* spawnAction(const char* const name, const Mood& triggers,
+      const Mood& actorReactions, const Mood& recipientReactions);
    Being* spawnBeing(const char* const name);
    Gathering* spawnGathering(const char* const name);
+   Relationship* spawnRelationship(const char* const name,
+      const Action& forgingAction, const Being& beingA, const Being& beingB);
    Environment* spawnEnvironment(const char* const name);
 
    // Search
-   bool find(Action& a, const uint64_t id);
-   bool find(Being& b, const uint64_t id);
-   bool find(Gathering& g, const uint64_t id);
-   bool find(Environment& g, const uint64_t id);
+   Action* findAction(const uint64_t id);
+   Being* findBeing(const uint64_t id);
+   Gathering* findGathering(const uint64_t id);
+   Relationship* findRel(const uint64_t id);
+   Relationship* findRel(const uint64_t beingA, const uint64_t beingB);
+   Environment* findEnv(const uint64_t id);
 
    // Serialization
    bool load(const char* const filename);
    bool loadActionNode(Node& child);
    bool loadBeingNode(Node& child);
    bool loadGatheringNode(Node& child);
+   bool loadRelationshipNode(Node& child);
    bool loadEnvironmentNode(Node& child);
    bool save(const char* const filename);
-
-   // Info
-   void toStdout();
 
    // Destroy
    void destroy();
@@ -100,6 +113,7 @@ private:
    uint64_t sidAction = 0;
    uint64_t sidBeing = 0;
    uint64_t sidGathering = 0;
+   uint64_t sidRelationship = 0;
    uint64_t sidEnvironment = 0;
 
    // Node data
@@ -109,7 +123,29 @@ private:
    std::list<Action> mActions;
    std::list<Being> mBeings;
    std::list<Gathering> mGatherings;
+   std::list<Relationship> mRelationships;
    std::list<Environment> mEnvironments;
+
+   friend class Enact;
 };
+
+//
+// Object reference loading functions
+//
+// Objects in the behave factory may at times be held solely by id.
+// This is to prevent storing multiple copies of the same object.
+// The class ObjRef is an object reference which allows for object
+// id storage. When objects are physically needed instead of just their
+// id, ObjRef provides an interface to load such objects. BehaveFactory
+// already loads all objects from file or through user calls. ObjRef
+// will need the interface to retrieve said objects from memory. These
+// functions do this.
+//
+Action* findActionFrom(uint64_t id);
+const Action* findConstActionFrom(uint64_t id);
+Being* findBeingFrom(uint64_t id);
+const Being* findConstBeingFrom(uint64_t id);
+Gathering* findGatheringFrom(uint64_t id);
+const Gathering* findConstGatheringFrom(uint64_t id);
 
 #endif   // __BEHAVEFACTORY_H_F15CB7E7A7397E6132CB1BCC3C95F0B9__

@@ -34,6 +34,8 @@ Purpose: An object reference is just an id for an object which may or may not
 Version control
 05 Nov 2019 Duncan Camilleri           Initial development
 25 Nov 2019 Duncan Camilleri           Added default constructor
+11 Dec 2019 Duncan Camilleri           Alterations to load and added unload
+18 Dec 2019 Duncan Camilleri           Added set()
 
 */
 
@@ -41,20 +43,26 @@ Version control
 #include "objref.h"
 
 template <class T>
+LoadObjRef<T> ObjRef<T>::mLoader = nullptr;
+template <class T>
+UnloadObjRef<T> ObjRef<T>::mUnloader = nullptr;
+template <class T> void* ObjRef<T>::mpUserdata = nullptr;
+
+template <class T>
 ObjRef<T>::ObjRef()
-: mId(0), mpObj(nullptr), mLoader(nullptr), mpUserdata(nullptr)
+: mId(0), mpObj(nullptr)
 {
 }
 
 template <class T>
 ObjRef<T>::ObjRef(uint64_t id)
-: mId(id), mpObj(nullptr), mLoader(nullptr), mpUserdata(nullptr)
+: mId(id), mpObj(nullptr)
 {
 }
 
 template <class T>
 ObjRef<T>::ObjRef(T* pObj, uint64_t id)
-: mId(id), mpObj(pObj), mLoader(nullptr), mpUserdata(nullptr)
+: mId(id), mpObj(pObj)
 {
 }
 
@@ -76,8 +84,6 @@ ObjRef<T>& ObjRef<T>::operator=(const ObjRef<T>& objref)
 
    mId = objref.mId;
    mpObj = objref.mpObj;
-   mpUserdata = objref.mpUserdata;
-   mLoader = objref.mLoader;
 
    return *this;
 }
@@ -86,11 +92,12 @@ ObjRef<T>& ObjRef<T>::operator=(const ObjRef<T>& objref)
 // Accessors
 //
 
+// For when an object already exists and we don't have to reload it.
 template <class T>
-void ObjRef<T>::setLoadObjRef(LoadObjRef<T> load /*= nullptr*/,
-   void* pUserdata /*= nullptr*/)
+void ObjRef<T>::set(T* pObj, uint64_t id)
 {
-   mLoader = load;
+   mId = id;
+   mpObj = pObj;
 }
 
 // When changing the id of the contained object, all member parameters
@@ -103,10 +110,14 @@ void ObjRef<T>::setId(uint64_t id)
 
    // Cleanup if id changed.
    if (oldId != mId && mpObj != nullptr) {
-      mpObj = nullptr;
-      mpUserdata = nullptr;
-      mLoader = nullptr;
+      dereference();
    }
+}
+
+template <class T>
+void ObjRef<T>::dereference()
+{
+   mpObj = nullptr;
 }
 
 template <class T>
@@ -127,9 +138,9 @@ T* ObjRef<T>::getObj()
 
    // If object does not exist and a loader function exists, try to load.
    if (mLoader != nullptr) {
-      return mLoader(mId, mpUserdata);
+      mpObj = mLoader(mId);
    }
 
-   // No object to return - nullptr.
-   return nullptr;
+   // Return loaded/invalid object.
+   return mpObj;
 }

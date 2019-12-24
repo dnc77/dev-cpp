@@ -40,6 +40,11 @@ Version control
 03 Nov 2019 Duncan Camilleri           Introduced private constructor
 04 Nov 2019 Duncan Camilleri           from() of ActionNode and ActionQtyNode
 25 Nov 2019 Duncan Camilleri           ActionQty now uses ObjRef
+05 Dec 2019 Duncan Camilleri           Added relationship requirement for action
+06 Dec 2019 Duncan Camilleri           Differentiate actor/recipient reactions
+16 Dec 2019 Duncan Camilleri           Introduced 'forgesRel'
+18 Dec 2019 Duncan Camilleri           Name assignment with nullptr supported
+20 Dec 2019 Duncan Camilleri           Actor terminology changed to instigator
 
 */
 
@@ -73,10 +78,14 @@ Action::Action(const Action& action)
    *this = action;
 }
 
-Action::Action(const Mood& triggers, const Mood& reactions)
-: mId(0), mTriggers(triggers), mReactions(reactions)
+Action::Action(const Mood& triggers,
+   const Mood& instigateReactions, const Mood& recipientReactions)
+: mId(0), mTriggers(triggers), mInstigateReactions(instigateReactions),
+   mRecipientReactions(recipientReactions)
 {
    memset(mName, 0, 32);
+   mForgesRel = false;
+   mRequireRel = false;
 }
 
 Action::~Action()
@@ -96,7 +105,11 @@ Action& Action::operator=(const Action& action)
    mId = action.mId;
    memcpy(mName, action.mName, 32);
    mTriggers = action.mTriggers;
-   mReactions = action.mReactions;
+   mInstigateReactions = action.mInstigateReactions;
+   mRecipientReactions = action.mRecipientReactions;
+   mForgesRel = action.mForgesRel;
+   mRequireRel = action.mRequireRel;
+   mChainResponses = action.mChainResponses;
 
    return *this;
 }
@@ -118,7 +131,11 @@ void Action::reset()
 {
    memset(mName, 0, 32);
    mTriggers.neutralize();
-   mReactions.neutralize();
+   mInstigateReactions.neutralize();
+   mRecipientReactions.neutralize();
+   mForgesRel = false;
+   mRequireRel = false;
+   mChainResponses.clear();
 }
 
 //
@@ -128,7 +145,20 @@ void Action::reset()
 void Action::name(const uint64_t id, const char* const name)
 {
    mId = id;
-   strncpy(mName, name, 31);
+   if (name == nullptr) {
+      memset(mName, 0, 32);
+   } else {
+      strncpy(mName, name, 31);
+   }
+}
+
+//
+// Accessors
+//
+
+const std::list<ObjRef<const Action>>& Action::getChainResponses() const
+{
+   return mChainResponses;
 }
 
 // 
@@ -175,7 +205,12 @@ ActionNode& ActionNode::operator=(const Action& action)
 // <action>name
 //    <id>id</id>
 //    <mood>triggers...</mood>
-//    <mood>reactions...</mood>
+//    <mood>instigatereactions...</mood>
+//    <mood>recipientreactions...</mood>
+//    <requiresrelationship>true/false</requiresrelationship>
+//    <chainresponses>
+//       <actionid>id</actionid>...<actionid>id</actionid>
+//    </chainresponses>
 // </action>
 // Note: Moods must be named 'triggers' and 'reactions' respectively.
 bool ActionNode::fromNode()
@@ -212,24 +247,40 @@ bool ActionNode::fromNode()
       // id.
       if (strncmp("id", pName, 2) == 0) {
          mId = child.getUint64(pValue);
+      } else if (strncmp("forgesrelationship", pName, 17) == 0) {
+         mForgesRel = child.getBoolValue();
+      } else if (strncmp("requiresrelationship", pName, 20) == 0) {
+         mRequireRel = child.getBoolValue();
+      } else if (strncmp("chainresponses", pName, 20) == 0) {
+         if (!fromChainResponses(child)) {
+            return fail();
+         }
       } else if (strncmp("triggers", pValue, 8) == 0) {
          MoodNode m(child);
          if (!m.fromNode()) {
-            return false;
+            return fail();
          }
 
          // Demote.
          mTriggers = m;
-      } else if (strncmp("reactions", pValue, 9) == 0) {
+      } else if (strncmp("instigatereactions", pValue, 14) == 0) {
          MoodNode m(child);
          if (!m.fromNode()) {
-            return false;
+            return fail();
          }
 
          // Demote.
-         mReactions = m;
+         mInstigateReactions = m;
+      } else if (strncmp("recipientreactions", pValue, 18) == 0) {
+         MoodNode m(child);
+         if (!m.fromNode()) {
+            return fail();
+         }
+
+         // Demote.
+         mRecipientReactions = m;
       }
-   }
+   } 
 
    // Done.
    return true;
@@ -258,10 +309,16 @@ bool ActionNode::toNode()
    // Spawn children and set their value.
    Node* pId = mpNode->spawnChild();
    Node* pTriggers = mpNode->spawnChild();
-   Node* pReactions = mpNode->spawnChild();
-   if (nullptr == pId || nullptr == pTriggers || nullptr == pReactions) {
+   Node* pInstigateReactions = mpNode->spawnChild();
+   Node* pRecipientReactions = mpNode->spawnChild();
+   Node* pFormsRel = mpNode->spawnChild();   
+   Node* pRequireRel = mpNode->spawnChild();
+   Node* pChainResponses = mpNode->spawnChild();
+   if (nullptr == pId || nullptr == pTriggers) return fail();
+   if (nullptr == pFormsRel || nullptr == pRequireRel) return fail();
+   if (nullptr == pChainResponses) return fail();
+   if (nullptr == pInstigateReactions || nullptr == pRecipientReactions)
       return fail();
-   }
 
    // Id.
    if (!pId->setValue("id", mId)) {
@@ -274,13 +331,73 @@ bool ActionNode::toNode()
       return fail();
    }
 
-   // Reactions.
-   MoodNode mnReactions(mReactions, *pReactions);
-   if (!mnReactions.toNode("reactions")) {
+   // Actor Reactions.
+   MoodNode mnInstigateReactions(mInstigateReactions, *pInstigateReactions);
+   if (!mnInstigateReactions.toNode("instigatereactions")) {
       return fail();
    }
 
+   // Recipient Reactions.
+   MoodNode mnRecipientReactions(mRecipientReactions, *pRecipientReactions);
+   if (!mnRecipientReactions.toNode("recipientreactions")) {
+      return fail();
+   }
+
+   // Relationship forming.
+   if (!pFormsRel->setValue("forgesrelationship", mForgesRel)) {
+      return fail();
+   }
+
+   // Relationship requirement.
+   if (!pRequireRel->setValue("requiresrelationship", mRequireRel)) {
+      return fail();
+   }
+
+   // Chain responses.
+   for (ObjRef<const Action>& chainResponse : mChainResponses) {
+      // Spawn child node.
+      Node* pChainResponse = pChainResponses->spawnChild();
+      if (nullptr == pChainResponse)
+         return fail();
+
+      // Assign value.
+      if (!pChainResponse->setValue("actionid", chainResponse.getId())) {
+         return fail();
+      }
+   }
+
    // Succeed.
+   return true;
+}
+
+//
+// From node privates
+//
+
+bool ActionNode::fromChainResponses(Node& node)
+{
+   try {
+      // Child nodes.
+      std::list<Node>& children = node.getChildren();
+      for (Node& child : children) {
+         // id
+         const char* const pName = child.getName();
+         const char* const pValue = child.getValue();
+
+         // Both a name and value must exist for each child.
+         if (!pName && !pValue) continue;
+
+         // actionid.
+         if (strncmp("actionid", pName, 8) == 0) {
+            ObjRef<const Action> obj(child.getUint64(pValue));
+            mChainResponses.push_back(obj);
+         }
+      }
+   } catch (exception& e) {
+      return false;
+   }
+
+   // Done.
    return true;
 }
 

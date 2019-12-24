@@ -59,6 +59,12 @@ Version control
 02 Nov 2019 Duncan Camilleri           Added neutralize()
 04 Nov 2019 Duncan Camilleri           Added MoodNode
 12 Nov 2019 Duncan Camilleri           Purpose comment fix for trust + fear
+27 Nov 2019 Duncan Camilleri           Added +operators for mood and intensity
+27 Nov 2019 Duncan Camilleri           Added average()
+03 Dec 2019 Duncan Camilleri           Added global intensify() function
+09 Dec 2019 Duncan Camilleri           Added diminish()
+24 Dec 2019 Duncan Camilleri           Major alterations to intensify & diminish
+
 */
 
 #ifndef __MOOD_H_AAB57A66720F9EDAC5D0668C603393AB__
@@ -84,6 +90,8 @@ static const intensity& NeutralIntensity = 0.0;
 static const intensity& MaxIntensity = 1.0;
 static const intensity& InvalidIntensity = -2.0;
 inline void embraceIntensity(intensity& i);
+inline void diminishIntensity(intensity& i, const intensity by);
+inline void intensifyIntensity(intensity& i, const intensity by);
 
 typedef struct __MoodIntensities {
    intensity joy;
@@ -136,8 +144,11 @@ public:
    virtual ~Mood();
 
    // Operators
+   // Mood operator+(const intensity i) const;
+   Mood operator+(const Mood& b) const;
    Mood operator+=(const Mood& m);
    Mood operator-=(const Mood& m);
+   Mood& operator=(intensity i);
    Mood& operator=(const Mood& mood);
    Mood& operator=(const MoodNode& moodnode);
 
@@ -151,13 +162,19 @@ public:
    const intensity& get(Plutchik emotion) const;
 
    // Intensity computations
-   const intensity& intensify(Plutchik emotion, intensity by = 0.01);
+   void diminish(Mood& target, const intensity by) const;
+   void intensify(const intensity by);
+   void intensify(Mood& target, const intensity by) const;
+   const intensity& intensify(Plutchik emotion, const intensity by);
    void neutralize();
    void updateComposites(Plutchik emotion);
    void updateComposites();
 
 private:
    intensity compositeCalc(Plutchik ea, Plutchik eb);
+
+public:
+   static Mood average(const Mood* const pMoods, int count);
 };
 
 //

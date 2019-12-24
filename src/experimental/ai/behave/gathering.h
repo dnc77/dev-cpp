@@ -115,7 +115,7 @@ protected:
    Node* mpNode;
 
    // From node privates
-   bool fromDoableActionsNode(Node& node);
+   bool fromActableActionsNode(Node& node);
    bool fromImpactActionsNode(Node& node);
 };
 

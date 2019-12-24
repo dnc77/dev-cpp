@@ -6,23 +6,29 @@
 //
 
 #include <sys/time.h>
+#include <wctype.h>
+#include <string.h>
 #include <stdio.h>
 #include <list>
 #include <map>
 #include <string>
+#include <mutex>
 #include <random>
 
 #include <helpers.h>
+#include "behavehelpers.h"
 #include "objref.h"
 #include "stringlist.h"
 #include "weightedbinary.h"
 #include "serializer.h"
 #include "mood.h"
 #include "action.h"
+#include "environment.h"
 #include "being.h"
 #include "gathering.h"
-#include "environment.h"
+#include "relationship.h"
 #include "behavefactory.h"
+#include "enact.h"
 
 using namespace std;
 
@@ -139,15 +145,26 @@ const char* const gXml =
 
 bool setWorldUp()
 {
+   // Set up all ObjRef load functions.
+   ObjRef<Action>::mLoader = findActionFrom;
+   ObjRef<const Action>::mLoader = findConstActionFrom;
+   ObjRef<Being>::mLoader = findBeingFrom;
+   ObjRef<const Being>::mLoader = findConstBeingFrom;
+   ObjRef<Gathering>::mLoader = findGatheringFrom;
+   ObjRef<const Gathering>::mLoader = findConstGatheringFrom;
+   ObjRef<Action>::mpUserdata = (void*)&gBehave;
+   ObjRef<const Action>::mpUserdata = (void*)&gBehave;
+   ObjRef<Being>::mpUserdata = (void*)&gBehave;
+   ObjRef<const Being>::mpUserdata = (void*)&gBehave;
+   ObjRef<Gathering>::mpUserdata = (void*)&gBehave;
+   ObjRef<const Gathering>::mpUserdata = (void*)&gBehave;
+
    if (!gBehave.load(gXml))
       return false;
 
    // Done.
    return true;
-   
 }
-
-
 
 // 
 //           o
@@ -156,39 +173,141 @@ bool setWorldUp()
 // ` ' '`---^``   '    `---^|---'|---'
 //                          |    |
 // 
-#include <string.h>
 
-void usingsl()
+bool decisionToAct(const Action& action,
+      const Being* pInstigator, const Being* pRecipient,
+      const Relationship* pRelationship, bool willAct)
 {
-   const char* pp = "djasdhjhsadhih";
-   vector<sloffset> v;
-   StringList<slsiz::medium> a;
-   for (int c = 0; c < 10000; ++c) {
-      v.push_back(a.addString(pp, strlen(pp)));
-   }
-}  
-
-void usingStr()
-{
-   list<string> v;
-   for (int c = 0; c < 10000; ++c) {
-      v.push_back("djasdhjhsadhih");
-   }
+   // printf("Decision is: '%s'\n", willAct ? "act" : "noact");
+   return true;
 }
-
-void usingStrVect()
+bool actionTaken(const Action& action,
+      const Being* pInstigator, const Being* pRecipient,
+      const Relationship* pRelationship)
 {
-   vector<string> v;
-   for (int c = 0; c < 10000; ++c) {
-      v.push_back("djasdhjhsadhih");
+   char actionname[32];
+   char actorname[32];
+   char recipientname[32];
+   memset(actionname, 0, 32);
+   memset(actorname, 0, 32);
+   memset(recipientname, 0, 32);
+   strncpy(actionname, action.name(), 31);
+   strncpy(actorname, pInstigator->name(), 31);
+   if (pRecipient) {
+      strncpy(recipientname, pRecipient->name(), 31);
+   } else {
+      strncpy(recipientname, "[solo]", 7);
    }
-}
 
+   cstrrtrim(actionname);
+   cstrrtrim(actorname);
+   cstrrtrim(recipientname);
+
+   // Action overview.
+   printf("%s => %s => %s\n", actorname, actionname, recipientname);
+
+   // Instigator.
+   const Mood& insBias = pInstigator->getBiasMood();
+   const Mood& insMood = pInstigator->getCurrentMood();
+   printf("   %s bias: joy[%f], trust[%f], fear[%f], surprise[%f], "
+      "sadness[%f], disgust[%f], anger[%f], anticipation[%f]\n",
+      actorname,
+      insBias.get(Mood::joy), insBias.get(Mood::trust),
+      insBias.get(Mood::fear), insBias.get(Mood::surprise),
+      insBias.get(Mood::sadness), insBias.get(Mood::disgust),
+      insBias.get(Mood::anger), insBias.get(Mood::anticipation)
+   );
+   printf("   %s mood: joy[%f], trust[%f], fear[%f], surprise[%f], "
+      "sadness[%f], disgust[%f], anger[%f], anticipation[%f]\n",
+      actorname,
+      insMood.get(Mood::joy), insMood.get(Mood::trust),
+      insMood.get(Mood::fear), insMood.get(Mood::surprise),
+      insMood.get(Mood::sadness), insMood.get(Mood::disgust),
+      insMood.get(Mood::anger), insMood.get(Mood::anticipation)
+   );
+
+   if (pRecipient) {
+      const Mood& recBias = pRecipient->getBiasMood();
+      const Mood& recMood = pRecipient->getCurrentMood();
+      printf("   %s bias: joy[%f], trust[%f], fear[%f], surprise[%f], "
+         "sadness[%f], disgust[%f], anger[%f], anticipation[%f]\n",
+         recipientname,
+         recBias.get(Mood::joy), recBias.get(Mood::trust),
+         recBias.get(Mood::fear), recBias.get(Mood::surprise),
+         recBias.get(Mood::sadness), recBias.get(Mood::disgust),
+         recBias.get(Mood::anger), recBias.get(Mood::anticipation)
+      );
+      printf("   %s mood: joy[%f], trust[%f], fear[%f], surprise[%f], "
+         "sadness[%f], disgust[%f], anger[%f], anticipation[%f]\n",
+         recipientname,
+         recMood.get(Mood::joy), recMood.get(Mood::trust),
+         recMood.get(Mood::fear), recMood.get(Mood::surprise),
+         recMood.get(Mood::sadness), recMood.get(Mood::disgust),
+         recMood.get(Mood::anger), recMood.get(Mood::anticipation)
+      );
+   }
+
+   if (pRelationship) {
+      const Mood& instrelView = 
+         (pInstigator->id() == pRelationship->getData().mBeingRefA.getId() ?
+            pRelationship->getData().mMoodA :
+            pRelationship->getData().mMoodB
+         );
+      const Mood& recrelView = 
+         (pRecipient->id() == pRelationship->getData().mBeingRefA.getId() ?
+            pRelationship->getData().mMoodA :
+            pRelationship->getData().mMoodB
+         );
+      printf("   %s relation view: joy[%f], trust[%f], fear[%f], surprise[%f], "
+         "sadness[%f], disgust[%f], anger[%f], anticipation[%f]\n",
+         actorname,
+         instrelView.get(Mood::joy), instrelView.get(Mood::trust),
+         instrelView.get(Mood::fear), instrelView.get(Mood::surprise),
+         instrelView.get(Mood::sadness), instrelView.get(Mood::disgust),
+         instrelView.get(Mood::anger), instrelView.get(Mood::anticipation)
+      );
+      printf("   %s relation view: joy[%f], trust[%f], fear[%f], surprise[%f], "
+         "sadness[%f], disgust[%f], anger[%f], anticipation[%f]\n",
+         recipientname,
+         recrelView.get(Mood::joy), recrelView.get(Mood::trust),
+         recrelView.get(Mood::fear), recrelView.get(Mood::surprise),
+         recrelView.get(Mood::sadness), recrelView.get(Mood::disgust),
+         recrelView.get(Mood::anger), recrelView.get(Mood::anticipation)
+      );
+   }
+
+   return true;
+}
 
 int main(int argc, char** argv)
 {
-   setWorldUp();
-   gBehave.save("resaved.xml");
+   // Load up data.
+   if (!setWorldUp()) {
+      printf("load failed!\n");
+      return 0;
+   }
+
+   // Form a relationship first.
+   RelationshipData reldata;
+   reldata.mBeingRefA.setId(1);
+   reldata.mBeingRefB.setId(2);
+   reldata.mMoodA = 0.5;
+   reldata.mMoodB = 0.5;
+   Relationship rel(reldata);
+   Environment* pEnv = gBehave.findEnv(1);
+
+   // Perform a few actions between Bob and Jane.
+   EnactCallbacks ecb;
+   Enact e(gBehave);
+   
+   ecb.actionDecided = decisionToAct;
+   ecb.actionTaken = actionTaken;
+   e.setCallbacks(&ecb);
+   // e.enact(ee);
+
+   while (true) {
+      e.enactAll();
+   }
 
    return 0;
 }

@@ -30,6 +30,10 @@ Version control
 02 Nov 2019 Duncan Camilleri           Introduced node
 08 Nov 2019 Duncan Camilleri           Basic serialization complete
 26 Nov 2019 Duncan Camilleri           Added Environments!
+03 Dec 2019 Duncan Camilleri           Changed find() functions to return ptr
+09 Dec 2019 Duncan Camilleri           Removed toStdout for now
+11 Dec 2019 Duncan Camilleri           Introduced ObjRef loading functions
+17 Dec 2019 Duncan Camilleri           Revamp of relationship spawning rules
 
 */
 
@@ -39,6 +43,7 @@ Version control
 #include <list>
 #include <map>
 #include <algorithm>
+#include <assert.h>
 #include <sys/time.h>
 #include <string.h>
 #include <stdio.h>
@@ -50,12 +55,21 @@ Version control
 #include "serializer.h"
 #include "mood.h"
 #include "action.h"
+#include "environment.h"
 #include "being.h"
 #include "gathering.h"
-#include "environment.h"
+#include "relationship.h"
 #include "behavefactory.h"
 
 using namespace std;
+
+// 
+// |         |                    ,---.          |
+// |---.,---.|---.,---..    ,,---.|__. ,---.,---.|--- ,---.,---.,   .
+// |   ||---'|   |,---| \  / |---'|    ,---||    |    |   ||    |   |
+// `---'`---'`   '`---^  `'  `---'`    `---^`---'`---'`---'`    `---|
+//                                                              `---'
+// 
 
 //
 // CONSTRUCTION
@@ -72,12 +86,12 @@ BehaveFactory::~BehaveFactory()
 // INSTANTIATE
 //
 
-Action* BehaveFactory::spawnAction(const char* const name,
-   const Mood& triggers, const Mood& reactions)
+Action* BehaveFactory::spawnAction(const char* const name, const Mood& triggers,
+   const Mood& actorReactions, const Mood& recipientReactions)
 {
    try {
       // Create an action and return it.
-      Action a(triggers, reactions);
+      Action a(triggers, actorReactions, recipientReactions);
       a.name(++sidAction, name);
       mActions.push_back(a);
 
@@ -118,6 +132,60 @@ Gathering* BehaveFactory::spawnGathering(const char* const name)
    }
 }
 
+// Spawning a relationship requires a forging action. This action would have
+// the ability to forge relationships. Two beings will be connected through
+// their current emotions.
+// The moods of a new relationship are set up as follows:
+// MoodA pertains to BeingA's perception of the relationship.
+// MoodB pertains to BeingB's perception of the relationship.
+// Normally, in a new relationship, anticipation is high as it
+// wanes down with time. This factor will not take play in this.
+// Mood A's perception of the relationship would be a higher degree
+// of Mood B's current mood compared with Mood A's current mood.
+// Vice versa applies to Mood B's perception of the relationship.
+// Before spawning a relationship for the factory, one should call findRel
+// to determine if the relationship already exists.
+// While spawning a relationship, it's not ideal to do this for efficiency
+// purposes.
+Relationship* BehaveFactory::spawnRelationship(const char* const name,
+   const Action& forgingAction, const Being& beingA, const Being& beingB)
+{
+   // First ensure that the forging action has actual permission to do so.
+   if (!forgingAction.forgesRelationship())
+      return nullptr;
+
+   try {
+      // Calculate relationship perceptions.
+      Mood calc[3];
+      RelationshipData data;
+
+      // Being A's perceptions.
+      calc[0] = beingA.getCurrentMood();
+      calc[1] = beingB.getCurrentMood();
+      calc[2] = calc[1];
+      data.mBeingRefA.set(&beingA, beingA.id());
+      data.mMoodA = Mood::average(calc, 3);
+
+      // Being B's perceptions.
+      calc[0] = beingB.getCurrentMood();
+      calc[1] = beingA.getCurrentMood();
+      calc[2] = calc[1];
+      data.mBeingRefB.set(&beingB, beingB.id());
+      data.mMoodB = Mood::average(calc, 3);
+
+      // Create a new relationship.
+      Relationship r(data);
+      r.name(++sidRelationship, name);
+
+      // Finally add the relationship.
+      mRelationships.push_back(r);
+      return &mRelationships.back();
+   } catch (exception& e) {
+      // push_back failure.
+      return nullptr;
+   }
+}
+
 Environment* BehaveFactory::spawnEnvironment(const char* const name)
 {
    try {
@@ -138,9 +206,9 @@ Environment* BehaveFactory::spawnEnvironment(const char* const name)
 //
 
 // Will find an action that has mId = id.
-// If found, a will be populated with that action and true is returned.
-// Otherwise false is returned.
-bool BehaveFactory::find(Action& a, const uint64_t id)
+// If found, will return that action.
+// Otherwise nullptr is returned.
+Action* BehaveFactory::findAction(const uint64_t id)
 {
    // Compares action's id with passed id.
    auto compare = [&](const Action& iter) -> bool {
@@ -148,20 +216,19 @@ bool BehaveFactory::find(Action& a, const uint64_t id)
    };
 
    // Find object.
-   list<Action>::const_iterator i = std::find_if(
+   list<Action>::iterator i = std::find_if(
       mActions.begin(), mActions.end(), compare);
 
-   if (i == mActions.end()) return false;
+   if (i == mActions.end()) return nullptr;
 
    // Found!
-   a = (*i);
-   return true;
+   return &(*i);
 }
 
 // Will find a being that has mId = id.
-// If found, b will be populated with that being and true is returned.
-// Otherwise false is returned.
-bool BehaveFactory::find(Being& b, const uint64_t id)
+// If found, will return that being.
+// Otherwise nullptr is returned.
+Being* BehaveFactory::findBeing(const uint64_t id)
 {
    // Compares being's id with passed id.
    auto compare = [&](const Being& iter) -> bool {
@@ -169,20 +236,19 @@ bool BehaveFactory::find(Being& b, const uint64_t id)
    };
 
    // Find object.
-   list<Being>::const_iterator i = std::find_if(
+   list<Being>::iterator i = std::find_if(
       mBeings.begin(), mBeings.end(), compare);
 
-   if (i == mBeings.end()) return false;
+   if (i == mBeings.end()) return nullptr;
 
    // Found!
-   b = (*i);
-   return true;   
+   return &(*i);
 }
 
 // Will find a gathering that has mId = id.
-// If found, g will be populated with that gathering and true is returned.
-// Otherwise false is returned.
-bool BehaveFactory::find(Gathering& g, const uint64_t id)
+// If found, will return that gathering.
+// Otherwise nullptr is returned.
+Gathering* BehaveFactory::findGathering(const uint64_t id)
 {
    // Compares gathering's id with passed id.
    auto compare = [&](const Gathering& iter) -> bool {
@@ -190,20 +256,71 @@ bool BehaveFactory::find(Gathering& g, const uint64_t id)
    };
 
    // Find object.
-   list<Gathering>::const_iterator i = std::find_if(
+   list<Gathering>::iterator i = std::find_if(
       mGatherings.begin(), mGatherings.end(), compare);
 
-   if (i == mGatherings.end()) return false;
+   if (i == mGatherings.end()) return nullptr;
 
    // Found!
-   g = (*i);
-   return true;   
+   return &(*i);
+}
+
+// Will find a relationship that has mId = id.
+// If found, will return that relationship.
+// Otherwise nullptr is returned.
+Relationship* BehaveFactory::findRel(const uint64_t id)
+{
+   // Compares relationship's id with passed id.
+   auto compare = [&](const Relationship& iter) -> bool {
+      return iter.id() == id;
+   };
+
+   // Find object.
+   list<Relationship>::iterator i = std::find_if(
+      mRelationships.begin(), mRelationships.end(), compare);
+
+   if (i == mRelationships.end()) return nullptr;
+
+   // Found!
+   return &(*i);
+}
+
+// Will find a relationship with being a and being b.
+// If found, relationship will be returned.
+// Otherwise, nullptr is returned.
+Relationship* BehaveFactory::findRel(
+   const uint64_t beingA, const uint64_t beingB)
+{
+   // Compares relationship's id with passed id.
+   auto compare = [&](const Relationship& iter) -> bool {
+      const RelationshipData& rdList = iter.getData();
+
+      uint64_t listBeingAId = rdList.mBeingRefA.getId();
+      uint64_t listBeingBId = rdList.mBeingRefB.getId();
+
+      if (listBeingAId == beingA && listBeingBId == beingB)
+         return true;
+      if (listBeingAId == beingB && listBeingBId == beingA)
+         return true;
+
+      // No match!
+      return false;
+   };
+
+   // Find object.
+   list<Relationship>::iterator i = std::find_if(
+      mRelationships.begin(), mRelationships.end(), compare);
+
+   if (i == mRelationships.end()) return nullptr;
+
+   // Found!
+   return &(*i);
 }
 
 // Will find an environment that has mId = id.
-// If found, e will be populated with that environment and true is returned.
-// Otherwise false is returned.
-bool BehaveFactory::find(Environment& e, const uint64_t id)
+// If found, environment will be returned.
+// Otherwise, nullptr is returned.
+Environment* BehaveFactory::findEnv(const uint64_t id)
 {
    // Compares environment's id with passed id.
    auto compare = [&](const Environment& iter) -> bool {
@@ -211,14 +328,13 @@ bool BehaveFactory::find(Environment& e, const uint64_t id)
    };
 
    // Find object.
-   list<Environment>::const_iterator i = std::find_if(
+   list<Environment>::iterator i = std::find_if(
       mEnvironments.begin(), mEnvironments.end(), compare);
 
-   if (i == mEnvironments.end()) return false;
+   if (i == mEnvironments.end()) return nullptr;
 
    // Found!
-   e = (*i);
-   return true;   
+   return &(*i);
 }
 
 //
@@ -260,12 +376,19 @@ bool BehaveFactory::load(const char* const filename)
          if (!loadGatheringNode(child)) {
             return false;
          }
+      } else if (strncmp(child.getName(), "relationship", 12) == 0) {
+         if (!loadRelationshipNode(child)) {
+            return false;
+         }
       } else if (strncmp(child.getName(), "env", 3) == 0) {
          if (!loadEnvironmentNode(child)) {
             return false;
          }
       }
    }
+
+   // All data loaded.
+   return true;
 }
 
 
@@ -334,6 +457,32 @@ bool BehaveFactory::loadGatheringNode(Node& child)
       // Update sid.
       if (sidGathering < gathering.id())
          sidGathering = gathering.id();
+   } catch (exception& e) {
+      // Catch push_back exceptions (if any).
+      return false;
+   }
+
+   // Done.
+   return true;
+}
+bool BehaveFactory::loadRelationshipNode(Node& child)
+{
+   try {
+      RelationshipNode relationship(child);
+      if (!relationship.fromNode()) {
+         return false;
+      }
+
+      // Add relationship - this should create a new relationship in the
+      // list and not reference the current relationship node.
+      // See operator overloading in Relationship.
+      mRelationships.push_back(
+         const_cast<const RelationshipNode&>(relationship)
+      );
+
+      // Update sid.
+      if (sidRelationship < relationship.id())
+         sidRelationship = relationship.id();
    } catch (exception& e) {
       // Catch push_back exceptions (if any).
       return false;
@@ -428,6 +577,21 @@ bool BehaveFactory::save(const char* const filename)
       }
    }
 
+   // Go through each relationship and serialize into the node.
+   for (Relationship& r : mRelationships) {
+      // Spawn child node.
+      Node* pChild = root.spawnChild();
+      if (!pChild) {
+         return fail();
+      }
+
+      // Create a gathering node and populate.
+      RelationshipNode rn(r, *pChild);
+      if (!rn.toNode()) {
+         return fail();
+      }
+   }
+
    // Go through each environment and serialize into the node.
    for (Environment& e : mEnvironments) {
       // Spawn child node.
@@ -453,41 +617,13 @@ bool BehaveFactory::save(const char* const filename)
 }
 
 //
-// INFO
-//
-
-void BehaveFactory::toStdout()
-{
-   auto moodout = [&](const Mood& m) {
-      printf("mood: joy: %0.4f, trust: %0.4f, fear: %0.4f, surprise: %0.4f, "
-         "sadness: %0.4f, disgust: %0.4f, anger: %0.4f, anticipation: %0.4f",
-         m.get(Mood::joy), m.get(Mood::trust),
-         m.get(Mood::fear), m.get(Mood::surprise),
-         m.get(Mood::sadness), m.get(Mood::disgust),
-         m.get(Mood::anger), m.get(Mood::anticipation)
-      );
-   };
-
-   printf("actions:\n");
-   for (Action& a : mActions) {
-      printf("   action: %s\n", a.name());
-      printf("      triggers: ");
-      moodout(a.getTriggers());
-      printf("\n");
-      printf("      reactions: ");
-      moodout(a.getReactions());
-      printf("\n");
-   }
-}
-
-
-//
 // DESTROY
 //
 
 void BehaveFactory::destroy()
 {
    mEnvironments.clear();
+   mRelationships.clear();
    mGatherings.clear();
    mBeings.clear();
    mActions.clear();
@@ -495,4 +631,61 @@ void BehaveFactory::destroy()
    sidGathering = 0;
    sidBeing = 0;
    sidAction = 0;
+}
+
+// 
+//      |        o          ,---.    |                  |o
+// ,---.|---.    .,---.,---.|__.     |    ,---.,---.,---|.,---.,---.
+// |   ||   |    ||    |---'|        |    |   |,---||   |||   ||   |
+// `---'`---'    |`    `---'`        `---'`---'`---^`---'``   '`---|
+//           `---'                                             `---'
+// 
+
+Action* findActionFrom(uint64_t id)
+{
+   assert(ObjRef<Action>::mpUserdata);
+   BehaveFactory* pFactory = (BehaveFactory*)ObjRef<Action>::mpUserdata;
+
+   return pFactory->findAction(id);
+}
+
+const Action* findConstActionFrom(uint64_t id)
+{
+   assert(ObjRef<const Action>::mpUserdata);
+   BehaveFactory* pFactory = (BehaveFactory*)ObjRef<const Action>::mpUserdata;
+
+   return const_cast<const Action*>(pFactory->findAction(id));
+}
+
+Being* findBeingFrom(uint64_t id)
+{
+   assert(ObjRef<Being>::mpUserdata);
+   BehaveFactory* pFactory = (BehaveFactory*)ObjRef<Being>::mpUserdata;
+
+   return pFactory->findBeing(id);
+}
+
+const Being* findConstBeingFrom(uint64_t id)
+{
+   assert(ObjRef<const Being>::mpUserdata);
+   BehaveFactory* pFactory = (BehaveFactory*)ObjRef<const Being>::mpUserdata;
+
+   return const_cast<const Being*>(pFactory->findBeing(id));
+}
+
+Gathering* findGatheringFrom(uint64_t id)
+{
+   assert(ObjRef<Gathering>::mpUserdata);
+   BehaveFactory* pFactory = (BehaveFactory*)ObjRef<Gathering>::mpUserdata;
+
+   return pFactory->findGathering(id);
+}
+
+const Gathering* findConstGatheringFrom(uint64_t id)
+{
+   assert(ObjRef<const Gathering>::mpUserdata);
+   BehaveFactory* pFactory = (BehaveFactory*)
+      ObjRef<const Gathering>::mpUserdata;
+
+   return const_cast<const Gathering*>(pFactory->findGathering(id));
 }

@@ -38,6 +38,7 @@ Version control
 #include "serializer.h"
 #include "mood.h"
 #include "action.h"
+#include "environment.h"
 #include "being.h"
 #include "gathering.h"
 
@@ -151,9 +152,9 @@ GatheringNode& GatheringNode::operator=(const Gathering& gathering)
 // <gathering>name
 //    <id>id</id>
 //    <mood>currentmood moodcontent</mood>
-//    <doableactions>
+//    <actableactions>
 //       <actionid>id</actionid>...<actionid>id</actionid>
-//    </doableactions>
+//    </actableactions>
 //    <impactactions>
 //       <actionqty>
 //          <actionid>id</actionid>
@@ -211,8 +212,8 @@ bool GatheringNode::fromNode()
 
          // Demote.
          mMood = n;
-      } else if (strncmp(pName, "doableactions", 13) == 0) {
-         if (!fromDoableActionsNode(child))
+      } else if (strncmp(pName, "actableactions", 13) == 0) {
+         if (!fromActableActionsNode(child))
             return fail();
       } else if (strncmp(pName, "impactactions", 13) == 0) {
          if (!fromImpactActionsNode(child)) {
@@ -252,11 +253,11 @@ bool GatheringNode::toNode()
    // Spawn children and set their value.
    Node* pId = mpNode->spawnChild();
    Node* pMood = mpNode->spawnChild();
-   Node* pDoableActions = mpNode->spawnChild();
+   Node* pActableActions = mpNode->spawnChild();
    Node* pImpactActions = mpNode->spawnChild();
    Node* pMembers = mpNode->spawnChild();
    if (nullptr == pId || nullptr == pMood) return fail();
-   if (nullptr == pDoableActions || nullptr == pImpactActions) return fail();
+   if (nullptr == pActableActions || nullptr == pImpactActions) return fail();
    if (nullptr == pMembers) return fail();
 
    // Set Id and Mood.
@@ -268,14 +269,14 @@ bool GatheringNode::toNode()
       return fail();
    }
 
-   // Doable actions.
-   if (!pDoableActions->setValue("doableactions", "")) {
+   // Actable actions.
+   if (!pActableActions->setValue("actableactions", "")) {
       return fail();
    }
 
-   for (ObjRef<const Action>& actionref : mDoableActionRefs) {
+   for (ObjRef<const Action>& actionref : mActableActionRefs) {
       // Create a node for an object reference.
-      Node* pChild = pDoableActions->spawnChild();
+      Node* pChild = pActableActions->spawnChild();
       if (!pChild) return fail();
 
       // Store action object reference only.
@@ -313,16 +314,16 @@ bool GatheringNode::toNode()
 // From node privates
 //
 
-// <doableactions>
+// <actableactions>
 //    <actionid>id</actionid>...<actionid>id</actionid>
-// </doableactions>
-bool GatheringNode::fromDoableActionsNode(Node& node)
+// </actableactions>
+bool GatheringNode::fromActableActionsNode(Node& node)
 {
    try {
       std::list<Node>& children = node.getChildren();
       for (Node& child : children) {
          ObjRef<const Action> actionref(child.getUint64("id"));
-         mDoableActionRefs.push_back(actionref);
+         mActableActionRefs.push_back(actionref);
       }
    } catch (std::exception& e) {
       return false;

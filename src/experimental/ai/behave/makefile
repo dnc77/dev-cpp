@@ -1,6 +1,8 @@
 # History of changes:
 #
 # 20 Aug 2019              created
+# 28 Nov 2019              added actiondecider
+# 29 Nov 2019              added relationships
 
 # Get global definitions makefile.
 MKPATH                     := $(shell dirname\
@@ -92,8 +94,11 @@ BEHAVEINC                  := $(BEHAVE_SRCDIR)stringlist.h \
                                  $(BEHAVE_SRCDIR)action.h \
                                  $(BEHAVE_SRCDIR)being.h \
                                  $(BEHAVE_SRCDIR)gathering.h \
+                                 $(BEHAVE_SRCDIR)relationship.h \
+                                 $(BEHAVE_SRCDIR)actiondecider.h \
                                  $(BEHAVE_SRCDIR)environment.h \
                                  $(BEHAVE_SRCDIR)behavefactory.h \
+                                 $(BEHAVE_SRCDIR)enact.h \
 
 # Individual project source files
 BEHAVESRC                  := $(BEHAVE_SRCDIR)stringlist.cpp \
@@ -103,8 +108,11 @@ BEHAVESRC                  := $(BEHAVE_SRCDIR)stringlist.cpp \
                                  $(BEHAVE_SRCDIR)action.cpp \
                                  $(BEHAVE_SRCDIR)being.cpp \
                                  $(BEHAVE_SRCDIR)gathering.cpp \
+                                 $(BEHAVE_SRCDIR)relationship.cpp \
+                                 $(BEHAVE_SRCDIR)actiondecider.cpp \
                                  $(BEHAVE_SRCDIR)environment.cpp \
                                  $(BEHAVE_SRCDIR)behavefactory.cpp \
+                                 $(BEHAVE_SRCDIR)enact.cpp \
                                  $(BEHAVE_SRCDIR)objrefinstances.cpp \
                                  $(BEHAVE_SRCDIR)main.cpp
 
