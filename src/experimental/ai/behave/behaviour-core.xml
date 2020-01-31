@@ -1,26 +1,45 @@
 <behavefactory>
+   <impactparams>
+      <comment>
+         These parameters affect impact moods. An impact mood is a mood which
+         is set up to have an impact on other moods. Impact moods are set up
+         from -1.0 to +1.0 to allow for diminish and intensify levels of a mood
+         after an action has been performed. All other moods vary from 0.0 to 
+         1.0.
+         Since impact moods have an impact on other moods, we need a mechanism
+         to be able to regulate the maximum impact. This controlling mechanism
+         will allow for subtle changes in the mood as well as larger changes
+         in one's mood within reason to the maximum extent possible.
+         The settings below define the subtlety level in intensity shift of
+         moods in various scenarios. These are ranges within -1.0 to 1.0 that
+         are used limit the effect of an impact mood on different moods
+         pertaining to the platform.
+      </comment>
+      <currentmoodminintensity>-0.0010</currentmoodminintensity>
+      <currentmoodmaxintensity>+0.0010</currentmoodmaxintensity>
+      <biasmoodminintensity>-0.00001</biasmoodminintensity>
+      <biasmoodmaxintensity>+0.00001</biasmoodmaxintensity>
+      <envmoodminintensity>-0.0001</envmoodminintensity>
+      <envmoodmaxintensity>+0.0001</envmoodmaxintensity>
+      <relmoodminintensity>-0.0020</relmoodminintensity>
+      <relmoodmaxintensity>+0.0020</relmoodmaxintensity>
+   </impactparams>
    <lastids>
       <comment>
-         First 50 actions reserved for behaviour core actions that are
-         too common.
+         First 99 actions reserved for behaviour core actions.
          These actions and their intensity trigger/reaction ratings can
          be subjected to change as deemed fit since they are highly
          opiniated and open to creative ideas.
 
-         First action 'introduce' is used when someone wants to introduce
-         himself/herself to someone else. In comments are given to explain
-         the rationale. Subsequent actions follow on the similar deducing logic
-         in building this model.
-
          Remembering: An action has a trigger which defines the minimum
-         level of each emotion in an action potential mood for it to be
-         considered triggerable. See actiondecider. A 0 indicates that
+         level of each emotion for it to be considered triggerable.
+         See actiondecider. A 0 indicates that
          the emotion concerned will not have a deciding factor on the
          trigger of the action in mention.
-         An action also has reactions which are used to leave an impact
-         on the actee in a relationship and the environment it has been
-         acted in as well.
-         Limits are -1.0 to 1.0.
+         An action also has reactions (aka impact moods) which are used to leave
+         an impact on beings, relationships and the environment as well.
+         Limits are 0.0 to 1.0 for normal emotions.
+         For impacting moods, limits are -1.0 to 1.0.
       </comment>
       <lastcoreactionid>99</lastcoreactionid>
 
@@ -38,65 +57,71 @@
          <id>12</id><name>fight</name>
          <id>13</id><name>kiss</name>
          <id>14</id><name>dance</name>
-         <id>15</id><name>dancedirty</name>
+         <id>15</id><name>seductivedance</name>
          <id>16</id><name>makeout</name>
          <id>17</id><name>sleep</name>
          <id>18</id><name>deescalate</name>
       </actionindex>
    </lastids>
    <exampleaction>
-      <action>introduce
-         <id>1</id>
+      <action>talk
+         <id>2</id>
          <comment>
-            Note: This action 'introduce' is an example of how actions are
+            Note: This action 'talk' is an example of how actions are
             deduced for the behaviour ai model.
          </comment>
          <mood>triggers
             <comment>
-               One does not need to be joyful to initiate an introduction.
+               One does not need to be extremely joyful to talk to someone else.
                However, one needs to be at a minimum level of joy before they
-               can have the energy to interact. Remember these are base line
-               triggers and they vary for each individual as each being has
-               their own bias and current mood :)
+               can have the energy to interact.
             </comment>
-            <joy>-0.12</joy>
+            <joy>0.0125</joy>
 
             <comment>
-               In this case, trust will not be considered as a trigger for
-               intitiating conversation.
+               Trust is also an important factor in conversations so it is
+               required to a certain extent.
             </comment>
-            <trust>0.00</trust>
+            <trust>0.1520</trust>
 
             <comment>
-               Fear should be minimal if one is to initate introductions to
-               unknown others. Note, fear is not negative here. Negative
-               fear may suggest over confidence. That's not needed as minimal
-               requirements to initiate conversation. A little bit of fear is
-               ok.
+               Fear is not taken into account when talking to others. It is not
+               a triggering factor from this perspective.
             </comment>
-            <fear>0.12</fear>
-
-            <surprise>0.00</surprise>
+            <fear>0.0000</fear>
+            <surprise>0.0000</surprise>
 
             <comment>
                Remembering that sadness is the opposite of joy. One *may* say
-               that anything up to 0.20 sadness is allowed. Remembering however
+               that anything up to 0.0125 sadness is allowed. However
                the action gets triggered for anything above a trigger. In that
                light sadness will not be considered as a trigger emotion. More
-               sadness will not encourage someone to introduce themselves to
-               someone new. However, it is more joy that is more inclined to
+               sadness will not encourage someone to talk more in this case.
+               However, it is more joy that is more inclined to
                encourage this. Note that despite being opposite, joy and sadness
-               don't work together but as two individual and separate emotions.
+               are not bound as one but as two individual and separate emotions.
+               That said, they can be made to work together as per the example
+               shown here. Notable is the fact that these are highly opiniated
+               conclusions.
             </comment>
             <sadness>0.00</sadness>
             <disgust>0.00</disgust>
             <anger>0.00</anger>
-            <anticipation>0.00</anticipation>
+            <anticipation>0.23</anticipation>
          </mood>
          <mood>instigatereactions
             <comment>
-               Having broken the ice out of own initiative leaves a sense of
-               fulfillment represented as below.
+               Instigate reactions is an impacting mood that will be scaled
+               down to a different much smaller range so that it will have an
+               impact on another mood reasonably. See impactingmoods further
+               above to see the range it will be scaled down to. This is 
+               entirely configurable.
+               Remembering that impacting moods are defined from -1.0 to 1.0 to
+               support deduction of an emotion, these ones are applied to the
+               being that has performed the action.
+
+               In this case, speaking with some has the following impacts on the
+               speaker.
             </comment>            
             <joy>0.002</joy>
             <trust>0.00</trust>
@@ -109,27 +134,43 @@
          </mood>
          <mood>recipientreactions
             <comment>
-               Having a stranger introduce themselves to you can increase joy
-               slightly.
+               Recipient reactions is another impacting mood with the same 
+               properties as instigatereactions, only this time, it is applied
+               to the being that has been impacted.
+
+               In this case, the impacting mood is applied to the person
+               listening to the conversation.
             </comment>            
-            <joy>0.20</joy>
+            <joy>0.00</joy>
             <trust>0.00</trust>
             <fear>-0.10</fear>
             <surprise>0.30</surprise>
             <sadness>-0.05</sadness>
             <disgust>-0.02</disgust>
             <anger>-0.08</anger>
-            <anticipation>0.00</anticipation>
+            <anticipation>0.5300</anticipation>
          </mood>
+         <comment>
+            Speaking to someone unknown is possible, and creates a relationship.
+         </comment>
          <forgesrelationship>1</forgesrelationship>
+         
+         <comment>
+            Speaking to someone requires a relationship. This can be forged on
+            the fly or could have existed in the first place.
+         </comment>
          <requiresrelationship>1</requiresrelationship>
-         <chainresponses>
+         <chainresponses>talk,cheer,support,disrespect,argue,raisevoice
             <comment>
-               If someone is received by an introduction, they have the option
-               to act back by introducing themselves and/or start talking.
+               After speaking to someone, the following actions can be reacted
+               on us by the listener.
             </comment>
-            <actionid>1</actionid>
-            <actionid>2></actionid>
+            <actionid>2</actionid>
+            <actionid>3</actionid>
+            <actionid>4</actionid>
+            <actionid>8</actionid>
+            <actionid>9</actionid>
+            <actionid>10</actionid>
          </chainresponses>
       </action>
    </exampleaction>
@@ -137,34 +178,34 @@
    <action>talk
       <id>2</id>
       <mood>triggers
-         <joy>-0.73</joy>
-         <trust>-0.71</trust>
-         <fear>0.00</fear>
-         <surprise>0.00</surprise>
+         <joy>0.0125</joy>
+         <trust>0.1520</trust>
+         <fear>0.0000</fear>
+         <surprise>0.0000</surprise>
          <sadness>0.00</sadness>
          <disgust>0.00</disgust>
          <anger>0.00</anger>
-         <anticipation>0.00</anticipation>
+         <anticipation>0.23</anticipation>
       </mood>
       <mood>instigatereactions
-         <joy>0.20</joy>
-         <trust>0.006</trust>
-         <fear>-0.01</fear>
-         <surprise>0.026</surprise>
-         <sadness>-0.008</sadness>
-         <disgust>-0.01</disgust>
-         <anger>-0.01</anger>
-         <anticipation>-0.002</anticipation>
+         <joy>0.002</joy>
+         <trust>0.00</trust>
+         <fear>-0.08</fear>
+         <surprise>0.00</surprise>
+         <sadness>-0.104</sadness>
+         <disgust>-0.008</disgust>
+         <anger>-0.002</anger>
+         <anticipation>0.36</anticipation>
       </mood>
       <mood>recipientreactions
-         <joy>0.20</joy>
-         <trust>0.006</trust>
-         <fear>-0.01</fear>
-         <surprise>0.026</surprise>
-         <sadness>-0.008</sadness>
-         <disgust>-0.01</disgust>
-         <anger>-0.01</anger>
-         <anticipation>-0.002</anticipation>
+         <joy>0.00</joy>
+         <trust>0.00</trust>
+         <fear>-0.10</fear>
+         <surprise>0.30</surprise>
+         <sadness>-0.05</sadness>
+         <disgust>-0.02</disgust>
+         <anger>-0.08</anger>
+         <anticipation>0.5300</anticipation>
       </mood>
       <forgesrelationship>1</forgesrelationship>
       <requiresrelationship>1</requiresrelationship>
@@ -177,38 +218,37 @@
          <actionid>10</actionid>
       </chainresponses>
    </action>
-
    <action>cheer
       <id>3</id>
       <mood>triggers
-         <joy>0.280</joy>
-         <trust>0.32</trust>
-         <fear>0.00</fear>
-         <surprise>0.00</surprise>
-         <sadness>0.00</sadness>
-         <disgust>0.00</disgust>
-         <anger>0.00</anger>
-         <anticipation>0.00</anticipation>
+         <joy>0.1240</joy>
+         <trust>0.0000</trust>
+         <fear>0.0000</fear>
+         <surprise>0.0673</surprise>
+         <sadness>0.0000</sadness>
+         <disgust>0.0000</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.0000</anticipation>
       </mood>
       <mood>instigatereactions
-         <joy>0.206</joy>
+         <joy>0.0873</joy>
          <trust>0.000</trust>
-         <fear>-0.120</fear>
-         <surprise>0.000</surprise>
-         <sadness>0.000</sadness>
-         <disgust>0.000</disgust>
-         <anger>0.000</anger>
-         <anticipation>0.476</anticipation>
+         <fear>0.0000</fear>
+         <surprise>0.0000</surprise>
+         <sadness>-0.0362</sadness>
+         <disgust>-0.0217</disgust>
+         <anger>-0.0085</anger>
+         <anticipation>0.0087</anticipation>
       </mood>
       <mood>recipientreactions
-         <joy>0.260</joy>
-         <trust>0.020</trust>
-         <fear>0.003</fear>
-         <surprise>0.380</surprise>
-         <sadness>-0.043</sadness>
-         <disgust>-0.023</disgust>
-         <anger>-0.008</anger>
-         <anticipation>0.000</anticipation>
+         <joy>0.0925</joy>
+         <trust>0.0872</trust>
+         <fear>-0.0765</fear>
+         <surprise>0.1276</surprise>
+         <sadness>-0.0925</sadness>
+         <disgust>-0.0575</disgust>
+         <anger>-0.0062</anger>
+         <anticipation>0.0000</anticipation>
       </mood>
       <forgesrelationship>1</forgesrelationship>
       <requiresrelationship>1</requiresrelationship>
@@ -223,34 +263,34 @@
    <action>support
       <id>4</id>
       <mood>triggers
-         <joy>0.000</joy>
-         <trust>0.413</trust>
-         <fear>0.00</fear>
-         <surprise>0.00</surprise>
-         <sadness>0.00</sadness>
-         <disgust>0.00</disgust>
-         <anger>0.00</anger>
-         <anticipation>0.00</anticipation>
+         <joy>0.0000</joy>
+         <trust>0.1072</trust>
+         <fear>0.0000</fear>
+         <surprise>0.0000</surprise>
+         <sadness>0.0000</sadness>
+         <disgust>0.0000</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.0430</anticipation>
       </mood>
       <mood>instigatereactions
-         <joy>0.021</joy>
-         <trust>0.021</trust>
-         <fear>0.000</fear>
-         <surprise>0.000</surprise>
-         <sadness>0.000</sadness>
-         <disgust>0.000</disgust>
-         <anger>0.000</anger>
-         <anticipation>0.103</anticipation>
+         <joy>0.0000</joy>
+         <trust>0.0000</trust>
+         <fear>0.0000</fear>
+         <surprise>0.0000</surprise>
+         <sadness>0.0000</sadness>
+         <disgust>0.0000</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.1876</anticipation>
       </mood>
       <mood>recipientreactions
-         <joy>0.002</joy>
-         <trust>0.360</trust>
-         <fear>-0.120</fear>
-         <surprise>0.008</surprise>
-         <sadness>-0.002</sadness>
-         <disgust>-0.010</disgust>
-         <anger>-0.004</anger>
-         <anticipation>0.310</anticipation>
+         <joy>0.0132</joy>
+         <trust>0.0592</trust>
+         <fear>-0.0965</fear>
+         <surprise>0.0430</surprise>
+         <sadness>-0.0082</sadness>
+         <disgust>0.0000</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.0632</anticipation>
       </mood>
       <forgesrelationship>1</forgesrelationship>
       <requiresrelationship>1</requiresrelationship>
@@ -264,38 +304,38 @@
    <action>hug
       <id>5</id>
       <mood>triggers
-         <joy>0.100</joy>
-         <trust>0.100</trust>
-         <fear>0.000</fear>
-         <surprise>0.00</surprise>
-         <sadness>0.00</sadness>
-         <disgust>0.00</disgust>
-         <anger>0.00</anger>
-         <anticipation>0.00</anticipation>
+         <joy>0.0000</joy>
+         <trust>0.0830</trust>
+         <fear>0.0000</fear>
+         <surprise>0.0000</surprise>
+         <sadness>0.0000</sadness>
+         <disgust>0.0000</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.0000</anticipation>
       </mood>
       <mood>instigatereactions
-         <joy>0.008</joy>
-         <trust>0.036</trust>
-         <fear>-0.003</fear>
-         <surprise>0.000</surprise>
-         <sadness>0.002</sadness>
-         <disgust>0.000</disgust>
-         <anger>0.000</anger>
-         <anticipation>0.002</anticipation>
+         <joy>0.0316</joy>
+         <trust>0.0132</trust>
+         <fear>-0.0865</fear>
+         <surprise>0.0000</surprise>
+         <sadness>-0.0059</sadness>
+         <disgust>0.0000</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.0820</anticipation>
       </mood>
       <mood>recipientreactions
-         <joy>0.018</joy>
-         <trust>0.285</trust>
-         <fear>-0.120</fear>
-         <surprise>0.263</surprise>
-         <sadness>-0.010</sadness>
-         <disgust>-0.010</disgust>
-         <anger>-0.023</anger>
-         <anticipation>0.227</anticipation>
+         <joy>0.132</joy>
+         <trust>0.096</trust>
+         <fear>-0.085</fear>
+         <surprise>0.0832</surprise>
+         <sadness>-0.0125</sadness>
+         <disgust>0.0000</disgust>
+         <anger>-0.0056</anger>
+         <anticipation>0.0082</anticipation>
       </mood>
       <forgesrelationship>0</forgesrelationship>
       <requiresrelationship>1</requiresrelationship>
-      <chainresponses>cheer,hug,kiss,dance,dancedirty
+      <chainresponses>cheer,hug,kiss,dance,seductivedance
          <actionid>3</actionid>
          <actionid>5</actionid>
          <actionid>13</actionid>
@@ -307,7 +347,7 @@
    <action>laughwith
       <id>6</id>
       <mood>triggers
-         <joy>0.120</joy>
+         <joy>0.5060</joy>
          <trust>0.000</trust>
          <fear>0.000</fear>
          <surprise>0.00</surprise>
@@ -353,7 +393,7 @@
          <fear>0.000</fear>
          <surprise>0.00</surprise>
          <sadness>0.00</sadness>
-         <disgust>-0.326</disgust>
+         <disgust>0.1630</disgust>
          <anger>0.00</anger>
          <anticipation>0.00</anticipation>
       </mood>
@@ -390,34 +430,34 @@
    <action>disrespect
       <id>8</id>
       <mood>triggers
-         <joy>0.000</joy>
-         <trust>0.000</trust>
-         <fear>0.000</fear>
-         <surprise>0.00</surprise>
-         <sadness>0.232</sadness>
-         <disgust>0.344</disgust>
-         <anger>0.143</anger>
-         <anticipation>0.00</anticipation>
+         <joy>0.0000</joy>
+         <trust>0.0000</trust>
+         <fear>0.0000</fear>
+         <surprise>0.0000</surprise>
+         <sadness>0.0862</sadness>
+         <disgust>0.1532</disgust>
+         <anger>0.1625</anger>
+         <anticipation>0.0532</anticipation>
       </mood>
       <mood>instigatereactions
-         <joy>0.026</joy>
-         <trust>-0.400</trust>
-         <fear>0.023</fear>
-         <surprise>0.000</surprise>
-         <sadness>0.000</sadness>
-         <disgust>0.000</disgust>
-         <anger>-0.023</anger>
-         <anticipation>0.075</anticipation>
+         <joy>0.0000</joy>
+         <trust>0.0000</trust>
+         <fear>0.0086</fear>
+         <surprise>0.0000</surprise>
+         <sadness>0.0000</sadness>
+         <disgust>0.0565</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.0793</anticipation>
       </mood>
       <mood>recipientreactions
-         <joy>-0.089</joy>
-         <trust>0.000</trust>
-         <fear>0.023</fear>
-         <surprise>0.000</surprise>
-         <sadness>0.036</sadness>
-         <disgust>0.382</disgust>
-         <anger>0.086</anger>
-         <anticipation>0.075</anticipation>
+         <joy>-0.0586</joy>
+         <trust>-0.0862</trust>
+         <fear>0.0068</fear>
+         <surprise>0.0020</surprise>
+         <sadness>0.0892</sadness>
+         <disgust>0.0958</disgust>
+         <anger>0.1062</anger>
+         <anticipation>-0.0058</anticipation>
       </mood>
       <forgesrelationship>1</forgesrelationship>
       <requiresrelationship>1</requiresrelationship>
@@ -439,8 +479,8 @@
          <fear>0.000</fear>
          <surprise>0.00</surprise>
          <sadness>0.000</sadness>
-         <disgust>0.216</disgust>
-         <anger>0.015</anger>
+         <disgust>0.6080</disgust>
+         <anger>0.5075</anger>
          <anticipation>0.00</anticipation>
       </mood>
       <mood>instigatereactions
@@ -482,9 +522,9 @@
          <fear>0.000</fear>
          <surprise>0.000</surprise>
          <sadness>0.000</sadness>
-         <disgust>0.348</disgust>
-         <anger>0.286</anger>
-         <anticipation>0.146</anticipation>
+         <disgust>0.6740</disgust>
+         <anger>0.6430</anger>
+         <anticipation>0.5730</anticipation>
       </mood>
       <mood>instigatereactions
          <joy>0.000</joy>
@@ -529,19 +569,19 @@
          <fear>0.000</fear>
          <surprise>0.000</surprise>
          <sadness>0.000</sadness>
-         <disgust>0.416</disgust>
-         <anger>0.463</anger>
+         <disgust>0.7080</disgust>
+         <anger>0.7315</anger>
          <anticipation>0.000</anticipation>
       </mood>
       <mood>instigatereactions
          <joy>0.020</joy>
          <trust>0.000</trust>
          <fear>0.041</fear>
-         <surprise>-0.000</surprise>
+         <surprise>0.000</surprise>
          <sadness>0.000</sadness>
-         <disgust>0.165</disgust>
+         <disgust>0.000</disgust>
          <anger>-0.087</anger>
-         <anticipation>0.416</anticipation>
+         <anticipation>0.0416</anticipation>
       </mood>
       <mood>recipientreactions
          <joy>-0.279</joy>
@@ -571,8 +611,8 @@
          <fear>0.000</fear>
          <surprise>0.000</surprise>
          <sadness>0.000</sadness>
-         <disgust>0.527</disgust>
-         <anger>0.472</anger>
+         <disgust>0.7635</disgust>
+         <anger>0.7360</anger>
          <anticipation>0.000</anticipation>
       </mood>
       <mood>instigatereactions
@@ -607,38 +647,38 @@
    <action>kiss
       <id>13</id>
       <mood>triggers
-         <joy>0.000</joy>
-         <trust>0.362</trust>
-         <fear>0.000</fear>
-         <surprise>0.000</surprise>
-         <sadness>0.000</sadness>
-         <disgust>0.000</disgust>
-         <anger>0.000</anger>
-         <anticipation>0.187</anticipation>
+         <joy>0.0000</joy>
+         <trust>0.6810</trust>
+         <fear>0.0000</fear>
+         <surprise>0.0000</surprise>
+         <sadness>0.0000</sadness>
+         <disgust>0.0000</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.0316</anticipation>
       </mood>
       <mood>instigatereactions
-         <joy>0.415</joy>
-         <trust>0.108</trust>
-         <fear>-0.205</fear>
-         <surprise>0.000</surprise>
-         <sadness>-0.114</sadness>
-         <disgust>0.000</disgust>
-         <anger>0.000</anger>
-         <anticipation>0.512</anticipation>
+         <joy>0.2635</joy>
+         <trust>0.0286</trust>
+         <fear>-0.0482</fear>
+         <surprise>0.0000</surprise>
+         <sadness>-0.0476</sadness>
+         <disgust>0.0000</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.4315</anticipation>
       </mood>
       <mood>recipientreactions
-         <joy>0.103</joy>
-         <trust>0.000</trust>
-         <fear>0.000</fear>
-         <surprise>0.136</surprise>
-         <sadness>-0.037</sadness>
-         <disgust>0.000</disgust>
-         <anger>-0.116</anger>
-         <anticipation>0.632</anticipation>
+         <joy>0.0862</joy>
+         <trust>0.0432</trust>
+         <fear>0.0000</fear>
+         <surprise>0.0386</surprise>
+         <sadness>-0.0125</sadness>
+         <disgust>0.0000</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.0000</anticipation>
       </mood>
       <forgesrelationship>0</forgesrelationship>
       <requiresrelationship>1</requiresrelationship>
-      <chainresponses>kiss,dancedirty,makeout,deescalate
+      <chainresponses>kiss,seductivedance,makeout,deescalate
          <actionid>13</actionid>
          <actionid>15</actionid>
          <actionid>16</actionid>
@@ -649,7 +689,7 @@
    <action>dance
       <id>14</id>
       <mood>triggers
-         <joy>0.425</joy>
+         <joy>0.7125</joy>
          <trust>0.000</trust>
          <fear>0.000</fear>
          <surprise>0.000</surprise>
@@ -681,7 +721,7 @@
       <forgesrelationship>1</forgesrelationship>
       <requiresrelationship>1</requiresrelationship>
       <chainresponses>introduce,talk,cheer,hug,laughwith,argue,kiss,
-         dance,dancedirty,deescalate
+         dance,seductivedance,deescalate
          <actionid>1</actionid>
          <actionid>2</actionid>
          <actionid>3</actionid>
@@ -695,17 +735,17 @@
       </chainresponses>
    </action>
 
-   <action>dancedirty
+   <action>seductivedance
       <id>15</id>
       <mood>triggers
          <joy>0.000</joy>
-         <trust>0.318</trust>
+         <trust>0.6590</trust>
          <fear>0.000</fear>
          <surprise>0.000</surprise>
          <sadness>0.000</sadness>
          <disgust>0.000</disgust>
          <anger>0.000</anger>
-         <anticipation>0.187</anticipation>
+         <anticipation>0.5935</anticipation>
       </mood>
       <mood>instigatereactions
          <joy>0.431</joy>
@@ -729,7 +769,7 @@
       </mood>
       <forgesrelationship>0</forgesrelationship>
       <requiresrelationship>1</requiresrelationship>
-      <chainresponses>hug,laughwith,argue,punch,dance,dancedirty,makeout,
+      <chainresponses>hug,laughwith,argue,punch,dance,seductivedance,makeout,
          deescalate         
          <actionid>5</actionid>
          <actionid>6</actionid>
@@ -746,13 +786,13 @@
       <id>16</id>
       <mood>triggers
          <joy>0.000</joy>
-         <trust>0.432</trust>
+         <trust>0.7160</trust>
          <fear>0.000</fear>
          <surprise>0.000</surprise>
          <sadness>0.000</sadness>
          <disgust>0.000</disgust>
          <anger>0.000</anger>
-         <anticipation>0.326</anticipation>
+         <anticipation>0.6630</anticipation>
       </mood>
       <mood>instigatereactions
          <joy>0.336</joy>
@@ -788,34 +828,34 @@
    <action>deescalate
       <id>18</id>
       <mood>triggers
-         <joy>0.000</joy>
-         <trust>0.000</trust>
-         <fear>0.000</fear>
-         <surprise>0.000</surprise>
-         <sadness>0.000</sadness>
-         <disgust>0.000</disgust>
-         <anger>0.000</anger>
-         <anticipation>0.424</anticipation>
+         <joy>0.0000</joy>
+         <trust>0.0000</trust>
+         <fear>0.0872</fear>
+         <surprise>0.0265</surprise>
+         <sadness>0.0000</sadness>
+         <disgust>0.1276</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.2724</anticipation>
       </mood>
       <mood>instigatereactions
-         <joy>0.000</joy>
-         <trust>0.000</trust>
-         <fear>-0.386</fear>
-         <surprise>0.000</surprise>
-         <sadness>0.000</sadness>
-         <disgust>-0.132</disgust>
-         <anger>0.000</anger>
-         <anticipation>0.431</anticipation>
+         <joy>0.0000</joy>
+         <trust>0.0279</trust>
+         <fear>0.0089</fear>
+         <surprise>0.0000</surprise>
+         <sadness>0.0000</sadness>
+         <disgust>0.0000</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.3423</anticipation>
       </mood>
       <mood>recipientreactions
-         <joy>-0.086</joy>
-         <trust>0.000</trust>
-         <fear>0.000</fear>
-         <surprise>0.000</surprise>
-         <sadness>0.000</sadness>
-         <disgust>0.000</disgust>
-         <anger>0.000</anger>
-         <anticipation>-0.516</anticipation>
+         <joy>0.0000</joy>
+         <trust>0.0000</trust>
+         <fear>0.1296</fear>
+         <surprise>0.0496</surprise>
+         <sadness>0.0000</sadness>
+         <disgust>0.0000</disgust>
+         <anger>0.0000</anger>
+         <anticipation>0.1473</anticipation>
       </mood>
       <forgesrelationship>0</forgesrelationship>
       <requiresrelationship>1</requiresrelationship>

@@ -33,6 +33,7 @@ Purpose: A relationship is defined by two parties, party A, and party B.
 Version control
 29 Nov 2019 Duncan Camilleri           Initial development
 09 Dec 2019 Duncan Camilleri           getPartner() and impact()
+13 Jan 2020 Duncan Camilleri           Impact model changes
 
 */
 
@@ -102,6 +103,10 @@ protected:
    uint64_t mId;
    char mName[32];
    RelationshipData mRelData;
+
+public:
+   static intensity mCfgRelationshipImpactingMoodMinIntensity;
+   static intensity mCfgRelationshipImpactingMoodMaxIntensity;
 };
 
 //

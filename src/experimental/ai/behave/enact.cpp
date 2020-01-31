@@ -27,6 +27,8 @@ Purpose: Combines beings, actions, environments and relationships together in a
 
 Version control
 09 Dec 2019 Duncan Camilleri           Initial development
+17 Jan 2020 Duncan Camilleri           enactAll() goes random
+
 */
 
 #include <exception>
@@ -206,7 +208,9 @@ void Enact::enactAll()
    // Go through each being in the factory.
    for (Being& b : mFactory.mBeings) {
       // Go through each action, and perform.
-      const std::list<ObjRef<const Action>>& actions = b.getActableActions();
+      std::list<ObjRef<const Action>> actions = b.getActableActions();
+      randomize(actions, 3);
+
       for (ObjRef<const Action> actionref : actions) {
          // Solo action?
          const Action* pAction = actionref.getObj();
@@ -251,3 +255,39 @@ bool Enact::enactWithBeings(const Action& a, Being& instigator)
    // No Action taken!
    return false;
 }
+
+//
+// |         |    o|
+// |--- ,---.|    .|---.,---.,---.,---.,   .
+// |    |   ||    ||   ||    ,---||    |   |
+// `---'`---'`---'``---'`    `---^`    `---|
+//                                     `---'
+//
+bool Enact::randomize(std::list<ObjRef<const Action>>& lst, int times /*= 2*/)
+{
+   int shuffleSeq = 0;
+   int count = lst.size();
+   int n;
+
+   // Shuffle multiple times to have a stronger effect.
+   for (; shuffleSeq < times; ++shuffleSeq) {
+      for (n = 0; n < count - 1; ++n) {
+         // Prepare randomization.
+         uniform_int_distribution<int> dist(n + 1, count - 1);
+         default_random_engine rand;
+
+         // Reset the distribution and generate the next number.
+         rand.seed(chrono::system_clock::now().time_since_epoch().count());
+         int source = dist(rand); dist(rand); dist(rand);
+
+         list<ObjRef<const Action>>::iterator iSource = lst.begin();
+         std::advance(iSource, source);
+         list<ObjRef<const Action>>::iterator iTarget = lst.begin();
+         std::advance(iTarget, n);
+         std::swap(*iSource, *iTarget);
+      }
+   }
+
+   return true;
+}
+

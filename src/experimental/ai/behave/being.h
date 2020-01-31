@@ -40,6 +40,7 @@ Version control
 28 Nov 2019 Duncan Camilleri           Doable actions become Actable actions
 28 Nov 2019 Duncan Camilleri           Accessor for actable actions
 16 Dec 2019 Duncan Camilleri           Added environment where being resides
+10 Jan 2020 Duncan Camilleri           Introduced impact parameters
 
 */
 
@@ -119,6 +120,12 @@ protected:
    std::list<ObjRef<const Action>> mActableActionRefs;
    // List of actions having an impact on this being.
    std::list<ActionQty> mImpactActions;
+
+public:
+   static intensity mCfgCurrentImpactingMoodMinIntensity;
+   static intensity mCfgCurrentImpactingMoodMaxIntensity;
+   static intensity mCfgBiasImpactingMoodMinIntensity;
+   static intensity mCfgBiasImpactingMoodMaxIntensity;
 };
 
 //

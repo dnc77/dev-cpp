@@ -27,6 +27,7 @@ Purpose: Combines beings, actions, environments and relationships together in a
 
 Version control
 09 Dec 2019 Duncan Camilleri           Initial development
+17 Jan 2020 Duncan Camilleri           Introduced generic randomize function
 
 */
 
@@ -97,6 +98,10 @@ protected:
    std::mutex mEnactSync;
 
    bool enactWithBeings(const Action& a, Being& instigator);
+
+private:
+   // To library.
+   bool randomize(std::list<ObjRef<const Action>>& lst, int times = 2);
 };
 
 

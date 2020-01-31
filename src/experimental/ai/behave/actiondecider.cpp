@@ -101,6 +101,7 @@ Version control
 28 Nov 2019 Duncan Camilleri           Initial development
 17 Dec 2019 Duncan Camilleri           Support for relationship forging actions
 19 Dec 2019 Duncan Camilleri           Support emotions without trigger actions
+16 Jan 2020 Duncan Camilleri           WeightingFactor with +'ve only emotions
 
 */
 
@@ -146,53 +147,59 @@ ActionDecider::~ActionDecider()
 // Actor-Relationship specific
 //
 
-// The action potential
+// The action potential.
+// Thought process: 
+// We need to establish a balance between the current mood and the bias mood.
+// To do that, we do the average of both, however the bias mood has a much less
+// influence than the current mood. To mimic this, 
 Mood ActionDecider::calcActionPotential()
 {
-   const intensity biasInfluence = 0.70;
-   const intensity currentInfluence = 1.20;
-   const intensity ambienceInfluence = 0.10;
-   const intensity relInfluence = 1.15;
-   Mood actionPotential[3];
+   const int apBiasMoodRatio = 1;
+   const int apCurrentMoodRatio = 6;
+   const int apRelationMoodRatio = 4;
+   const int total = apCurrentMoodRatio + apBiasMoodRatio + apRelationMoodRatio;
+
+   Mood actionPotential[total];
    Mood average;
-   // 0 - biasMood with a slightly lower influence.
-   mpInstigator->getBiasMood().intensify(actionPotential[0], biasInfluence);
-   // 1 - currentMood with stronger influence.
-   mpInstigator->getCurrentMood().intensify(
-      actionPotential[1], currentInfluence);
-   // 2 - relationship mood of actor.
+   int order = 0;
+   int n = 0;
+
+   // biasMood first.
+   for (; n < apBiasMoodRatio; ++n, ++order) {
+      actionPotential[order] = mpInstigator->getBiasMood();
+   }
+
+   // currentMood.
+   for (n = 0; n < apCurrentMoodRatio; ++n, ++order) {
+      actionPotential[order] = mpInstigator->getCurrentMood();
+   }
+
+   // relationship mood of actor.
    if (mpRel != nullptr) {
       if (mpInstigator->id() == mpRel->getData().mBeingRefA.getId()) {
          // Include relationship modifier.
-         mpRel->getData().mMoodA.intensify(actionPotential[2], relInfluence);
+         for (n = 0; n < apRelationMoodRatio; ++n, ++order) {
+            actionPotential[order] = mpRel->getData().mMoodA;
+         }
 
-         average = Mood::average(actionPotential, 3);
+         average = Mood::average(actionPotential, total);
       } else if (mpInstigator->id() == mpRel->getData().mBeingRefB.getId()) {
          // Include relationship modifier.
-         mpRel->getData().mMoodB.intensify(actionPotential[2], relInfluence);
+         for (n = 0; n < apRelationMoodRatio; ++n, ++order) {
+            actionPotential[order] = mpRel->getData().mMoodB;
+         }
 
-         average = Mood::average(actionPotential, 3);
+         average = Mood::average(actionPotential, total);
       } else {
          // Find resultant potential - no valid relationship.
-         average = Mood::average(actionPotential, 2);
+         average = Mood::average(actionPotential, total - apRelationMoodRatio);
       }
    } else {
       // Find resultant potential - no valid relationship.
-      average = Mood::average(actionPotential, 2);
+      average = Mood::average(actionPotential, total - apRelationMoodRatio);
    }
 
-   // Established base line mood for actor. Now consider the environment.
-   Environment* pEnv = const_cast<Being*>(mpInstigator)->getEnvironment();
-   if (!pEnv)
-      return average;
-   
-   Mood ambience = pEnv->getAmbienceMood();
-   ambience.intensify(ambience, ambienceInfluence);
-
-   // We want to apply a subtle influence of the environment's ambience
-   // mood to the baseline mood of the actor to conclude the action potential
-   // calculation.
-   return average + ambience;
+   return average;
 }
 
 //
@@ -299,7 +306,7 @@ bool ActionDecider::isTriggerable(double& weightingFactor)
       // intensities of each emotion and the *enabled* trigger emotion.
       // So we can say that given Trigger mood T[e], and Action potential AP[e],
       // the weighting factor would be:
-      // avg(summation((AP[e] - T[e]) / 2) where e = 1 to 8 (for each emotion).
+      // avg(summation(AP[e] - T[e])) where e = 1 to 8 (for each emotion).
       if (emotion != 0) {
          nEnabledTriggers++;
          weightingFactor += (ap.get((Mood::Plutchik)n) - emotion);
@@ -308,7 +315,7 @@ bool ActionDecider::isTriggerable(double& weightingFactor)
 
    // There is enough emotion to make it plausible for this action to happen.
    if (nEnabledTriggers > 0) {
-      weightingFactor = weightingFactor / (nEnabledTriggers * 2);
+      weightingFactor = weightingFactor / nEnabledTriggers;
       return true;
    } else if (nEnabledTriggers == 0) {
       weightingFactor = 0.5;

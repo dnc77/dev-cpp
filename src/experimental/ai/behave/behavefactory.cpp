@@ -34,6 +34,7 @@ Version control
 09 Dec 2019 Duncan Camilleri           Removed toStdout for now
 11 Dec 2019 Duncan Camilleri           Introduced ObjRef loading functions
 17 Dec 2019 Duncan Camilleri           Revamp of relationship spawning rules
+13 Jan 2020 Duncan Camilleri           Introduced impact parameters
 
 */
 
@@ -384,6 +385,10 @@ bool BehaveFactory::load(const char* const filename)
          if (!loadEnvironmentNode(child)) {
             return false;
          }
+      } else if (strncmp(child.getName(), "impactparams", 12) == 0) {
+         if (!loadImpactParams(child)) {
+            return false;
+         }
       }
    }
 
@@ -516,6 +521,41 @@ bool BehaveFactory::loadEnvironmentNode(Node& child)
    return true;
 }
 
+bool BehaveFactory::loadImpactParams(Node& ip)
+{
+   // We have a behave factory loaded. Get each child.
+   list<Node>& children = ip.getChildren();
+   for (Node& child : children) {
+      if (strncmp(child.getName(), "currentmoodminintensity", 23) == 0) {
+         Being::mCfgCurrentImpactingMoodMinIntensity =
+            (intensity)child.getDouble(child.getValue());
+      } else if (strncmp(child.getName(), "currentmoodmaxintensity", 23) == 0) {
+         Being::mCfgCurrentImpactingMoodMaxIntensity =
+            (intensity)child.getDouble(child.getValue());
+      } else if (strncmp(child.getName(), "biasmoodminintensity", 20) == 0) {
+         Being::mCfgBiasImpactingMoodMinIntensity =
+            (intensity)child.getDouble(child.getValue());
+      } else if (strncmp(child.getName(), "biasmoodmaxintensity", 20) == 0) {
+         Being::mCfgBiasImpactingMoodMaxIntensity =
+            (intensity)child.getDouble(child.getValue());
+      } else if (strncmp(child.getName(), "envmoodminintensity", 19) == 0) {
+         Environment::mCfgAmbienceImpactingMoodMinIntensity =
+            (intensity)child.getDouble(child.getValue());
+      } else if (strncmp(child.getName(), "envmoodmaxintensity", 19) == 0) {
+         Environment::mCfgAmbienceImpactingMoodMaxIntensity =
+            (intensity)child.getDouble(child.getValue());
+      } else if (strncmp(child.getName(), "relmoodminintensity", 19) == 0) {
+         Relationship::mCfgRelationshipImpactingMoodMinIntensity =
+            (intensity)child.getDouble(child.getValue());
+      } else if (strncmp(child.getName(), "relmoodmaxintensity", 19) == 0) {
+         Relationship::mCfgRelationshipImpactingMoodMaxIntensity =
+            (intensity)child.getDouble(child.getValue());
+      }
+   }
+
+   return true;
+}
+
 bool BehaveFactory::save(const char* const filename)
 {
    // First clear the local node data and assign to a root node.
@@ -607,12 +647,55 @@ bool BehaveFactory::save(const char* const filename)
       }
    }
 
+   // Impact parameters.
+   Node* pImpact = root.spawnChild();
+   if (!pImpact || !saveImpactParams(pImpact)) {
+      return fail();
+   }
+
    // Save file.
    if (!root.toFile(filename)) {
       return fail();
    }
 
    // File saved.
+   return true;
+}
+
+bool BehaveFactory::saveImpactParams(Node* pip)
+{
+   assert(pip);
+   Node* pCurrMin = pip->spawnChild();
+   Node* pCurrMax = pip->spawnChild();
+   Node* pBiasMin = pip->spawnChild();
+   Node* pBiasMax = pip->spawnChild();
+   Node* pEnvMin = pip->spawnChild();
+   Node* pEnvMax = pip->spawnChild();
+   Node* pRelMin = pip->spawnChild();
+   Node* pRelMax = pip->spawnChild();
+   if (!pCurrMin || !pCurrMax || !pBiasMin || !pBiasMax ||
+      !pEnvMin || !pEnvMax || !pRelMin || !pRelMax)
+   {
+      return false;
+   }
+
+   pCurrMin->setValue("currentmoodminintensity",
+      Being::mCfgCurrentImpactingMoodMinIntensity);
+   pCurrMax->setValue("currentmoodmaxintensity",
+      Being::mCfgCurrentImpactingMoodMaxIntensity);
+   pBiasMin->setValue("biasmoodminintensity",
+      Being::mCfgBiasImpactingMoodMinIntensity);
+   pBiasMax->setValue("biasmoodmaxintensity",
+      Being::mCfgBiasImpactingMoodMaxIntensity);
+   pEnvMin->setValue("envmoodminintensity",
+      Environment::mCfgAmbienceImpactingMoodMinIntensity);
+   pEnvMax->setValue("envmoodmaxintensity",
+      Environment::mCfgAmbienceImpactingMoodMaxIntensity);
+   pRelMin->setValue("relmoodminintensity",
+      Relationship::mCfgRelationshipImpactingMoodMinIntensity);
+   pRelMax->setValue("relmoodmaxintensity",
+      Relationship::mCfgRelationshipImpactingMoodMaxIntensity);
+
    return true;
 }
 

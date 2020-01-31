@@ -35,11 +35,14 @@ Version control
 09 Dec 2019 Duncan Camilleri           Reviewed mood impact calculations
 12 Dec 2019 Duncan Camilleri           Added name() accessor
 16 Dec 2019 Duncan Camilleri           Added environment where being resides
+08 Jan 2020 Duncan Camilleri           Fixed bug with impact action counting
+09 Jan 2020 Duncan Camilleri           Changes to impact model
 
 */
 
 #include <assert.h>
 #include <string.h>
+#include <math.h>
 #include <cstdint>
 #include <list>
 #include <string>
@@ -60,6 +63,12 @@ using namespace std;
 // `---'`---'``   '`---|
 //                 `---'
 // 
+
+// Configurable parameters
+intensity Being::mCfgCurrentImpactingMoodMinIntensity = -0.0010;
+intensity Being::mCfgCurrentImpactingMoodMaxIntensity = +0.0010;
+intensity Being::mCfgBiasImpactingMoodMinIntensity = -0.00001;
+intensity Being::mCfgBiasImpactingMoodMaxIntensity = +0.00001;
 
 //
 // Construction
@@ -213,37 +222,49 @@ void Being::impact(const Action& a, bool instigator /*= false*/)
 {
    // Locate ActionQty with a.name and if found increment quantity, otherwise
    // add a new ActionQty item for this action.
+   bool impactedBefore = false;
    list<ActionQty>::iterator i = mImpactActions.begin();
    for (; i != mImpactActions.end(); ++i) {
       const Action* pAction = (*i).getAction();
       if (a.id() == pAction->id()) {
+         impactedBefore = true;
          (*i)++;
-         return;
+         break;
       }
    }
 
-   // Impact the current mood - intensify
+   // Get impacting moods first.
    const Mood& impactingMood =
       (instigator ? a.getInstigateReactions() : a.getRecipientReactions());
+
+   // Impact the current mood.
    unsigned short emotion = 0;
    for (; emotion < Mood::plutchikCount; ++emotion) {
-      const intensity i = impactingMood.get((Mood::Plutchik)emotion);
-      mMood.intensify((Mood::Plutchik)emotion, i);
+      Mood::Plutchik e = (Mood::Plutchik)emotion;
+      mMood.intensify(e,
+         Mood::scaleIntensity(mCfgCurrentImpactingMoodMinIntensity,
+         mCfgCurrentImpactingMoodMaxIntensity, 
+         impactingMood.get(e)),
+         false
+      );
    }
 
    // Impact the bias mood.
-   Mood diminished = impactingMood;
-   impactingMood.diminish(diminished, 2);
-
-   // Apply diminished impacting mood to bias.
    for (emotion = 0; emotion < Mood::plutchikCount; ++emotion) {
       Mood::Plutchik e = (Mood::Plutchik)emotion;
-      mBias.intensify(e, diminished.get(e));
+      mBias.intensify(e,
+         Mood::scaleIntensity(mCfgBiasImpactingMoodMinIntensity,
+         mCfgBiasImpactingMoodMaxIntensity, 
+         impactingMood.get(e)),
+         false
+      );
    }
 
    // Action has not been added as a previous impact action yet.
-   ActionQty qty(a);
-   mImpactActions.push_back(qty);
+   if (!impactedBefore) {
+      ActionQty qty(a);
+      mImpactActions.push_back(qty);
+   }
 }
 
 //

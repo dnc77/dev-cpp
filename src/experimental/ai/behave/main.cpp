@@ -3,6 +3,7 @@
 //
 // Version control
 // 21 Aug 2019 Duncan Camilleri           Initial development
+// 16 Jan 2020 Duncan Camilleri           Basic call changes
 //
 
 #include <sys/time.h>
@@ -279,6 +280,39 @@ bool actionTaken(const Action& action,
    return true;
 }
 
+void runLoop()
+{
+   EnactCallbacks ecb;
+   Enact e(gBehave);
+   
+   ecb.actionDecided = decisionToAct;
+   ecb.actionTaken = actionTaken;
+   e.setCallbacks(&ecb);
+
+   while (true) {
+      e.enactAll();
+   }
+}
+
+void runOnce()
+{
+   EnactCallbacks ecb;
+   Enact e(gBehave);
+
+   // Set enact.
+   ecb.actionDecided = decisionToAct;
+   ecb.actionTaken = actionTaken;
+   e.setCallbacks(&ecb);
+
+   // Set participants.
+   Being* pBeing1 = gBehave.findBeing(1);
+   Being* pBeing2 = gBehave.findBeing(2);
+   Action* pAction = gBehave.findAction(2);
+
+   e.enact(*pAction, pBeing1, pBeing2);
+}
+
+
 int main(int argc, char** argv)
 {
    // Load up data.
@@ -287,27 +321,17 @@ int main(int argc, char** argv)
       return 0;
    }
 
-   // Form a relationship first.
-   RelationshipData reldata;
-   reldata.mBeingRefA.setId(1);
-   reldata.mBeingRefB.setId(2);
-   reldata.mMoodA = 0.5;
-   reldata.mMoodB = 0.5;
-   Relationship rel(reldata);
-   Environment* pEnv = gBehave.findEnv(1);
+   runLoop();
+   // runOnce();
 
-   // Perform a few actions between Bob and Jane.
-   EnactCallbacks ecb;
-   Enact e(gBehave);
-   
-   ecb.actionDecided = decisionToAct;
-   ecb.actionTaken = actionTaken;
-   e.setCallbacks(&ecb);
-   // e.enact(ee);
-
-   while (true) {
-      e.enactAll();
+   /*
+   // Get first two beings.
+   if (!pBeing1 || !pBeing2 || !pAction) {
+      return -1;
    }
+
+   pBeing1->impact(*pAction, true);
+   */
 
    return 0;
 }

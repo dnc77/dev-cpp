@@ -28,6 +28,7 @@ Version control
 26 Nov 2019 Duncan Camilleri           Initial development
 03 Dec 2019 Duncan Camilleri           Added ambience mood
 16 Dec 2019 Duncan Camilleri           Remove residing beings
+13 Jan 2020 Duncan Camilleri           Impact params
 
 */
 
@@ -100,6 +101,10 @@ protected:
    Mood mAmbience;
 
    std::list<ObjRef<const Action>> mActionRefs;       // possible actions
+
+public:
+   static intensity mCfgAmbienceImpactingMoodMinIntensity;
+   static intensity mCfgAmbienceImpactingMoodMaxIntensity;
 };
 
 

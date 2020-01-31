@@ -64,6 +64,7 @@ Version control
 03 Dec 2019 Duncan Camilleri           Added global intensify() function
 09 Dec 2019 Duncan Camilleri           Added diminish()
 24 Dec 2019 Duncan Camilleri           Major alterations to intensify & diminish
+09 Jan 2020 Duncan Camilleri           Support flat/exp intensify & diminish
 
 */
 
@@ -82,16 +83,21 @@ Version control
 #error "mood.h: missing include - serializer.h"
 #endif
 
-// An intensity may vary from -1.0 to 1.0 with
-// 0.0 being neutral, -1.0 being low and 1.0 being high.
+// An intensity may vary from 0.0 to 1.0 with
+// 0.0 being low and 1.0 being high.
+// Impacting intensity have to support negative values and therefore need to
+// be from -MaxIntensity to MaxIntensity (-1.0 to 1.0).
 using intensity = float;
-static const intensity& MinIntensity = -1.0;
+static const intensity& MinIntensity = 0.0;
 static const intensity& NeutralIntensity = 0.0;
 static const intensity& MaxIntensity = 1.0;
-static const intensity& InvalidIntensity = -2.0;
+static const intensity& MinImpactingIntensity = -MaxIntensity;
+static const intensity& InvalidIntensity = -1.0;
 inline void embraceIntensity(intensity& i);
-inline void diminishIntensity(intensity& i, const intensity by);
-inline void intensifyIntensity(intensity& i, const intensity by);
+inline void diminishIntensity(
+   intensity& i, const intensity by, bool flat = true);
+inline void intensifyIntensity(
+   intensity& i, const intensity by, bool flat = true);
 
 typedef struct __MoodIntensities {
    intensity joy;
@@ -162,10 +168,11 @@ public:
    const intensity& get(Plutchik emotion) const;
 
    // Intensity computations
-   void diminish(Mood& target, const intensity by) const;
-   void intensify(const intensity by);
-   void intensify(Mood& target, const intensity by) const;
-   const intensity& intensify(Plutchik emotion, const intensity by);
+   void diminish(Mood& target, const intensity by, bool flat = true) const;
+   void intensify(const intensity by, bool flat = true);
+   void intensify(Mood& target, const intensity by, bool flat = true) const;
+   const intensity& intensify(Plutchik emotion,
+      const intensity by, bool flat = true);
    void neutralize();
    void updateComposites(Plutchik emotion);
    void updateComposites();
@@ -175,6 +182,7 @@ private:
 
 public:
    static Mood average(const Mood* const pMoods, int count);
+   static float scaleIntensity(const float min, const float max, intensity i);
 };
 
 //

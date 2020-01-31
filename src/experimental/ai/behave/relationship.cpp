@@ -33,6 +33,7 @@ Purpose: A relationship is defined by two parties, party A, and party B.
 Version control
 29 Nov 2019 Duncan Camilleri           Initial development
 09 Dec 2019 Duncan Camilleri           getPartner() and impact()
+09 Jan 2020 Duncan Camilleri           impact() exponential diminish
 
 */
 
@@ -56,6 +57,9 @@ Version control
 // `    `---'`---'`---^`---'``---'`   '`---'`   '`|---'
 //                                                |
 // 
+
+intensity Relationship::mCfgRelationshipImpactingMoodMinIntensity = -0.0020;
+intensity Relationship::mCfgRelationshipImpactingMoodMaxIntensity = 0.0020;
 
 //
 // Construction
@@ -180,16 +184,27 @@ void Relationship::impact(const Being& actor, const Action& action)
       pRecipientMood = &mRelData.mMoodA;
    }
 
-   // Impact beings' perceptions of the relationship.
-   Mood actorDiminished;
-   Mood recipientDiminished;
-   action.getInstigateReactions().diminish(actorDiminished, 1);
-   action.getRecipientReactions().diminish(recipientDiminished, 1);
-
+   // Impacting moods (instigator and recipient impacting moods).
+   const Mood& instigateImpact = action.getInstigateReactions();
+   const Mood& recipientImpact = action.getRecipientReactions();
    for (unsigned short emotion = 0; emotion < Mood::plutchikCount; ++emotion) {
       Mood::Plutchik e = (Mood::Plutchik)emotion;
-      pActorMood->intensify(e, actorDiminished.get(e));
-      pRecipientMood->intensify(e, recipientDiminished.get(e));
+      
+      // Impact instigator of action's view on relationship.
+      pActorMood->intensify(e,
+         Mood::scaleIntensity(mCfgRelationshipImpactingMoodMinIntensity,
+            mCfgRelationshipImpactingMoodMaxIntensity, 
+            instigateImpact.get(e)),
+         false
+      );
+
+      // Impact recipient of action's view on relationship.
+      pRecipientMood->intensify(e,
+         Mood::scaleIntensity(mCfgRelationshipImpactingMoodMinIntensity,
+            mCfgRelationshipImpactingMoodMaxIntensity, 
+            recipientImpact.get(e)),
+         false
+      );
    }
 }
 

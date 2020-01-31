@@ -28,6 +28,7 @@ Version control
 26 Nov 2019 Duncan Camilleri           Initial development
 03 Dec 2019 Duncan Camilleri           Added ambience mood
 16 Dec 2019 Duncan Camilleri           Remove residing beings
+09 Jan 2020 Duncan Camilleri           Exponential impact functionality
 
 */
 
@@ -57,6 +58,9 @@ using namespace std;
 // a phone call, a lift, a train etc...
 // Some actions can be performed in an environment and some actions cannot.
 //
+
+intensity Environment::mCfgAmbienceImpactingMoodMinIntensity = -0.0001;
+intensity Environment::mCfgAmbienceImpactingMoodMaxIntensity = 0.0001;
 
 //
 // Construction
@@ -180,13 +184,17 @@ void Environment::name(const uint64_t id, const char* const name)
 void Environment::impact(const Action& a)
 {
    // Diminish the recipient reactions and apply to ambience.
-   Mood diminished;
-   a.getRecipientReactions().diminish(diminished, 3);
+   const Mood& impactingMood = a.getRecipientReactions();
 
    // Apply diminished impacting mood to bias.
    for (unsigned short emotion = 0; emotion < Mood::plutchikCount; ++emotion) {
       Mood::Plutchik e = (Mood::Plutchik)emotion;
-      mAmbience.intensify(e, 1 + diminished.get(e));
+      mAmbience.intensify(e,
+         Mood::scaleIntensity(mCfgAmbienceImpactingMoodMinIntensity,
+         mCfgAmbienceImpactingMoodMaxIntensity, 
+         impactingMood.get(e)),
+         false
+      );
    }
 }
 

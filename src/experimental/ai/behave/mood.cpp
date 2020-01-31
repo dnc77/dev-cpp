@@ -63,6 +63,10 @@ Version control
 03 Dec 2019 Duncan Camilleri           Changed intensify() to be a multiplier
 03 Dec 2019 Duncan Camilleri           Added global intensify() function
 24 Dec 2019 Duncan Camilleri           Major alterations to intensify & diminish
+07 Jan 2020 Duncan Camilleri           IntensifyIntensity comment fix
+07 Jan 2020 Duncan Camilleri           Bug fix in intensify/diminish calcs
+09 Jan 2020 Duncan Camilleri           Support flat/exp intensify & diminish
+16 Jan 2020 Duncan Camilleri           scaleIntensity() should not embrace()
 
 */
 
@@ -98,36 +102,36 @@ void embraceIntensity(intensity& i)
    if (i > MaxIntensity) i = MaxIntensity;
 }
 
-// To diminish an intensity 'i' by an index 'by', the following is done:
-// a) absolute of intensity 'i' is 'absf'
-// b) absf - (absf * (by / 10))
-// c) if i was negative, set results as negative
-void diminishIntensity(intensity& i, const intensity by)
+// A flat diminish simply subtracts the specified 'by' from the intensity 'i'.
+// An exponential diminish subtracts a multiplication of the current value.
+void diminishIntensity(intensity& i, const intensity by, bool flat /*= true*/)
 {
-   float fBy = (float)by / 10;
-   intensity orig = i;
-   intensity absf = fabsf(i);
+   if (flat) {
+      i -= by;
+   } else {
+      intensity orig = i;
+      i = fabsf(i) - (i * by);
 
-   i = absf - (absf * fBy);
-   if (orig < 0)
-      i = -i;
+      if (orig < 0)
+         i = -i;
+   }
 
    embraceIntensity(i);
 }
 
-// To diminish an intensity 'i' by an index 'by', the following is done:
-// a) absolute of intensity 'i' is 'absf'
-// b) absf + (absf * (by / 10))
-// c) if i was negative, set results as negative
-void intensifyIntensity(intensity& i, const intensity by)
+// A flat intensify simply adds the specified 'by' to the intensity 'i'.
+// An exponential intensify adds a multiplication of the current value.
+void intensifyIntensity(intensity& i, const intensity by, bool flat /*= true*/)
 {
-   float fBy = (float)by / 10;
-   intensity orig = i;
-   intensity absf = fabsf(i);
+   if (flat) {
+      i += by;
+   } else {
+      intensity orig = i;
+      i = fabsf(i) + (i * by);
 
-   i = absf + (absf * fBy);
-   if (orig < 0)
-      i = -i;
+      if (orig < 0)
+         i = -i;
+   }
 
    embraceIntensity(i);
 }
@@ -274,12 +278,13 @@ const intensity& Mood::get(Plutchik emotion) const
 //
 
 // Will call on the diminishIntensity function on each emotion of the mood.
-void Mood::diminish(Mood& target, const intensity by) const
+void Mood::diminish(Mood& target,
+   const intensity by, bool flat /*= true*/) const
 {
    target = *this;
    unsigned short n = 0;
    for (; n < plutchikCount; ++n) {
-      diminishIntensity(target.mEmotions[n], by);
+      diminishIntensity(target.mEmotions[n], by, flat);
    }
 
    // Composites.
@@ -287,11 +292,11 @@ void Mood::diminish(Mood& target, const intensity by) const
 }
 
 // Will call on the intensifyIntensity function on each emotion of the mood.
-void Mood::intensify(const intensity by)
+void Mood::intensify(const intensity by, bool flat /*= true*/)
 {
    unsigned short n = 0;
    for (; n < plutchikCount; ++n) {
-      intensifyIntensity(mEmotions[n], by);
+      intensifyIntensity(mEmotions[n], by, flat);
    }
 
    // Update composites.
@@ -300,13 +305,14 @@ void Mood::intensify(const intensity by)
 
 // This does not intensify 'this'. Instead, target is the intensified result of
 // this.
-void Mood::intensify(Mood& target, const intensity by) const
+void Mood::intensify(Mood& target,
+   const intensity by, bool flat /*= true*/) const
 {
    target = *this;
 
    unsigned short n = 0;
    for (; n < plutchikCount; ++n) {
-      intensifyIntensity(target.mEmotions[n], by);
+      intensifyIntensity(target.mEmotions[n], by, flat);
    }
 
    // Update composites.
@@ -314,14 +320,15 @@ void Mood::intensify(Mood& target, const intensity by) const
 }
 
 // Intensifies a single emotion.
-const intensity& Mood::intensify(Plutchik emotion, const intensity by)
+const intensity& Mood::intensify(Plutchik emotion,
+   const intensity by, bool flat /*= true*/)
 {
    assert(emotion < plutchikCount);
    if (emotion >= plutchikCount)
       return InvalidIntensity;
 
    // Intensify.
-   intensifyIntensity(mEmotions[emotion], by);
+   intensifyIntensity(mEmotions[emotion], by, flat);
 
    // Update any composites and return.
    updateComposites(emotion);
@@ -422,6 +429,23 @@ Mood Mood::average(const Mood* const pMoods, int count)
    return result;
 }
 
+// Will change the value of intensity to a float that will fit between a new
+// minimum/maximum range min/max. This is used to change the values of impacting
+// intensities so that they are much smaller. This will in turn shift the moods
+// by a much smaller rate than -1.0 to 1.0. Naturally, events are not meant to
+// shift our moods to significant extents. But rather, this happens over time.
+// Note: Impacting moods vary from a negative to a positive because they need
+// to impact moods by either deducting or increasing the current mood level.
+// As a result, the range of impacting moods is from
+// -MaxIntensity to +MaxIntensity.
+float Mood::scaleIntensity(const float min, const float max, intensity i)
+{
+   float oldRange = MaxIntensity - MinImpactingIntensity;
+   float newRange = max - min;
+   assert(oldRange > 0 && newRange > 0);
+
+   return (((i - MinImpactingIntensity) * newRange) / oldRange) + min;
+}
 
 // 
 // ,-.-.              |,   .         |

@@ -34,6 +34,7 @@ Version control
 09 Dec 2019 Duncan Camilleri           Removed toStdout for now
 11 Dec 2019 Duncan Camilleri           Introduced ObjRef loading functions
 17 Dec 2019 Duncan Camilleri           Revamp of relationship spawning rules
+13 Jan 2020 Duncan Camilleri           Introduced impact parameters
 
 */
 
@@ -103,7 +104,9 @@ public:
    bool loadGatheringNode(Node& child);
    bool loadRelationshipNode(Node& child);
    bool loadEnvironmentNode(Node& child);
+   bool loadImpactParams(Node& ip);
    bool save(const char* const filename);
+   bool saveImpactParams(Node* pip);
 
    // Destroy
    void destroy();
