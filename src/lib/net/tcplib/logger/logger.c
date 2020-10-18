@@ -29,6 +29,7 @@ Version control
 28 Oct 2016 Duncan Camilleri           Added comments to handle members
 28 Oct 2016 Duncan Camilleri           Added indentation functionality
 22 Mar 2019 Duncan Camilleri           Added copyright notice
+17 Oct 2020 Duncan Camilleri           Typecast missing
 */
 
 #include <stdio.h>
@@ -68,7 +69,7 @@ typedef struct {
 loghdl createLoggerHandle(const char* const filename, int level, int std)
 {
    // Allocate a log handle first.
-   loghandle* p = malloc(sizeof(loghandle));
+   loghandle* p = (loghandle*)malloc(sizeof(loghandle));
    if (!p) return 0;
 
    // Set input parameters first.
