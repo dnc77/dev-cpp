@@ -23,9 +23,23 @@ projects:
    experimental/net/ethframe  : ethframe dumper (experiment)
    experimental/concurrency/* : concurrency testing and reviewing tools
 
-Notes:
-
+Usage Notes:
 *  The inc folder defines common classes used in this repository. Include files
    define the interface to a particular library and is a good way to get an idea
    on how it can be used.
 *  Makefiles under the src folder can be used to compile and link.
+
+Compilation Notes:
+*  This repository has been compiled and linked on a Raspberry PI using Raspbian
+   with the following:
+   - gcc (Raspbian 6.3.0-18+rpi1+deb9u1) 6.3.0 20170516
+   - GNU ld (GNU Binutils for Raspbian) 2.28
+   These should compile and link with no warnings or errors however these have
+   not been proven to cross compile. In fact some issues may be encountered on
+   some 64 bit platforms and more recent compilers.
+   Some of these issues include:
+   - Compiling C code and C++ code together using a more recent version of gcc
+
+   These issues should be solveable easily however in case of any difficulties,
+   please do not hesitate to get in touch!
+
