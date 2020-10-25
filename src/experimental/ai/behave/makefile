@@ -3,6 +3,7 @@
 # 20 Aug 2019              created
 # 28 Nov 2019              added actiondecider
 # 29 Nov 2019              added relationships
+# 16 Oct 2020              introducing global compilers and tools
 
 # Get global definitions makefile.
 MKPATH                     := $(shell dirname\
@@ -32,19 +33,19 @@ LIBDIR_RREL                := # no libraries here
 OBJDIR_RDBG                := $(OBJDIR)$(RASPDEBUG)/
 OBJDIR_RREL                := $(OBJDIR)$(RASPREL)/
 
-# Compilers and tools
-CD                         := cd
-MV                         := mv
-MKDIR                      := mkdir -p
-RMDIR                      := rm -Rf
-AR                         := ar
-GCC                        := gcc
-TOUCH                      := touch
-ECHO                       := echo
-VALGRIND                   := valgrind
-VALGRINDOPTFULL            := --leak-check=full --track-origins=yes \
-                              --track-fds=yes
-VALGRINDOUTPUT             :=
+# Compilers and tools (uncomment to override makefile.def)
+# CD                         := cd
+# MV                         := mv
+# MKDIR                      := mkdir -p
+# RMDIR                      := rm -Rf
+# AR                         := ar
+# GCC                        := g++
+# TOUCH                      := touch
+# ECHO                       := echo
+# VALGRIND                   := valgrind
+# VALGRINDOPTFULL            := --leak-check=full --track-origins=yes \
+#                               --track-fds=yes
+# VALGRINDOUTPUT             :=
 
 # Compiler flags
 GCCSTD98                   := -std=c++98

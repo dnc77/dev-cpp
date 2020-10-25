@@ -4,6 +4,7 @@
 # 03 Feb 2019              added logger
 # 23 Mar 2019              added root directory notice and check
 # 28 Mar 2019              start getting dependent libs from global locations
+# 16 Oct 2020              introducing global compilers and tools
 
 # Get global definitions makefile.
 MKPATH                     := $(shell dirname\
@@ -37,19 +38,20 @@ LIBDIR_RREL                := $(LIBDIR)$(RASPREL)/
 OBJDIR_RDBG                := $(OBJDIR)$(RASPDEBUG)/
 OBJDIR_RREL                := $(OBJDIR)$(RASPREL)/
 
-# Compilers and tools
-CD                         := cd
-MV                         := mv
-MKDIR                      := mkdir -p
-RMDIR                      := rm -Rf
-AR                         := ar
-GCC                        := gcc
-TOUCH                      := touch
-ECHO                       := echo
-VALGRIND                   := valgrind
-VALGRINDOPTFULL            := --leak-check=full --track-origins=yes \
-                              --track-fds=yes
-VALGRINDOUTPUT             :=
+# Compilers and tools (uncomment to override makefile.def)
+# CD                         := cd
+# MV                         := mv
+# MKDIR                      := mkdir -p
+# RMDIR                      := rm -Rf
+# AR                         := ar
+GC                         := gcc -x c
+# GCC                        := gcc
+# TOUCH                      := touch
+# ECHO                       := echo
+# VALGRIND                   := valgrind
+# VALGRINDOPTFULL            := --leak-check=full --track-origins=yes \
+#                               --track-fds=yes
+# VALGRINDOUTPUT             :=
 
 # Compiler flags
 GCCSTD98                   := -std=c++98
@@ -224,7 +226,7 @@ memchk :
 # logger debug build
 $(LOGGER_RDBG) : $(LOGGERDEP_RDBG) $(LOGGERINC) $(LOGGERSRC)
 	@$(ECHO) "dbg: Compiling and linking to $@"
-	@$(GCC) $(OBJCOPT_RDBG) $(LOGGERSRC) $(LOGGERDEP_RDBG)
+	@$(GC) $(OBJCOPT_RDBG) $(LOGGERSRC) $(LOGGERDEP_RDBG)
 	@$(MV) *.o $(OBJDIR_RDBG)
 	@$(AR) rc $(LOGGER_RDBG) $(OBJDIR_RDBG)*.o
 

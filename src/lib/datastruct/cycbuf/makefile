@@ -1,6 +1,7 @@
 # History of changes:
 #
 # 25 Mar 2019              introducing globalized compilation
+# 16 Oct 2020              introducing global compilers and tools
 
 # Get global definitions makefile.
 MKPATH                     := $(shell dirname\
@@ -30,19 +31,19 @@ LIBDIR_RREL                := $(LIBDIR)$(RASPREL)/
 OBJDIR_RDBG                := $(OBJDIR)$(RASPDEBUG)/
 OBJDIR_RREL                := $(OBJDIR)$(RASPREL)/
 
-# Compilers and tools
-CD                         := cd
-MV                         := mv
-MKDIR                      := mkdir -p
-RMDIR                      := rm -Rf
-AR                         := ar
-GCC                        := gcc
-TOUCH                      := touch
-ECHO                       := echo
-VALGRIND                   := valgrind
-VALGRINDOPTFULL            := --leak-check=full --track-origins=yes \
-                              --track-fds=yes
-VALGRINDOUTPUT             :=
+# Compilers and tools (override makefile.def)
+# CD                         := cd
+# MV                         := mv
+# MKDIR                      := mkdir -p
+# RMDIR                      := rm -Rf
+# AR                         := ar
+# GCC                        := gcc
+# TOUCH                      := touch
+# ECHO                       := echo
+# VALGRIND                   := valgrind
+# VALGRINDOPTFULL            := --leak-check=full --track-origins=yes \
+#                               --track-fds=yes
+# VALGRINDOUTPUT             :=
 
 # Compiler flags
 GCCSTD98                   := -std=c++98

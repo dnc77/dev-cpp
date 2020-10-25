@@ -40,6 +40,7 @@ Version control
 02 Apr 2019 Duncan Camilleri           Bug not checking for no data available
 02 Apr 2019 Duncan Camilleri           ::recv() returns ssize_t not size_t
 02 Apr 2019 Duncan Camilleri           Support for a full buffer
+17 Oct 2020 Duncan Camilleri           Operator overloads not returning *this
 */
 
 // Includes
@@ -115,16 +116,19 @@ netdataraw& netdataraw::operator<<(netnode& net)
 netdataraw& netdataraw::operator>>(netnode& net)
 {
    mSocket = net.mSocket;
+   return *this;
 }
 
 netdataraw& netdataraw::operator<<(int socket)
 {
    mSocket = socket;
+   return *this;
 }
 
 netdataraw& netdataraw::operator>>(int socket)
 {
    mSocket = socket;
+   return *this;
 }
 
 //
