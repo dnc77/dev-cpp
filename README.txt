@@ -19,7 +19,6 @@ projects:
    lib/encode/becode          : big endian coding for IEEE-754, 16, 32, 64 bit
    lib/encode/elgamal         : an encryption/decryption alg. using mod and exp
    lib/net/tcplib             : a compact TCP/IP library
-   experimental/ai/behave     : a human behaviour ai experimental base
    experimental/net/ethframe  : ethframe dumper (experiment)
    experimental/concurrency/* : concurrency testing and reviewing tools
 

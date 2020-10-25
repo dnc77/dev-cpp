@@ -59,7 +59,6 @@ LIBENC_BECODE              := becode
 LIBENC_ELGAMAL             := elgamal
 LIBNET_TCPLIB              := tcplib
 BINNET_ETHFRAME            := ethframe
-BINAI_BEHAVE               := behave
 
 #
 # Additional paths

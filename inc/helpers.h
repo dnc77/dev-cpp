@@ -27,6 +27,7 @@ Purpose: Various helper utilities.
 Version control
 28 Jan 2019 Duncan Camilleri           Initial development
 22 Mar 2019 Duncan Camilleri           Added copyright notice
+
 */
 
 #ifndef __HELPERS_H_1181F24416A281704183E457A90E8460__
@@ -87,3 +88,4 @@ inline void doubletime(timeval& tv,
 }
 
 #endif   // __HELPERS_H_1181F24416A281704183E457A90E8460__
+
