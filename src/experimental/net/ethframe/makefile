@@ -4,6 +4,7 @@
 # 03 Feb 2019              added logger
 # 23 Mar 2019              added root directory notice and check
 # 28 Mar 2019              start getting dependent libs from global locations
+# 16 Oct 2020              introducing global compilers and tools
 
 # Get global definitions makefile.
 MKPATH                     := $(shell dirname\
@@ -33,19 +34,19 @@ LIBDIR_RREL                := # no libraries here
 OBJDIR_RDBG                := $(OBJDIR)$(RASPDEBUG)/
 OBJDIR_RREL                := $(OBJDIR)$(RASPREL)/
 
-# Compilers and tools
-CD                         := cd
-MV                         := mv
-MKDIR                      := mkdir -p
-RMDIR                      := rm -Rf
-AR                         := ar
-GCC                        := gcc
-TOUCH                      := touch
-ECHO                       := echo
-VALGRIND                   := valgrind
-VALGRINDOPTFULL            := --leak-check=full --track-origins=yes \
-                              --track-fds=yes
-VALGRINDOUTPUT             :=
+# Compilers and tools (uncomment to override makefile.def)
+# CD                         := cd
+# MV                         := mv
+# MKDIR                      := mkdir -p
+# RMDIR                      := rm -Rf
+# AR                         := ar
+# GCC                        := gcc
+# TOUCH                      := touch
+# ECHO                       := echo
+# VALGRIND                   := valgrind
+# VALGRINDOPTFULL            := --leak-check=full --track-origins=yes \
+#                               --track-fds=yes
+# VALGRINDOUTPUT             :=
 
 # Compiler flags
 GCCSTD98                   := -std=c++98

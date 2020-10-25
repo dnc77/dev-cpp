@@ -1,6 +1,7 @@
 # History of changes:
 #
 # 24 Mar 2019              created
+# 16 Oct 2020              introducing global compilers and tools
 
 # Get global definitions makefile.
 MKPATH                     := $(shell dirname\
@@ -27,16 +28,15 @@ ALLMAKE                    := $(CYCBUFMAKE) $(OCTREEMAKE) \
                               $(BECODEMAKE) $(ELGAMALMAKE) \
                               $(TCPLIBMAKE)
 
-# Compilers and tools
-CD                         := cd
-MV                         := mv
-MKDIR                      := mkdir -p
-RMDIR                      := rm -Rf
-AR                         := ar
-FIND                       := find
-GCC                        := gcc
-TOUCH                      := touch
-ECHO                       := echo
+# Compilers and tools (uncomment to override makefile.def)
+# CD                         := cd
+# MV                         := mv
+# MKDIR                      := mkdir -p
+# RMDIR                      := rm -Rf
+# AR                         := ar
+# GCC                        := gcc
+# TOUCH                      := touch
+# ECHO                       := echo
 
 #
 # First rule (parameters)

@@ -2,6 +2,7 @@
 # History of changes:
 #
 # 27 Mar 2019              creation
+# 16 Oct 2020              added compilers and tools here
 
 # Get root path
 GLOBALROOTDIR              := $(shell dirname\
@@ -16,7 +17,22 @@ GLOBALROOTDIR              := $(shell dirname\
 RASPDEBUG                  := dbg
 RASPREL                    := rel
 
+#
+# Compilers and tools
+#
 
+CD                         := cd
+MV                         := mv
+MKDIR                      := mkdir -p
+RMDIR                      := rm -Rf
+AR                         := ar
+GC                         := gcc
+GCC                        := gcc
+TOUCH                      := touch
+ECHO                       := echo
+VALGRIND                   := valgrind
+VALGRINDOPTFULL            := --leak-check=full --track-origins=yes \
+                              --track-fds=yes
 #
 # All projects
 #
