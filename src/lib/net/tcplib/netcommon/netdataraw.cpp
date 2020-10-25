@@ -109,6 +109,7 @@ void netdataraw::commitSendBuf(size_t size)
 netdataraw& netdataraw::operator<<(netnode& net)
 {
    mSocket = net.mSocket;
+   return *this;
 }
 
 netdataraw& netdataraw::operator>>(netnode& net)
