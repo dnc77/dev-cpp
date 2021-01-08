@@ -30,6 +30,8 @@ Version control
 28 Oct 2016 Duncan Camilleri           Added indentation functionality
 22 Mar 2019 Duncan Camilleri           Added copyright notice
 17 Oct 2020 Duncan Camilleri           Typecast missing
+11 Dec 2020 Duncan Camilleri           Added logHex
+12 Dec 2020 Duncan Camilleri           Added label to logHex
 */
 
 #include <stdio.h>
@@ -37,6 +39,7 @@ Version control
 #include <memory.h>
 #include <string.h>
 #include <stdarg.h>
+#include <ctype.h>
 #include <net/logger.h>
 
 //
@@ -277,6 +280,74 @@ void logCri(loghdl h, int showLevel, const char* const fmt, ...)
    }
 
    va_end(va);
+}
+
+void logHex(loghdl h, int showLevel, int bytesPerRow,
+            const char* const buf, const int size,
+            const char* const pLabel)
+{
+   const unsigned char* pStart = (const unsigned char* const)buf;
+   const unsigned char* const pEnd = pStart + size;
+   const unsigned char* pCur = pStart;
+
+   loghandle* p = (loghandle*)h;
+   if (!p || !buf || size <= 0) return;
+
+   // Are we within the level?
+   if (showLevel > p->mLevel) return;
+
+   // Reduce columns to nearest 8 byte.
+   if (bytesPerRow < 8) bytesPerRow = 8;
+   if (bytesPerRow > 8)
+      bytesPerRow = bytesPerRow - (bytesPerRow % 8);
+
+   // Print label.
+   if (pLabel) {
+      justlog(h, showLevel, "%s\n", pLabel);
+   }
+
+   // Print loop.
+   while (pCur < pEnd) {
+      int n = 0;
+      int nRemaining = 0;
+      char rowAddr[16];
+      char bytes[(const int) bytesPerRow + 1];
+      memset(rowAddr, 0, 16);
+      memset(bytes, 0, bytesPerRow + 1);
+
+      // Get memory address first...
+      sprintf(rowAddr, "%016x", pCur);
+      justlog(h, showLevel, "%s ", &rowAddr[11]);
+
+      // Indentation...
+      if (p->mEnableStd) {
+         logIndent(p, stdout);
+      }
+      if (p->mFile) {
+         logIndent(p, p->mFile);
+      }
+
+      // One row.
+      for (; n < bytesPerRow && pCur < pEnd; ++n, ++pCur) {
+         // eight byte separator
+         if (n > 0 && n % 8 == 0)
+            justlog(h, showLevel, " ");
+
+         // One line ascii buffer
+         bytes[n] = ((isprint(*pCur) && !isspace(*pCur)) ? *pCur : '.');
+
+         // Output hex bytes.
+         justlog(h, showLevel, "%02x ", pCur[0]);
+      }
+
+      // Output binary bytes.
+      nRemaining = bytesPerRow - n;
+      for (int n = 0; n < nRemaining; ++n) {
+         justlog(h, showLevel, "   ");
+      }
+
+      justlog(h, showLevel, " %s\n", bytes);
+   }
 }
 
 // Indentation

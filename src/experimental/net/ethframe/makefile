@@ -54,6 +54,7 @@ GCCSTD11                   := -std=c++11
 GCCSTD14                   := -std=c++14
 GCCSTD17                   := -std=c++17
 GCCPIC                     := -fPIC
+GCCNOFORMATWRN             := -Wformat=0
 GCCDEBUG                   := -g
 GCCCOMPILEONLY             := -c
 GCCOUTFILE                 := -o
@@ -105,6 +106,8 @@ RAWRECV_OBJ_RREL           := $(OBJDIR_RREL)$(PRJMAIN).o
 # stdc++ - c++ library
 # m - math library
 # dl - dynamic loading library
+# g++ RAWRECV_LNKLIB_RDBG        := -pthread $(GCCLIB)stdc++
+# g++ RAWRECV_LNKLIB_RREL        := -pthread $(GCCLIB)stdc++
 RAWRECV_LNKLIB_RDBG        := $(GCCLIB)pthread $(GCCLIB)stdc++
 RAWRECV_LNKLIB_RREL        := $(GCCLIB)pthread $(GCCLIB)stdc++
 

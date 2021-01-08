@@ -49,7 +49,7 @@ condition_variable gcvFrm;    // condition variable signaled if frames available
 //
 
 // Standard error log.
-auto gErr = [&](const char* const label, const char* const err) {
+auto gErr = [](const char* const label, const char* const err) {
    printf("[error %s] %s (%d:%s)\n", label, err, errno, strerror(errno));
 };
 

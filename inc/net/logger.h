@@ -27,6 +27,8 @@ Purpose: Provides generic log functionality.
 Version control
 15 Apr 2014 Duncan Camilleri           Initial development
 22 Mar 2019 Duncan Camilleri           Added copyright notice
+11 Dec 2020 Duncan Camilleri           Added logHex
+12 Dec 2020 Duncan Camilleri           Added label to logHex
 */
 
 #ifndef __LOGGER_H_35EB83B50B7DEFA4CB39D6D640C53174__
@@ -65,6 +67,8 @@ void logInfo(loghdl h, int showLevel, const char* const fmt, ...);
 void logWarn(loghdl h, int showLevel, const char* const fmt, ...);
 void logErr(loghdl h, int showLevel, const char* const fmt, ...);
 void logCri(loghdl h, int showLevel, const char* const fmt, ...);
+void logHex(loghdl h, int showLevel, int bytesPerRow,
+   const char* const buf, const int size, const char* const pLabel);
 
 // Indentation
 void logindent(loghdl h);

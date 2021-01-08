@@ -59,6 +59,7 @@ GCCSTD11                   := -std=c++11
 GCCSTD14                   := -std=c++14
 GCCSTD17                   := -std=c++17
 GCCPIC                     := -fPIC
+GCCNOFORMATWRN             := -Wformat=0
 GCCDEBUG                   := -g
 GCCCOMPILEONLY             := -c
 GCCOUTFILE                 := -o
@@ -162,8 +163,8 @@ TEST_RDBG                  := $(LIBDIR_RDBG)$(PRJMAIN)$(PRJTEST)
 TEST_RREL                  := $(LIBDIR_RREL)$(PRJMAIN)$(PRJTEST)
 
 # Project dependencies
-LOGGERDEP_RDBG             :=
-LOGGERDEP_RREL             :=
+LOGGERDEP_RDBG             := 
+LOGGERDEP_RREL             := 
 TCPLIBDEP_RDBG             := $(LIBDAT_CYCBUF_RDBG) $(LIBENC_BECODE_RDBG)\
                               $(LOGGER_RDBG)
 TCPLIBDEP_RREL             := $(LIBDAT_CYCBUF_RDBG) $(LIBENC_BECODE_RREL)\
@@ -217,7 +218,7 @@ mkreldirs : roottest
 
 clean : roottest
 	@$(RMDIR) $(LOGGER_RDBG) $(TCPLIB_RDBG) $(TEST_RDBG)
-	@$(RMDIR) $(LOGGER_RDBG) $(TCPLIB_RREL) $(TEST_RREL)
+	@$(RMDIR) $(LOGGER_RREL) $(TCPLIB_RREL) $(TEST_RREL)
 	@$(RMDIR) $(OBJDIR)
 
 memchk :
@@ -231,7 +232,7 @@ $(LOGGER_RDBG) : $(LOGGERDEP_RDBG) $(LOGGERINC) $(LOGGERSRC)
 	@$(AR) rc $(LOGGER_RDBG) $(OBJDIR_RDBG)*.o
 
 # logger release build
-$(LOGGER_RREL) :
+$(LOGGER_RREL) : $(LOGGERDEP_RREL) $(LOGGERINC) $(LOGGERSRC)
 	@$(ECHO) "rel: Compiling and linking to $@"
 	@$(GCC) $(OBJCOPT_RREL) $(LOGGERSRC) $(LOGGERDEP_RREL)
 	@$(MV) *.o $(OBJDIR_RREL)

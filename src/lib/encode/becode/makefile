@@ -50,6 +50,7 @@ GCCSTD98                   := -std=c++98
 GCCSTD11                   := -std=c++11
 GCCSTD14                   := -std=c++14
 GCCSTD17                   := -std=c++17
+GCCNOFORMATWRN             := -Wformat=0
 GCCPIC                     := -fPIC
 GCCDEBUG                   := -g
 GCCCOMPILEONLY             := -c

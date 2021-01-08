@@ -100,6 +100,8 @@ TEST_OBJ_RREL              := $(OBJDIR_RREL)$(PRJMAIN).o
 # stdc++ - c++ library
 # m - math library
 # dl - dynamic loading library
+# g++ TEST_LNKLIB_RDBG           := -pthread $(GCCLIB)stdc++
+# g++ TEST_LNKLIB_RREL           := -pthread $(GCCLIB)stdc++
 TEST_LNKLIB_RDBG           := $(GCCLIB)pthread $(GCCLIB)stdc++
 TEST_LNKLIB_RREL           := $(GCCLIB)pthread $(GCCLIB)stdc++
 
